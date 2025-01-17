@@ -620,11 +620,11 @@ The <dfn attribute for="AISummarizer">length</dfn> getter steps are to return [=
 <div algorithm>
   The <dfn method for="AISummarizer">summarizeStreaming(|input|, |options|)</dfn> method steps are:
 
-  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then throw an "{{InvalidStateError}}" {{DOMException}}.
 
-  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then return [=a promise rejected with=] [=this=]'s [=AISummarizer/destruction reason=].
+  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then throw [=this=]'s [=AISummarizer/destruction reason=].
 
-  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
+  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then throw |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
 
   1. Let |abortedDuringSummarization| be false.
 
