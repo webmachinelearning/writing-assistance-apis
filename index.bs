@@ -14,7 +14,6 @@ Assume Explicit For: yes
 Default Biblio Status: current
 Boilerplate: omit conformance
 Indent: 2
-Die On: warning
 </pre>
 
 <pre class="link-defaults">
@@ -111,7 +110,7 @@ partial interface AI {
 [Exposed=(Window,Worker), SecureContext]
 interface AISummarizerFactory {
   Promise<AISummarizer> create(optional AISummarizerCreateOptions options = {});
-  Promise<AISummarizerCapabilities> capabilities();
+  Promise<AICapabilityAvailability> available(optional AISummarizerCreateCoreOptions options = {});
 };
 
 [Exposed=(Window,Worker), SecureContext]
@@ -135,15 +134,6 @@ interface AISummarizer {
   readonly attribute DOMString? outputLanguage;
 
   undefined destroy();
-};
-
-[Exposed=(Window,Worker), SecureContext]
-interface AISummarizerCapabilities {
-  readonly attribute AICapabilityAvailability available;
-
-  AICapabilityAvailability createOptionsAvailable(
-    optional AISummarizerCreateCoreOptions options = {}
-  );
 };
 
 dictionary AISummarizerCreateCoreOptions {
@@ -186,29 +176,9 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
   1. If |options|["{{AISummarizerCreateOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["{{AISummarizerCreateOptions/signal}}"]'s [=AbortSignal/abort reason=].
 
-  1. If |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] [=map/exists=], then [=list/for each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"]:
+  1. [=Validate and canonicalize language tags=] given |options|. If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
 
-    1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
-
-    1. [=set/Append=] [$CanonicalizeUnicodeLocaleId$](|languageTag|) to |expectedInputLanguages|.
-
-  1. Set |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] to |expectedInputLanguages|.
-
-     <p class="note">We'll be |options| throughout this algorithm to carry state around, including mutations to the language tag members. The language tag members are canonicalized and deduplicated here, and can be modified later in the [=in parallel=] section by the best-fit algorithm. They will eventually be used to [=initialize the summarization model=] and exposed as properties on the {{AISummarizer}} object.
-
-  1. If |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] [=map/exists=], then [=list/for each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"]:
-
-    1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
-
-    1. [=set/Append=] [$CanonicalizeUnicodeLocaleId$](|languageTag|) to |expectedContextLanguages|.
-
-  1. Set |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] to |expectedContextLanguages|.
-
-  1. If |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] [=map/exists=], then:
-
-    1. If [$IsStructurallyValidLanguageTag$](|options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]) is false, then throw a {{TypeError}}.
-
-    1. Set |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] to [$CanonicalizeUnicodeLocaleId$](|options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]).
+     <p class="note">This can mutate |options|.
 
   1. Let |fireProgressEvent| be an algorithm taking two arguments that does nothing.
 
@@ -218,7 +188,7 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
     1. [=Invoke=] |options|["{{AISummarizerCreateOptions/monitor}}"] with « |monitor| » and "`rethrow`".
 
-      If an exception |e| is thrown, return [=a promise rejected with=] |e|.
+      If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
 
     1. Set |fireProgressEvent| to an algorithm taking arguments |loaded| and |total|, which performs the following steps:
 
@@ -240,73 +210,9 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
   1. [=In parallel=]:
 
-    1. Let |availability| be the [=current summarizer create options availability=] given |options|["{{AISummarizerCreateCoreOptions/type}}"], |options|["{{AISummarizerCreateCoreOptions/format}}"], and |options|["{{AISummarizerCreateCoreOptions/length}}"].
+    1. Let |availability| be the result of [=computing summarizer options availability=] given |options|.
 
-    1. Let |languageAvailabilities| be the [=current summarizer language availabilities=].
-
-    1. If |languageAvailabilities| is null, then set |availability| to null.
-
-    1. Otherwise:
-
-      1. [=set/For each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"]:
-
-        1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/readily available input languages=], |languageTag|).
-
-        1. If |bestReadilyAvailableMatch| is not undefined, then:
-
-          1. [=list/Replace=] |languageTag| with |bestReadilyAvailableMatch| in |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"].
-
-          1. [=iteration/Continue=].
-
-        1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/after-download available input languages=], |languageTag|).
-
-        1. If |bestAfterDownloadAvailableMatch| is not undefined, then:
-
-          1. [=list/Replace=] |languageTag| with |bestAfterDownloadAvailableMatch| in |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"].
-
-          1. Set |availability| to the [=AICapabilityAvailability/minimum availability=] given « |availability|, "{{AICapabilityAvailability/after-download}}" ».
-
-        1. Otherwise, set |availability| to "{{AICapabilityAvailability/no}}".
-
-      1. [=set/For each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"]:
-
-        1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/readily available context languages=], |languageTag|).
-
-        1. If |bestReadilyAvailableMatch| is not undefined, then:
-
-          1. [=list/Replace=] |languageTag| with |bestReadilyAvailableMatch| in |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"].
-
-          1. [=iteration/Continue=].
-
-        1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/after-download available context languages=], |languageTag|).
-
-        1. If |bestAfterDownloadAvailableMatch| is not undefined, then:
-
-          1. [=list/Replace=] |languageTag| with |bestAfterDownloadAvailableMatch| in |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"].
-
-          1. Set |availability| to the [=AICapabilityAvailability/minimum availability=] given « |availability|, "{{AICapabilityAvailability/after-download}}" ».
-
-        1. Otherwise, set |availability| to "{{AICapabilityAvailability/no}}".
-
-      1. If |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] is present, then:
-
-        1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/readily available output languages=], |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]).
-
-        1. If |bestReadilyAvailableMatch| is not undefined, then:
-
-          1. Set |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] to |bestReadilyAvailableMatch|.
-
-        1. Otherwise:
-
-          1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/after-download available output languages=], |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]).
-
-          1. If |bestAfterDownloadAvailableMatch| is not undefined, then:
-
-            1. Set |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] to |bestAfterDownloadAvailableMatch|.
-
-            1. Set |availability| to the [=AICapabilityAvailability/minimum availability=] given « |availability|, "{{AICapabilityAvailability/after-download}}" ».
-
-          1. Otherwise, set |availability| to "{{AICapabilityAvailability/no}}".
+       <p class="note">This can mutate |options|.
 
     1. Switch on |availability|:
 
@@ -453,123 +359,136 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
     1. [=Resolve=] |promise| with |summarizer|.
 </div>
 
-<h3 id="summarizer-capabilities">Capabilities</h3>
-
 <div algorithm>
-  The <dfn method for="AISummarizerFactory">capabilities()</dfn> method steps are:
+  To <dfn>validate and canonicalize language tags</dfn> given an {{AISummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
 
-  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
-
-  1. Let |promise| be [=a new promise=] created in [=this=]'s [=relevant realm=].
-
-  1. [=In parallel=]:
-
-    1. Let |availableCreateOptions| be a new [=map=] from [=tuples=] of ({{AISummarizerType}}, {{AISummarizerFormat}}, {{AISummarizerLength}}) values to {{AICapabilityAvailability}} values, initially empty.
-
-    1. [=list/For each=] |type| of {{AISummarizerType}}'s [=enumeration values=]:
-
-      1. [=list/For each=] |format| of {{AISummarizerFormat}}'s [=enumeration values=]:
-
-        1. [=list/For each=] |length| of {{AISummarizerLength}}'s [=enumeration values=]:
-
-          1. Set |availableCreateOptions|[(|type|, |format|, |length|)] to the [=current summarizer create options availability=] given |type|, |format|, and |length|.
-
-    1. Let |languageAvailabilities| be the [=current summarizer language availabilities=].
-
-    1. If |languageAvailabilities| is null, or |availableCreateOptions|'s [=map/values=] [=list/contains=] null, then [=queue a global task=] on the [=AI task source=] given [=this=] to perform the following steps:
-
-      1. [=Reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
-
-    1. Otherwise, [=queue a global task=] on the [=AI task source=] given [=this=] to perform the following steps:
-
-      1. Let |capabilitiesObject| be a new {{AISummarizerCapabilities}} object, created in [=this=]'s [=relevant realm=], with
-
-        <dl class="props">
-          : [=AISummarizerCapabilities/available create options=]
-          :: |availableCreateOptions|
-          : [=AISummarizerCapabilities/language availabilities=]
-          :: |languageAvailabilities|
-        </dl>
-
-      1. [=Resolve=] |promise| with |capabilitiesObject|.
-</div>
-
-<hr>
-
-Every {{AISummarizerCapabilities}} has an <dfn for="AISummarizerCapabilities">available create options</dfn>, a [=map=] from [=tuples=] of ({{AISummarizerType}}, {{AISummarizerFormat}}, {{AISummarizerLength}}) values to {{AICapabilityAvailability}} values, set during creation.
-
-Every {{AISummarizerCapabilities}} has an <dfn for="AISummarizerCapabilities">language availabilities</dfn>, a [=language availabilities=], set during creation.
-
-<div algorithm>
-  The <dfn attribute for="AISummarizerCapabilities">available</dfn> getter steps are:
-
-  1. Let |languageAvailability| be [=this=]'s [=AISummarizerCapabilities/language availabilities=]'s [=language availabilities/overall availability=].
-
-  1. Return the [=AICapabilityAvailability/minimum availability=] given the [=set/union=] of « |languageAvailability| » and of [=this=]'s [=AISummarizerCapabilities/available create options=] [=map/values=].
-</div>
-
-<div algorithm>
-  The <dfn method for="AISummarizerCapabilities">createOptionsAvailable(|options|)</dfn> method steps are:
-
-  1. Let |returnValue| be [=this=]'s [=AISummarizerCapabilities/available create options=][(|options|["{{AISummarizerCreateCoreOptions/type}}"], |options|["{{AISummarizerCreateCoreOptions/format}}"], |options|["{{AISummarizerCreateCoreOptions/length}}"])].
-
-     <p class="note">Even if |returnValue| is "{{AICapabilityAvailability/no}}", we do not bail early, as we need to check the input language tags for validity and throw an exception for invalid input.</p>
+  1. Let |expectedInputLanguages| be an empty [=ordered set=].
 
   1. If |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] [=map/exists=], then [=list/for each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"]:
 
     1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
 
-    1. Set |languageTag| to [$CanonicalizeUnicodeLocaleId$](|languageTag|).
+    1. [=set/Append=] [$CanonicalizeUnicodeLocaleId$](|languageTag|) to |expectedInputLanguages|.
 
-    1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$]([=this=]'s [=AISummarizerCapabilities/language availabilities=]'s [=language availabilities/readily available input languages=], |languageTag|).
+  1. Set |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] to |expectedInputLanguages|.
 
-    1. If |bestReadilyAvailableMatch| is not undefined, then [=iteration/continue=].
-
-    1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$]([=this=]'s [=AISummarizerCapabilities/language availabilities=]'s [=language availabilities/after-download available input languages=], |languageTag|).
-
-    1. If |bestAfterDownloadAvailableMatch| is not undefined, then set |returnValue| to the [=AICapabilityAvailability/minimum availability=] given « |availabilitySoFar|, "{{AICapabilityAvailability/after-download}}" ».
-
-    1. Otherwise, set |returnValue| to "{{AICapabilityAvailability/no}}".
+  1. Let |expectedContextLanguages| be an empty [=ordered set=].
 
   1. If |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] [=map/exists=], then [=list/for each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"]:
 
     1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
 
-    1. Set |languageTag| to [$CanonicalizeUnicodeLocaleId$](|languageTag|).
+    1. [=set/Append=] [$CanonicalizeUnicodeLocaleId$](|languageTag|) to |expectedContextLanguages|.
 
-    1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$]([=this=]'s [=AISummarizerCapabilities/language availabilities=]'s [=language availabilities/readily available context languages=], |languageTag|).
-
-    1. If |bestReadilyAvailableMatch| is not undefined, then [=iteration/continue=].
-
-    1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$]([=this=]'s [=AISummarizerCapabilities/language availabilities=]'s [=language availabilities/after-download available context languages=], |languageTag|).
-
-    1. If |bestAfterDownloadAvailableMatch| is not undefined, then set |returnValue| to the [=AICapabilityAvailability/minimum availability=] given « |availabilitySoFar|, "{{AICapabilityAvailability/after-download}}" ».
-
-    1. Otherwise, set |returnValue| to "{{AICapabilityAvailability/no}}".
+  1. Set |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] to |expectedContextLanguages|.
 
   1. If |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] [=map/exists=], then:
 
     1. If [$IsStructurallyValidLanguageTag$](|options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]) is false, then throw a {{TypeError}}.
 
-    1. Let |languageTag| be [$CanonicalizeUnicodeLocaleId$](|options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]).
-
-    1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$]([=this=]'s [=AISummarizerCapabilities/language availabilities=]'s [=language availabilities/readily available output languages=], |languageTag|).
-
-    1. If |bestReadilyAvailableMatch| is undefined, then:
-
-      1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$]([=this=]'s [=AISummarizerCapabilities/language availabilities=]'s [=language availabilities/after-download available output languages=], |languageTag|).
-
-      1. If |bestAfterDownloadAvailableMatch| is not undefined, then set |returnValue| to the [=AICapabilityAvailability/minimum availability=] given « |availabilitySoFar|, "{{AICapabilityAvailability/after-download}}" ».
-
-      1. Otherwise, set |returnValue| to "{{AICapabilityAvailability/no}}".
-
-  1. Return |returnValue|.
+    1. Set |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] to [$CanonicalizeUnicodeLocaleId$](|options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]).
 </div>
 
-<hr>
+<h3 id="summarizer-availability">Availability</h3>
 
 <div algorithm>
-  The <dfn>current summarizer create options availability</dfn>, given a {{AISummarizerType}} |type|, {{AISummarizerFormat}} |format|, and an {{AISummarizerLength}} |length|, is given by the following steps. They return an {{AICapabilityAvailability}} value or null.
+  The <dfn method for="AISummarizerFactory">available(|options|)</dfn> method steps are:
+
+  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+
+  1. [=Validate and canonicalize language tags=] given |options|.
+
+  1. Let |promise| be [=a new promise=] created in [=this=]'s [=relevant realm=].
+
+  1. [=In parallel=]:
+
+    1. Let |availability| be the result of [=computing summarizer options availability=] given |options|.
+
+    1. If |availability| is null, then [=reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
+
+    1. Otherwise, [=resolve=] |promise| with |availability|.
+</div>
+
+<div algorithm>
+  To <dfn>compute summarizer options availability</dfn> given an {{AISummarizerCreateCoreOptions}} |options|, perform the following steps. They return either an {{AICapabilityAvailability}} value or null, and they mutate |options| in place to update language tags to their best-fit matches.
+
+  1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. Let |availability| be the [=summarizer non-language options availability=] given |options|["{{AISummarizerCreateCoreOptions/type}}"], |options|["{{AISummarizerCreateCoreOptions/format}}"], and |options|["{{AISummarizerCreateCoreOptions/length}}"].
+
+  1. If |availability| is null, then return null.
+
+  1. Let |languageAvailabilities| be the [=summarizer language availabilities=].
+
+  1. If |languageAvailabilities| is null, then return null.
+
+  1. [=set/For each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"]:
+
+    1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/readily available input languages=], |languageTag|).
+
+    1. If |bestReadilyAvailableMatch| is not undefined, then:
+
+      1. [=list/Replace=] |languageTag| with |bestReadilyAvailableMatch| in |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"].
+
+      1. [=iteration/Continue=].
+
+    1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/after-download available input languages=], |languageTag|).
+
+    1. If |bestAfterDownloadAvailableMatch| is not undefined, then:
+
+      1. [=list/Replace=] |languageTag| with |bestAfterDownloadAvailableMatch| in |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"].
+
+      1. Set |availability| to the [=AICapabilityAvailability/minimum availability=] given « |availability|, "{{AICapabilityAvailability/after-download}}" ».
+
+    1. Otherwise, return "{{AICapabilityAvailability/no}}".
+
+  1. [=set/For each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"]:
+
+    1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/readily available context languages=], |languageTag|).
+
+    1. If |bestReadilyAvailableMatch| is not undefined, then:
+
+      1. [=list/Replace=] |languageTag| with |bestReadilyAvailableMatch| in |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"].
+
+      1. [=iteration/Continue=].
+
+    1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/after-download available context languages=], |languageTag|).
+
+    1. If |bestAfterDownloadAvailableMatch| is not undefined, then:
+
+      1. [=list/Replace=] |languageTag| with |bestAfterDownloadAvailableMatch| in |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"].
+
+      1. Set |availability| to the [=AICapabilityAvailability/minimum availability=] given « |availability|, "{{AICapabilityAvailability/after-download}}" ».
+
+    1. Otherwise, return "{{AICapabilityAvailability/no}}".
+
+  1. If |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] is present, then:
+
+    1. Let |bestReadilyAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/readily available output languages=], |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]).
+
+    1. If |bestReadilyAvailableMatch| is not undefined, then:
+
+      1. Set |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] to |bestReadilyAvailableMatch|.
+
+    1. Otherwise:
+
+      1. Let |bestAfterDownloadAvailableMatch| be [$LookupMatchingLocaleByBestFit$](|languageAvailabilities|'s [=language availabilities/after-download available output languages=], |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]).
+
+      1. If |bestAfterDownloadAvailableMatch| is not undefined, then:
+
+        1. Set |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] to |bestAfterDownloadAvailableMatch|.
+
+        1. Set |availability| to the [=AICapabilityAvailability/minimum availability=] given « |availability|, "{{AICapabilityAvailability/after-download}}" ».
+
+      1. Otherwise, return "{{AICapabilityAvailability/no}}".
+
+  1. [=Assert=]: |availability| is either "{{AICapabilityAvailability/readily}}" or "{{AICapabilityAvailability/after-download}}".
+
+  1. Return |availability|.
+</div>
+
+<div algorithm>
+  The <dfn>summarizer non-language options availability</dfn>, given a {{AISummarizerType}} |type|, {{AISummarizerFormat}} |format|, and an {{AISummarizerLength}} |length|, is given by the following steps. They return an {{AICapabilityAvailability}} value or null.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
@@ -577,7 +496,7 @@ Every {{AISummarizerCapabilities}} has an <dfn for="AISummarizerCapabilities">la
 
   1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after performing a download (e.g., of an AI model or fine-tuning), then return "{{AICapabilityAvailability/after-download}}".
 
-  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=current summarizer create options availability=] could stop producing such an error), then return null.
+  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=summarizer non-language options availability=] could stop producing such an error), then return null.
 
   1. Otherwise, return "{{AICapabilityAvailability/no}}".
 </div>
@@ -594,21 +513,11 @@ A <dfn>language availabilities</dfn> is a [=struct=] with the following [=struct
 All of these [=struct/items=] are [=sets=] of strings representing [=Unicode canonicalized locale identifiers=], initially empty. [[!ECMA-402]]
 
 <div algorithm>
-  The <dfn for="language availabilities">overall availability</dfn> of a [=language availabilities=] |languageAvailabilities| is the {{AICapabilityAvailability}} given by the following steps:
-
-  1. If all of |languageAvailabilities|'s [=struct/items=] [=set/is empty|are empty=], then return "{{AICapabilityAvailability/no}}".
-
-  1. If |languageAvailabilities|'s [=language availabilities/readily available input languages=], |languageAvailabilities|'s [=language availabilities/readily available context languages=], and |languageAvailabilities|'s [=language availabilities/readily available output languages=] [=set/is empty|are all empty=], then return "{{AICapabilityAvailability/after-download}}".
-
-  1. Return "{{AICapabilityAvailability/readily}}".
-</div>
-
-<div algorithm>
-  The <dfn>current summarizer language availabilities</dfn> are given by the following steps. They return a [=language availabilities=] or null.
+  The <dfn>summarizer language availabilities</dfn> are given by the following steps. They return a [=language availabilities=] or null.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
-  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=current summarizer language availabilities=] could stop producing such an error), then return null.
+  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=summarizer language availabilities=] could stop producing such an error), then return null.
 
   1. Let |availabilities| be a [=language availabilities=].
 
@@ -657,13 +566,13 @@ All of these [=struct/items=] are [=sets=] of strings representing [=Unicode can
   <div class="example" id="example-subtags-chinese">
     A common setup seen in today's software is to support two types of written Chinese: "traditional Chinese" and "simplified Chinese". Let's suppose that the user agent supports summarizing text written in traditional Chinese readily, and simplified Chinese after a download.
 
-    One way this could be implemented would be for [=current summarizer language availabilities=] to return that "`zh-Hant`" is in the [=language availabilities/readily available input languages=], and "`zh`" and "`zh-Hans`" are in the [=language availabilities/after-download available input languages=]. This return value conforms to the requirements of the [=language tag set completeness rules=], in ensuring that "`zh`" is present. Per <a class="allow-2119" href="#readily-or-after-download-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "`zh`" belongs in the set of [=language availabilities/after-download available input languages=], with "`zh-Hans`", instead of in the set of [=language availabilities/readily available input languages=], with "`zh-Hant`".
+    One way this could be implemented would be for [=summarizer language availabilities=] to return that "`zh-Hant`" is in the [=language availabilities/readily available input languages=], and "`zh`" and "`zh-Hans`" are in the [=language availabilities/after-download available input languages=]. This return value conforms to the requirements of the [=language tag set completeness rules=], in ensuring that "`zh`" is present. Per <a class="allow-2119" href="#readily-or-after-download-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "`zh`" belongs in the set of [=language availabilities/after-download available input languages=], with "`zh-Hans`", instead of in the set of [=language availabilities/readily available input languages=], with "`zh-Hant`".
 
-    Combined with the use of [$LookupMatchingLocaleByBestFit$], this means {{AISummarizerCapabilities/createOptionsAvailable()}} will give the following answers:
+    Combined with the use of [$LookupMatchingLocaleByBestFit$], this means {{AISummarizerFactory/available()}} will give the following answers:
 
     <xmp class="language-js">
     function inputLangAvailable(languageTag) {
-      return summarizerCapabilities.createOptionsAvailable({
+      return ai.summarizer.available({
         expectedInputLanguages: [languageTag]
       });
     }
@@ -909,10 +818,6 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
-  1. [=Assert=]: the [=current summarizer create options availability=] given |type|, |format|, and |length| is "{{AICapabilityAvailability/readily}}".
-
-     <p class="note">Otherwise, the {{AISummarizer}} object would not have been created.
-
   1. In an [=implementation-defined=] manner, subject to the following guidelines, begin the processs of summarizing |input| into a string.
 
      If they are non-null, |sharedContext| and |context| should be used to aid in the summarization by providing context on how the web developer wishes the input to be summarized.
@@ -1120,7 +1025,7 @@ Just IDL for now; full spec coming!
 [Exposed=(Window,Worker), SecureContext]
 interface AIWriterFactory {
   Promise<AIWriter> create(optional AIWriterCreateOptions options = {});
-  Promise<AIWriterCapabilities> capabilities();
+  Promise<AICapabilityAvailability> available(optional AIWriterCreateCoreOptions options = {});
 };
 
 [Exposed=(Window,Worker), SecureContext]
@@ -1138,13 +1043,6 @@ interface AIWriter {
   readonly attribute DOMString? outputLanguage;
 
   undefined destroy();
-};
-
-[Exposed=(Window,Worker), SecureContext]
-interface AIWriterCapabilities {
-  readonly attribute AICapabilityAvailability available;
-
-  AICapabilityAvailability createOptionsAvailable(optional AIWriterCreateCoreOptions options = {});
 };
 
 dictionary AIWriterCreateCoreOptions {
@@ -1182,7 +1080,7 @@ Just IDL for now; full spec coming!
 [Exposed=(Window,Worker), SecureContext]
 interface AIRewriterFactory {
   Promise<AIRewriter> create(optional AIRewriterCreateOptions options = {});
-  Promise<AIRewriterCapabilities> capabilities();
+  Promise<AICapabilityAvailability> available(optional AIRewriterCreateCoreOptions options = {});
 };
 
 [Exposed=(Window,Worker), SecureContext]
@@ -1200,13 +1098,6 @@ interface AIRewriter {
   readonly attribute DOMString? outputLanguage;
 
   undefined destroy();
-};
-
-[Exposed=(Window,Worker), SecureContext]
-interface AIRewriterCapabilities {
-  readonly attribute AICapabilityAvailability available;
-
-  AICapabilityAvailability createOptionsAvailable(optional AIRewriterCreateCoreOptions options = {});
 };
 
 dictionary AIRewriterCreateCoreOptions {
