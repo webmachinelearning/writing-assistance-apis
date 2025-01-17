@@ -14,6 +14,7 @@ Assume Explicit For: yes
 Default Biblio Status: current
 Boilerplate: omit conformance
 Indent: 2
+Die On: warning
 </pre>
 
 <pre class="link-defaults">
@@ -492,11 +493,11 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
+  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=summarizer non-language options availability=] could stop producing such an error), then return null.
+
   1. If the user agent supports summarizing text into the type of summary described by |type|, in the format described by |format|, and with the length guidance given by |length| without performing any downloading operations, then return "{{AICapabilityAvailability/readily}}".
 
   1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after performing a download (e.g., of an AI model or fine-tuning), then return "{{AICapabilityAvailability/after-download}}".
-
-  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=summarizer non-language options availability=] could stop producing such an error), then return null.
 
   1. Otherwise, return "{{AICapabilityAvailability/no}}".
 </div>
@@ -601,11 +602,11 @@ Every {{AISummarizer}} has a <dfn for="AISummarizer">summary format</dfn>, an {{
 
 Every {{AISummarizer}} has a <dfn for="AISummarizer">summary length</dfn>, an {{AISummarizerLength}}, set during creation.
 
-Every {{AISummarizer}} has a <dfn for="AISummarizer">expected input languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
+Every {{AISummarizer}} has an <dfn for="AISummarizer">expected input languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
 
-Every {{AISummarizer}} has a <dfn for="AISummarizer">expected context languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
+Every {{AISummarizer}} has an <dfn for="AISummarizer">expected context languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
 
-Every {{AISummarizer}} has a <dfn for="AISummarizer">output language</dfn>, a [=string=] or null, set during creation.
+Every {{AISummarizer}} has an <dfn for="AISummarizer">output language</dfn>, a [=string=] or null, set during creation.
 
 Every {{AISummarizer}} has a <dfn for="AISummarizer">destruction reason</dfn>, a JavaScript value, initially undefined.
 
