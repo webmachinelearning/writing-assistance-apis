@@ -152,8 +152,8 @@ It's better practice, if possible, to supply the `create()` method with informat
 ```js
 const summarizer = await ai.summarize.create({
   type: "key-points",
-  expectedInputLanguages: ["ja", "kr"],
-  expectedContextLanguages: ["en", "ja", "kr"],
+  expectedInputLanguages: ["ja", "ko"],
+  expectedContextLanguages: ["en", "ja", "ko"],
   outputLanguage: "zh",
   sharedContext: `
     These are messages from a language exchange platform managed by a Chinese educational
