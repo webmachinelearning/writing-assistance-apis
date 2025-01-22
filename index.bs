@@ -29,6 +29,9 @@ urlPrefix: https://tc39.es/ecma402/; spec: ECMA-402
     text: LookupMatchingLocaleByBestFit; url: sec-lookupmatchinglocalebybestfit
     text: IsStructurallyValidLanguageTag; url: sec-isstructurallyvalidlanguagetag
     text: CanonicalizeUnicodeLocaleId; url: sec-canonicalizeunicodelocaleid
+urlPrefix: https://tc39.es/ecma262/; spec: ECMA-262
+  type: abstract-op
+    text: floor; url: eqn-floor
 </pre>
 
 <style>
@@ -191,13 +194,15 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
       If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
 
-    1. Set |fireProgressEvent| to an algorithm taking arguments |loaded| and |total|, which performs the following steps:
+    1. Set |fireProgressEvent| to an algorithm taking argument |loaded|, which performs the following steps:
 
       1. [=Assert=]: this algorithm is running [=in parallel=].
 
       1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
 
-        1. [=Fire an event=] named {{AICreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to |total|, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
+        1. [=Fire an event=] named {{AICreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to 1, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
+
+          <p class="advisement">This assumes <a href="https://github.com/whatwg/xhr/pull/394">whatwg/xhr#394</a> is merged so that passing non-integer values for {{ProgressEvent/loaded}} works as expected.</p>
 
   1. Let |abortedDuringDownload| be false.
 
@@ -234,13 +239,9 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
       ::
         1. If [=initializing the summarization model=] given |promise| and |options| returns false, then abort these steps.
 
-        1. Let |totalBytes| be the total size of the previously-downloaded summarization capabilities, in bytes.
+        1. Perform |fireProgressEvent| given 0.
 
-        1. [=Assert=]: |totalBytes| is greater than 0.
-
-        1. Perform |fireProgressEvent| given 0 and |totalBytes|.
-
-        1. Perform |fireProgressEvent| given |totalBytes| and |totalBytes|.
+        1. Perform |fireProgressEvent| given 1.
 
         1. [=Finalize summarizer creation=] given |promise| and |options|.
 
@@ -254,7 +255,7 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
           1. Let |lastProgressTime| be the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
 
-          1. Perform |fireProgressEvent| given 0 and |totalBytes|.
+          1. Perform |fireProgressEvent| given 0.
 
           1. While true:
 
@@ -266,9 +267,104 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
                 1. [=Assert=]: |bytesSoFar| is greater than 0 and less than or equal to |totalBytes|.
 
-                1. Perform |fireProgressEvent| given |bytesSoFar| and |totalBytes|.
+                1. Let |rawProgressFraction| be |bytesSoFar| divided by |totalBytes|.
+
+                1. Let |progressFraction| be [$floor$](|rawProgressFraction| &times; 65,536) &divide; 65,536.
+
+                1. Perform |fireProgressEvent| given |progressFraction|.
+
+                   <div class="note">
+                    <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
+
+                    <p>|progressFraction| is calculated from |rawProgressFraction| to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the {{ProgressEvent/loaded}} value will be different from the previous one that was fired ~50 milliseconds ago.</p>
+
+                    <details>
+                      <summary>Full calculation</summary>
+
+                      <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from [this source](https://worldpopulationreview.com/country-rankings/internet-speeds-by-country)). Then, downloading 5 GiB will take:</p>
+
+                      <math style="display:block math">
+                        <mtable>
+                          <mtr>
+                            <mtd></mtd>
+                            <mtd style="text-align: left">
+                              <mn>5</mn>
+                              <mtext>&nbsp;GiB</mtext>
+
+                              <mo>×</mo>
+                              <mfrac>
+                                <mrow>
+                                  <msup>
+                                    <mn>2</mn>
+                                    <mn>30</mn>
+                                  </msup>
+                                  <mtext>&nbsp;bytes</mtext>
+                                </mrow>
+                                <mtext>GiB</mtext>
+                              </mfrac>
+
+                              <mo>×</mo>
+                              <mfrac>
+                                <mrow>
+                                  <mn>8</mn>
+                                  <mtext>&nbsp;bits</mtext>
+                                </mrow>
+                                <mtext>bytes</mtext>
+                              </mfrac>
+
+                              <mo>÷</mo>
+                              <mfrac>
+                                <mrow>
+                                  <mn>20</mn>
+                                  <mo>×</mo>
+                                  <msup>
+                                    <mn>10</mn>
+                                    <mn>6</mn>
+                                  </msup>
+                                  <mtext>&nbsp;bits</mtext>
+                                </mrow>
+                                <mtext>s</mtext>
+                              </mfrac>
+
+                              <mo>×</mo>
+                              <mfrac>
+                                <mrow>
+                                  <mn>1000</mn>
+                                  <mtext>&nbsp;ms</mtext>
+                                </mrow>
+                                <mtext>s</mtext>
+                              </mfrac>
+
+                              <mo>÷</mo>
+                              <mfrac>
+                                <mrow>
+                                  <mn>50</mn>
+                                  <mtext>&nbsp;ms</mtext>
+                                </mrow>
+                                <mtext>interval</mtext>
+                              </mfrac>
+                            </mtd>
+                          </mtr>
+
+                          <mtr>
+                            <mtd>
+                              <mo>=</mo>
+                            </mtd>
+                            <mtd style="text-align: left">
+                              <mn>49,950</mn>
+                              <mtext>&nbsp;intervals</mtext>
+                            </mtd>
+                          </mtr>
+                        </mtable>
+                      </math>
+
+                      Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.
+                    </details>
+                  </div>
 
                 1. If |bytesSoFar| equals |totalBytes|, then [=iteration/break=].
+
+                  <p class="note">Since this is the only exit condition for the loop, we are guaranteed to fire a {{AICreateMonitor/downloadprogress}} event for the 100% mark.</p>
 
                 1. Set |lastProgressTime| to the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
 
