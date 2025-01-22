@@ -59,6 +59,19 @@ interface AICreateMonitor : EventTarget {
   attribute EventHandler ondownloadprogress;
 };
 
+[Exposed=(Window,Worker), SecureContext, Serializable]
+interface TooManyTokensError : DOMException {
+  constructor(optional DOMString message = "", TooManyTokensErrorOptions options);
+
+  readonly attribute unsigned long long tokenCount;
+  readonly attribute unsigned long long tokensAvailable;
+};
+
+dictionary TooManyTokensErrorOptions {
+  required [EnforceRange] unsigned long long tokenCount;
+  required [EnforceRange] unsigned long long tokensAvailable;
+};
+
 callback AICreateMonitorCallback = undefined (AICreateMonitor monitor);
 
 enum AICapabilityAvailability { "readily", "after-download", "no" };
@@ -101,6 +114,48 @@ The following are the [=event handlers=] (and their corresponding [=event handle
       <td><dfn event for="AICreateMonitor">downloadprogress</dfn>
 </table>
 
+<hr>
+
+Every {{TooManyTokensError}} instance has a <dfn for="TooManyTokensError">token count</dfn> and a <dfn for="TooManyTokensError">tokens available</dfn>, both numbers.
+
+<div algorithm>
+  The <dfn constructor for="TooManyTokensError" lt="TooManyTokensError(message, options)">new TooManyTokensError(|message|, |options|)</dfn> constructor steps are:
+
+  1. Set [=this=]'s [=DOMException/name=] to "`TooManyTokensError`".
+
+  1. Set [=this=]'s [=DOMException/message=] to |message|.
+
+  1. Set [=this=]'s [=TooManyTokensError/token count=] to |options|["{{TooManyTokensErrorOptions/tokenCount}}"].
+
+  1. Set [=this=]'s [=TooManyTokensError/tokens available=] to |options|["{{TooManyTokensErrorOptions/tokensAvailable}}"].
+</div>
+
+The <dfn attribute for="TooManyTokensError">tokenCount</dfn> getter steps are to return [=this=]'s [=TooManyTokensError/token count=].
+
+The <dfn attribute for="TooManyTokensError">tokensAvailable</dfn> getter steps are to return [=this=]'s [=TooManyTokensError/tokens available=].
+
+{{TooManyTokensError}} objects are [=serializable objects=].
+
+<div algorithm="TooManyTokensError serialization steps">
+  Their [=serialization steps=], given |value| and |serialized|, are:
+
+  1. Run the {{DOMException}} [=serialization steps=] given |value| and |serialized|.
+
+  1. Set |serialized|.\[[TokensCount]] to |value|'s [=TooManyTokensError/token count=].
+
+  1. Set |serialized|.\[[TokensAvailable]] to |value|'s [=TooManyTokensError/tokens available=].
+</div>
+
+<div algorithm="TooManyTokensError deserialization steps">
+  Their [=deserialization steps=], given |serialized| and |value|, are:
+
+  1. Run the {{DOMException}} [=deserialization steps=] given |serialized| and |value|.
+
+  1. Set |value|'s [=TooManyTokensError/token count=] to |serialized|.\[[TokensCount]].
+
+  1. Set |value|'s [=TooManyTokensError/tokens available=] to |serialized|.\[[TokensAvailable]].
+</div>
+
 <h2 id="summarizer-api">The summarizer API</h2>
 
 <xmp class="idl">
@@ -133,6 +188,12 @@ interface AISummarizer {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
+
+  Promise<unsigned long long> countTokens(
+    DOMString input,
+    optional AISummarizerSummarizeOptions options = {}
+  );
+  readonly attribute unsigned long long tokensAvailable;
 
   undefined destroy();
 };
@@ -304,7 +365,19 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
     This could include loading the model into memory, loading |options|["{{AISummarizerCreateOptions/sharedContext}}"] into the model's context window, or loading any fine-tunings necessary to support the other options expressed by |options|.
 
-  1. If initialization failed for any reason, then:
+  1. If initialization failed because the number of tokens needed to load |options| was too large for the implementation, then:
+
+    1. Let |tokenCount| be the result of [=counting the tokens=] necessary to encode |options|.
+
+      <p class="note" id="note-options-token-encoding">This could be the same value as given by [=counting the tokens=] in |options|["{{AISummarizerCreateOptions/sharedContext}}"], or it could be larger. For example, if other options are encoded using prompt engineering, then the prompt would be included when computing |tokenCount|.</p>
+
+    1. Let |tokensAvailable| be the maximum number of tokens that the user agent supports.
+
+    1. [=Assert=]: |tokensAvailable| is less than |tokenCount|. (That is how we reached this error branch.)
+
+    1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to [=reject=] |promise| with a {{TooManyTokensError}} whose [=TooManyTokensError/token count=] is |tokenCount| and [=TooManyTokensError/tokens available=] is |tokensAvailable|.
+
+  1. If initialization failed for any other reason, then:
 
     1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to [=reject=] |promise| with an "{{OperationError}}" {{DOMException}}.
 
@@ -328,6 +401,10 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
       <p class="note">This check is necessary in case any code running on the [=agent/event loop=] caused the {{AbortSignal}} to become [=AbortSignal/aborted=] before this [=task=] ran.
 
+    1. Let |tokensAvailable| be the total number of tokens available to the user agent for future [=summarize|summarization=] operations.
+
+      <p class="note">This will generally vary for each {{AISummarizer}} instance, depending on how many tokens were taken up by encoding |options|. See <a href="#note-options-token-encoding">the earlier note</a> on this encoding.</p>
+
     1. Let |summarizer| be a new {{AISummarizer}} object, created in |promise|'s [=relevant realm=], with
 
       <dl class="props">
@@ -342,6 +419,9 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
         : [=AISummarizer/summary length=]
         :: |options|["{{AISummarizerCreateCoreOptions/length}}"]
+
+        : [=AISummarizer/tokens available=]
+        :: |tokensAvailable|
 
         : [=AISummarizer/expected input languages=]
         :: the result of [=creating a frozen array=] given |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
@@ -602,6 +682,8 @@ Every {{AISummarizer}} has a <dfn for="AISummarizer">summary format</dfn>, an {{
 
 Every {{AISummarizer}} has a <dfn for="AISummarizer">summary length</dfn>, an {{AISummarizerLength}}, set during creation.
 
+Every {{AISummarizer}} has a <dfn for="AISummarizer">tokens available</dfn> number, set during creation.
+
 Every {{AISummarizer}} has an <dfn for="AISummarizer">expected input languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
 
 Every {{AISummarizer}} has an <dfn for="AISummarizer">expected context languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
@@ -624,6 +706,8 @@ The <dfn attribute for="AISummarizer">format</dfn> getter steps are to return [=
 
 The <dfn attribute for="AISummarizer">length</dfn> getter steps are to return [=this=]'s [=AISummarizer/summary length=].
 
+The <dfn attribute for="AISummarizer">tokensAvailable</dfn> getter steps are to return [=this=]'s [=AISummarizer/tokens available=].
+
 The <dfn attribute for="AISummarizer">expectedInputLanguages</dfn> getter steps are to return [=this=]'s [=AISummarizer/expected input languages=].
 
 The <dfn attribute for="AISummarizer">expectedContextLanguages</dfn> getter steps are to return [=this=]'s [=AISummarizer/expected context languages=].
@@ -637,9 +721,9 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
   1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
-  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then return [=a promise rejected with=] [=this=]'s [=AISummarizer/destruction reason=].
-
   1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
+
+  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then return [=a promise rejected with=] [=this=]'s [=AISummarizer/destruction reason=].
 
   1. Let |abortedDuringSummarization| be false.
 
@@ -703,9 +787,7 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
           1. Abort these steps.
 
-        1. Let |exception| be the result of [=exception/creating=] a {{DOMException}} with name given by |errorInfo|'s [=summarization error information/error name=], using |errorInfo|'s [=summarization error information/error information=] to populate the message appropriately.
-
-        1. [=Reject=] |promise| with |exception|.
+        1. [=Reject=] |promise| with the result of [=converting error information into an exception object=] given [=this=] and |errorInfo|.
 
     1. Let |stopProducing| be the following steps:
 
@@ -721,9 +803,9 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
   1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then throw an "{{InvalidStateError}}" {{DOMException}}.
 
-  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then throw [=this=]'s [=AISummarizer/destruction reason=].
-
   1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then throw |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
+
+  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then throw [=this=]'s [=AISummarizer/destruction reason=].
 
   1. Let |abortedDuringSummarization| be false.
 
@@ -799,9 +881,7 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
           1. Abort these steps.
 
-        1. Let |exception| be the result of [=exception/creating=] a {{DOMException}} with name given by |errorInfo|'s [=summarization error information/error name=], using |errorInfo|'s [=summarization error information/error information=] to populate the message appropriately.
-
-        1. [=ReadableStream/Error=] |stream| with |exception|.
+        1. [=ReadableStream/Error=] |stream| with the result of [=converting error information into an exception object=] given [=this=] and |errorInfo|.
 
     1. Let |stopProducing| be the following steps:
 
@@ -815,11 +895,71 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 </div>
 
 <div algorithm>
+  The <dfn method for="AISummarizer">countTokens(|input|, |options|)</dfn> method steps are:
+
+  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+
+  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
+
+  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then return [=a promise rejected with=] [=this=]'s [=AISummarizer/destruction reason=].
+
+  1. Let |promise| be [=a new promise=] created in [=this=]'s [=relevant realm=].
+
+  1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
+
+  1. [=In parallel=]:
+
+    1. Let |inputToModel| be the [=implementation-defined=] string that would be sent to the language model in order to [=summarize=] |input|, given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], and [=this=]'s [=AISummarizer/output language=].
+
+      <p class="note">See <a href="#note-input-to-model">this note</a> for more detail on what |inputToModel| might consist of.</p>
+
+    1. Let |tokenCount| be the result of [=counting the tokens=] given |inputToModel|.
+
+    1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
+
+      1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then:
+
+        1. [=Reject=] |promise| with |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
+
+        1. Abort these steps.
+
+      1. If [=this=]'s [=AISummarizer/destroyed=] is true, then:
+
+        1. [=Reject=] |promise| with [=this=]'s [=AISummarizer/destruction reason=].
+
+        1. Abort these steps.
+
+      1. If |tokenCount| is null, then:
+
+        1. [=Reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
+
+        1. Abort these steps.
+
+      1. [=Resolve=] |promise| with |tokenCount|.
+
+  1. Return |promise|.
+</div>
+
+<div algorithm>
   To <dfn>summarize</dfn> a string |input|, given a string-or-null |sharedContext|, a string-or-null |context|, an {{AISummarizerType}} |type|, an {{AISummarizerFormat}} |format|, an {{AISummarizerLength}} |length|, a [=string=]-or-null |outputLanguage|, an algorithm |chunkProduced| that takes a string and returns nothing, an algorithm |done| that takes no arguments and returns nothing, an algorithm |error| that takes [=summarization error information=] and returns nothing, and an algorithm |stopProducing| that takes no arguments and returns a boolean:
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
-  1. In an [=implementation-defined=] manner, subject to the following guidelines, begin the processs of summarizing |input| into a string.
+  1. Let |inputToModel| be the [=implementation-defined=] string that would be sent to the language model in order to summarize according to <a href="#step-actual-summarization">the upcoming summarization step</a>.
+
+    <p class="note" id="note-input-to-model">This might be something similar to the concatenation of |input| and |context|, if all of the previous options were loaded into the model during initialization, and so the tokens used to express them are already accounted for via the {{AISummarizer/tokensAvailable}} property's current value. Or it might require more tokens, if the options are sent along with every summarization call, or if there is a per-summarization wrapper prompt of some sort.</p>
+
+  1. Let |tokenCount| be the result of [=counting the tokens=] given |inputToModel|.
+
+  1. If |tokenCount| is greater than the number of tokens the language model can accept, then:
+
+    1. Let |errorInfo| be a [=too many tokens error information=] with a [=too many tokens error information/token count=] of |tokenCount|.
+
+    1. Perform |error| given |errorInfo|.
+
+    1. Return.
+
+  1. <span id="step-actual-summarization"></span>In an [=implementation-defined=] manner, subject to the following guidelines, begin the processs of summarizing |input| into a string.
 
      If they are non-null, |sharedContext| and |context| should be used to aid in the summarization by providing context on how the web developer wishes the input to be summarized.
 
@@ -854,6 +994,20 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
       1. Perform |error| given |errorInfo|.
 
       1. [=iteration/Break=].
+</div>
+
+<div algorithm>
+  To <dfn>count the tokens</dfn> in a string |inputToModel|:
+
+  1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. In an implementation-defined manner, subject to the following constraints, return the number of tokens needed to represent |inputToModel| in the underlying language model.
+
+     The number of tokens must be 0 if |inputToModel|'s [=string/length=] is 0, and greater than 0 otherwise.
+
+     The number of tokens must be at most equal to |inputToModel|'s [=string/length=].
+
+  1. If an error occurred during the token counting process, then return null.
 </div>
 
 <hr>
@@ -975,12 +1129,37 @@ This section gives normative guidance on how the implementation of [=summarize=]
 
 <h3 id="summarizer-errors">Errors</h3>
 
-A <dfn>summarization error information</dfn> is a [=struct=] with the following [=struct/items=]:
+<h4 id="summarizer-error-info-structs">Summarization error information</h4>
 
-: <dfn for="summarization error information">error name</dfn>
+This section contains infrastructure for marshalling error information across the boundary between [=in parallel=] and the [=event loop=].
+
+A <dfn>summarization error information</dfn> is either a [=too many tokens error information=] or a [=DOMException error information=].
+
+A <dfn>too many tokens error information</dfn> is a [=struct=] with the following [=struct/item=]:
+
+: <dfn for="too many tokens error information">token count</dfn>
+:: a [=number=] representing the number of tokens that were counted in the input text.
+
+A <dfn>DOMException error information</dfn> is a [=struct=] with the following [=struct/items=]:
+
+: <dfn for="DOMException error information">error name</dfn>
 :: a [=string=] that will be used for the {{DOMException}}'s [=DOMException/name=].
-: <dfn for="summarization error information">error information</dfn>
+: <dfn for="DOMException error information">error information</dfn>
 :: other information necessary to create a useful {{DOMException}} for the web developer. (Typically, just an exception message.)
+
+<div algorithm>
+  To <dfn>convert error information into an exception object</dfn>, given an {{AISummarizer}} |summarizer| and a [=summarization error information=] |errorInfo|:
+
+  1. If |errorInfo| is a [=DOMException error information=], then return a new {{DOMException}} with name given by |errorInfo|'s [=DOMException error information/error name=], using |errorInfo|'s [=DOMException error information/error information=] to populate the message appropriately.
+
+  1. Otherwise:
+
+    1. [=Assert=]: |error| is a [=too many tokens error information=].
+
+    1. Return a new {{TooManyTokensError}} whose [=TooManyTokensError/token count=] is |error|'s [=too many tokens error information/token count=] and [=TooManyTokensError/tokens available=] is |summarizer|'s [=AISummarizer/tokens available=].
+</div>
+
+<h4 id="summarizer-error-implementation-specific">Implementation-specific failures</h4>
 
 When summarization fails, the following possible reasons may be surfaced to the web developer. This table lists the possible {{DOMException}} [=DOMException/names=] and the cases in which an implementation should use them:
 
@@ -1007,16 +1186,12 @@ When summarization fails, the following possible reasons may be surfaced to the 
 
         <p>The {{AISummarizerCreateCoreOptions/outputLanguage}} option was not set, and the language of the input text could not be determined, so the user agent did not have a good output language default available.
     <tr>
-      <td>"{{QuotaExceededError}}"
-      <td>
-        <p>The input to be summarized was too large for the user agent to handle.
-    <tr>
       <td>"{{UnknownError}}"
       <td>
         <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
 </table>
 
-<p class="note">This table does not give the complete list of exceptions that can be surfaced by {{AISummarizer/summarize()|summarizer.summarize()}} and {{AISummarizer/summarize()|summarizer.summarizeStreaming()}}. It only contains those which can come from the [=implementation-defined=] [=summarize=] algorithm.
+<p class="note">This table does not give the complete list of exceptions that can be surfaced by {{AISummarizer/summarize()|summarizer.summarize()}} and {{AISummarizer/summarize()|summarizer.summarizeStreaming()}}. It only contains those which can come from the <a href="#step-actual-summarization">key step</a> of the [=summarize=] algorithm, where [=implementation-defined=] errors can occur.
 
 <h2 id="writer-api">The writer API</h2>
 
@@ -1031,8 +1206,14 @@ interface AIWriterFactory {
 
 [Exposed=(Window,Worker), SecureContext]
 interface AIWriter {
-  Promise<DOMString> write(DOMString writingTask, optional AIWriterWriteOptions options = {});
-  ReadableStream writeStreaming(DOMString writingTask, optional AIWriterWriteOptions options = {});
+  Promise<DOMString> write(
+    DOMString writingTask,
+    optional AIWriterWriteOptions options = {}
+  );
+  ReadableStream writeStreaming(
+    DOMString writingTask,
+    optional AIWriterWriteOptions options = {}
+  );
 
   readonly attribute DOMString sharedContext;
   readonly attribute AIWriterTone tone;
@@ -1042,6 +1223,12 @@ interface AIWriter {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
+
+  Promise<unsigned long long> countTokens(
+    DOMString input,
+    optional AIWriterWriteOptions options = {}
+  );
+  readonly attribute unsigned long long tokensAvailable;
 
   undefined destroy();
 };
@@ -1086,8 +1273,14 @@ interface AIRewriterFactory {
 
 [Exposed=(Window,Worker), SecureContext]
 interface AIRewriter {
-  Promise<DOMString> rewrite(DOMString input, optional AIRewriterRewriteOptions options = {});
-  ReadableStream rewriteStreaming(DOMString input, optional AIRewriterRewriteOptions options = {});
+  Promise<DOMString> rewrite(
+    DOMString input,
+    optional AIRewriterRewriteOptions options = {}
+  );
+  ReadableStream rewriteStreaming(
+    DOMString input,
+    optional AIRewriterRewriteOptions options = {}
+  );
 
   readonly attribute DOMString sharedContext;
   readonly attribute AIRewriterTone tone;
@@ -1097,6 +1290,12 @@ interface AIRewriter {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
+
+  Promise<unsigned long long> countTokens(
+    DOMString input,
+    optional AIRewriterRewriteOptions options = {}
+  );
+  readonly attribute unsigned long long tokensAvailable;
 
   undefined destroy();
 };

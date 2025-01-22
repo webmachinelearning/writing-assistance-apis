@@ -175,6 +175,73 @@ console.log(summary); // will be in Chinese
 
 If the `outputLanguage` is not supplied, the default behavior is to produce the output in "the same language as the input". For the multilingual input case, what this means is left implementation-defined for now, and implementations should err on the side of rejecting with a `"NotSupportedError"` `DOMException`. For this reason, it's strongly recommended that developers supply `outputLanguage`.
 
+### Too-large inputs
+
+It's possible that the inputs given for summarizing and rewriting might be too large for the underlying machine learning model to handle. The same can even be the case for strings that are usually smaller, such as the writing task for the writer API, or the context given to all APIs.
+
+Whenever any API call fails due to too-large input, it is rejected with a `TooManyTokensError`. This is a new type of exception, which subclasses `DOMException`, and has the following additional properties:
+
+* `tokenCount`: how many tokens the input consists of
+* `tokensAvailable`: how many tokens were available (which will be less than `tokenCount`)
+
+("[Tokens](https://arxiv.org/abs/2404.08335)" are the way that current language models process their input, and the exact mapping of strings to tokens is implementation-defined. However, we believe this API is relatively future-proof, since even if the technology moves away from current tokenization strategies, at the limit we can reinterpret tokens to mean code units, i.e., normal JavaScript string length.)
+
+This allows detecting failures due to overlarge inputs and giving clear feedback to the user, with code such as the following:
+
+```js
+const summarizer = await ai.summarizer.create();
+
+try {
+  console.log(await summarizer.summarize(potentiallyLargeInput));
+} catch (e) {
+  if (e.name === "TooManyTokensError") {
+    console.error(`Input too large! You tried to summarize ${e.tokenCount} tokens, but only ${e.tokensAvailable} were available.`);
+
+    // Or maybe:
+    console.error(`Input too large! It's ${e.tokenCount / e.tokensAvailable}x as large as the maximum possible input size.`);
+  }
+}
+```
+
+Note that all of the following methods can reject (or error the relevant stream) with this exception:
+
+* `ai.summarizer.create()`, if `sharedContext` is too large;
+
+* `ai.summarizer.summarize()`/`summarizeStreaming()`, if the combination of the creation-time `sharedContext`, the current method call's `input` argument, and the current method call's `context` is too large;
+
+* Similarly for writer creation / writing, and rewriter creation / rewriting.
+
+In some cases, instead of providing errors after the fact, the developer needs to be able to communicate to the user how close they are to the limit. For this, they can use the `tokensAvailable` property and `countTokens()` methods on the summarizer/writer/rewriter objects:
+
+```js
+const rewriter = await ai.rewriter.create();
+meterEl.max = rewriter.tokensAvailable;
+
+textbox.addEventListener("input", () => {
+  meterEl.value = await rewriter.countTokens(textbox.value);
+  submitButton.disabled = meterEl.value > meterEl.max;
+});
+
+submitButton.addEventListener("click", () => {
+  console.log(rewriter.rewrite(textbox.value));
+});
+```
+
+Developers need to be cautious not to over-use this API, however, as it requires a round-trip to the language model. That is, the following code is bad, as it performs two round trips with the same input:
+
+```js
+// DO NOT DO THIS
+
+const tokenCount = await rewriter.countTokens(input);
+if (tokenCount < rewriter.tokensAvailable) {
+  console.log(await rewriter.rewrite(input));
+} else {
+  console.error(`Input too large!`);
+}
+```
+
+If you're planning to call `rewrite()` anyway, then using a pattern like the one that opened this section, which catches `TooManyTokensError`s, is more efficient than using `countTokens()` plus a conditional call to `rewrite()`.
+
 ### Testing available options before creation
 
 All APIs are customizable during their `create()` calls, with various options. In addition to the language options above, the others are given in more detail in [the spec](https://webmachinelearning.github.io/writing-assistance-apis/).
