@@ -8,7 +8,7 @@
   <meta content="Bikeshed version c67c745b1, updated Fri Jan 17 14:27:28 2025 -0800" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="7e0971a1b4e6a2d2c7ed2fbfa9556a26f65a78ff" name="revision">
+  <meta content="4f04e0429db64f5f3e24abcb6dfd54b7edb6ae27" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -945,7 +945,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
         <p><a data-link-type="dfn" href="https://webidl.spec.whatwg.org/#invoke-a-callback-function" id="ref-for-invoke-a-callback-function">Invoke</a> <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreateoptions-monitor" id="ref-for-dom-aisummarizercreateoptions-monitor①">monitor</a></code>"] with « <var>monitor</var> » and "<code>rethrow</code>".</p>
         <p>If this throws an exception <var>e</var>, catch it, and return <a data-link-type="dfn" href="https://webidl.spec.whatwg.org/#a-promise-rejected-with" id="ref-for-a-promise-rejected-with③">a promise rejected with</a> <var>e</var>.</p>
        <li data-md>
-        <p>Set <var>fireProgressEvent</var> to an algorithm taking arguments <var>loaded</var> and <var>total</var>, which performs the following steps:</p>
+        <p>Set <var>fireProgressEvent</var> to an algorithm taking argument <var>loaded</var>, which performs the following steps:</p>
         <ol>
          <li data-md>
           <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel">in parallel</a>.</p>
@@ -953,7 +953,8 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
           <p><a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-global-task" id="ref-for-queue-a-global-task">Queue a global task</a> on the <a data-link-type="dfn" href="#ai-task-source" id="ref-for-ai-task-source">AI task source</a> given <a data-link-type="dfn" href="https://webidl.spec.whatwg.org/#this" id="ref-for-this④">this</a>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global" id="ref-for-concept-relevant-global①">relevant global object</a> to perform the following steps:</p>
           <ol>
            <li data-md>
-            <p><a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-event-fire" id="ref-for-concept-event-fire">Fire an event</a> named <code class="idl"><a data-link-type="idl" href="#eventdef-aicreatemonitor-downloadprogress" id="ref-for-eventdef-aicreatemonitor-downloadprogress">downloadprogress</a></code> at <var>monitor</var>, using <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#progressevent" id="ref-for-progressevent">ProgressEvent</a></code>, with the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-loaded" id="ref-for-dom-progressevent-loaded">loaded</a></code> attribute initialized to <var>loaded</var>, the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-total" id="ref-for-dom-progressevent-total">total</a></code> attribute initialized to <var>total</var>, and the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-lengthcomputable" id="ref-for-dom-progressevent-lengthcomputable">lengthComputable</a></code> attribute initialized to true.</p>
+            <p><a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-event-fire" id="ref-for-concept-event-fire">Fire an event</a> named <code class="idl"><a data-link-type="idl" href="#eventdef-aicreatemonitor-downloadprogress" id="ref-for-eventdef-aicreatemonitor-downloadprogress">downloadprogress</a></code> at <var>monitor</var>, using <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#progressevent" id="ref-for-progressevent">ProgressEvent</a></code>, with the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-loaded" id="ref-for-dom-progressevent-loaded">loaded</a></code> attribute initialized to <var>loaded</var>, the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-total" id="ref-for-dom-progressevent-total">total</a></code> attribute initialized to 1, and the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-lengthcomputable" id="ref-for-dom-progressevent-lengthcomputable">lengthComputable</a></code> attribute initialized to true.</p>
+            <p class="advisement">This assumes <a href="https://github.com/whatwg/xhr/pull/394">whatwg/xhr#394</a> is merged so that passing non-integer values for <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-loaded" id="ref-for-dom-progressevent-loaded①">loaded</a></code> works as expected.</p>
           </ol>
         </ol>
       </ol>
@@ -1000,13 +1001,9 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
          <li data-md>
           <p>If <a data-link-type="dfn" href="#initialize-the-summarization-model" id="ref-for-initialize-the-summarization-model">initializing the summarization model</a> given <var>promise</var> and <var>options</var> returns false, then abort these steps.</p>
          <li data-md>
-          <p>Let <var>totalBytes</var> be the total size of the previously-downloaded summarization capabilities, in bytes.</p>
+          <p>Perform <var>fireProgressEvent</var> given 0.</p>
          <li data-md>
-          <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①">Assert</a>: <var>totalBytes</var> is greater than 0.</p>
-         <li data-md>
-          <p>Perform <var>fireProgressEvent</var> given 0 and <var>totalBytes</var>.</p>
-         <li data-md>
-          <p>Perform <var>fireProgressEvent</var> given <var>totalBytes</var> and <var>totalBytes</var>.</p>
+          <p>Perform <var>fireProgressEvent</var> given 1.</p>
          <li data-md>
           <p><a data-link-type="dfn" href="#finalize-summarizer-creation" id="ref-for-finalize-summarizer-creation">Finalize summarizer creation</a> given <var>promise</var> and <var>options</var>.</p>
         </ol>
@@ -1023,7 +1020,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
            <li data-md>
             <p>Let <var>lastProgressTime</var> be the <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#dfn-monotonic-clock" id="ref-for-dfn-monotonic-clock">monotonic clock</a>’s <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#monotonic-clock-unsafe-current-time" id="ref-for-monotonic-clock-unsafe-current-time">unsafe current time</a>.</p>
            <li data-md>
-            <p>Perform <var>fireProgressEvent</var> given 0 and <var>totalBytes</var>.</p>
+            <p>Perform <var>fireProgressEvent</var> given 0.</p>
            <li data-md>
             <p>While true:</p>
             <ol>
@@ -1036,11 +1033,93 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
                  <li data-md>
                   <p>Let <var>bytesSoFar</var> be the number of bytes downloaded so far.</p>
                  <li data-md>
-                  <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert②">Assert</a>: <var>bytesSoFar</var> is greater than 0 and less than or equal to <var>totalBytes</var>.</p>
+                  <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①">Assert</a>: <var>bytesSoFar</var> is greater than 0 and less than or equal to <var>totalBytes</var>.</p>
                  <li data-md>
-                  <p>Perform <var>fireProgressEvent</var> given <var>bytesSoFar</var> and <var>totalBytes</var>.</p>
+                  <p>Let <var>rawProgressFraction</var> be <var>bytesSoFar</var> divided by <var>totalBytes</var>.</p>
+                 <li data-md>
+                  <p>Let <var>progressFraction</var> be <a data-link-type="abstract-op" href="https://tc39.es/ecma262/#eqn-floor" id="ref-for-eqn-floor">floor</a>(<var>rawProgressFraction</var> × 65,536) ÷ 65,536.</p>
+                 <li data-md>
+                  <p>Perform <var>fireProgressEvent</var> given <var>progressFraction</var>.</p>
+                  <div class="note" role="note">
+                   <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
+                   <p><var>progressFraction</var> is calculated from <var>rawProgressFraction</var> to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-loaded" id="ref-for-dom-progressevent-loaded②">loaded</a></code> value will be different from the previous one that was fired ~50 milliseconds ago.</p>
+                   <details>
+                    <summary>Full calculation</summary>
+                    <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from <a href="https://worldpopulationreview.com/country-rankings/internet-speeds-by-country">this source</a>). Then, downloading 5 GiB will take:</p>
+                    <math style="display:block math">
+                     <mtable>
+                      <mtr>
+                       <mtd></mtd>
+                       <mtd style="text-align: left">
+                        <mn>5</mn>
+                        <mtext> GiB</mtext>
+                        <mo>×</mo>
+                        <mfrac>
+                         <mrow>
+                          <msup>
+                           <mn>2</mn>
+                           <mn>30</mn>
+                          </msup>
+                          <mtext> bytes</mtext>
+                         </mrow>
+                         <mtext>GiB</mtext>
+                        </mfrac>
+                        <mo>×</mo>
+                        <mfrac>
+                         <mrow>
+                          <mn>8</mn>
+                          <mtext> bits</mtext>
+                         </mrow>
+                         <mtext>bytes</mtext>
+                        </mfrac>
+                        <mo>÷</mo>
+                        <mfrac>
+                         <mrow>
+                          <mn>20</mn>
+                          <mo>×</mo>
+                          <msup>
+                           <mn>10</mn>
+                           <mn>6</mn>
+                          </msup>
+                          <mtext> bits</mtext>
+                         </mrow>
+                         <mtext>s</mtext>
+                        </mfrac>
+                        <mo>×</mo>
+                        <mfrac>
+                         <mrow>
+                          <mn>1000</mn>
+                          <mtext> ms</mtext>
+                         </mrow>
+                         <mtext>s</mtext>
+                        </mfrac>
+                        <mo>÷</mo>
+                        <mfrac>
+                         <mrow>
+                          <mn>50</mn>
+                          <mtext> ms</mtext>
+                         </mrow>
+                         <mtext>interval</mtext>
+                        </mfrac>
+                       </mtd>
+                      </mtr>
+                      <mtr>
+                       <mtd>
+                        <mo>=</mo>
+                       </mtd>
+                       <mtd style="text-align: left">
+                        <mn>49,950</mn>
+                        <mtext> intervals</mtext>
+                       </mtd>
+                      </mtr>
+                     </mtable>
+                    </math>
+                    <p>Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.</p>
+                   </details>
+                  </div>
                  <li data-md>
                   <p>If <var>bytesSoFar</var> equals <var>totalBytes</var>, then <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#iteration-break" id="ref-for-iteration-break">break</a>.</p>
+                  <p class="note" role="note">Since this is the only exit condition for the loop, we are guaranteed to fire a <code class="idl"><a data-link-type="idl" href="#eventdef-aicreatemonitor-downloadprogress" id="ref-for-eventdef-aicreatemonitor-downloadprogress①">downloadprogress</a></code> event for the 100% mark.</p>
                  <li data-md>
                   <p>Set <var>lastProgressTime</var> to the <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#dfn-monotonic-clock" id="ref-for-dfn-monotonic-clock②">monotonic clock</a>’s <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#monotonic-clock-unsafe-current-time" id="ref-for-monotonic-clock-unsafe-current-time②">unsafe current time</a>.</p>
                 </ol>
@@ -1062,7 +1141,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
             <p><a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-global-task" id="ref-for-queue-a-global-task②">Queue a global task</a> on the <a data-link-type="dfn" href="#ai-task-source" id="ref-for-ai-task-source②">AI task source</a> given <a data-link-type="dfn" href="https://webidl.spec.whatwg.org/#this" id="ref-for-this⑦">this</a>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global" id="ref-for-concept-relevant-global③">relevant global object</a> to perform the following steps:</p>
             <ol>
              <li data-md>
-              <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert③">Assert</a>: <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreateoptions-signal" id="ref-for-dom-aisummarizercreateoptions-signal④">signal</a></code>"]'s is <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#abortsignal-aborted" id="ref-for-abortsignal-aborted①">aborted</a>.</p>
+              <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert②">Assert</a>: <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreateoptions-signal" id="ref-for-dom-aisummarizercreateoptions-signal④">signal</a></code>"]'s is <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#abortsignal-aborted" id="ref-for-abortsignal-aborted①">aborted</a>.</p>
              <li data-md>
               <p><a data-link-type="dfn" href="https://webidl.spec.whatwg.org/#reject" id="ref-for-reject③">Reject</a> <var>promise</var> with <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreateoptions-signal" id="ref-for-dom-aisummarizercreateoptions-signal⑤">signal</a></code>"]'s <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#abortsignal-abort-reason" id="ref-for-abortsignal-abort-reason①">abort reason</a>.</p>
             </ol>
@@ -1083,7 +1162,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="initialize-the-summarization-model">initialize the summarization model</dfn>, given a <code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#idl-promise" id="ref-for-idl-promise③">Promise</a></code> <var>promise</var> and an <code class="idl"><a data-link-type="idl" href="#dictdef-aisummarizercreateoptions" id="ref-for-dictdef-aisummarizercreateoptions①">AISummarizerCreateOptions</a></code> <var>options</var>: 
     <ol>
      <li data-md>
-      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert④">Assert</a>: these steps are running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel③">in parallel</a>.</p>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert③">Assert</a>: these steps are running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel③">in parallel</a>.</p>
      <li data-md>
       <p>Perform any necessary initialization operations for the AI model backing the <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#user-agent" id="ref-for-user-agent">user agent</a>’s summarization capabilities.</p>
       <p>This could include loading the model into memory, loading <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreateoptions-sharedcontext" id="ref-for-dom-aisummarizercreateoptions-sharedcontext">sharedContext</a></code>"] into the model’s context window, or loading any fine-tunings necessary to support the other options expressed by <var>options</var>.</p>
@@ -1103,7 +1182,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="finalize-summarizer-creation">finalize summarizer creation</dfn>, given a <code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#idl-promise" id="ref-for-idl-promise④">Promise</a></code> <var>promise</var> and an <code class="idl"><a data-link-type="idl" href="#dictdef-aisummarizercreateoptions" id="ref-for-dictdef-aisummarizercreateoptions②">AISummarizerCreateOptions</a></code> <var>options</var>: 
     <ol>
      <li data-md>
-      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑤">Assert</a>: these steps are running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel④">in parallel</a>.</p>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert④">Assert</a>: these steps are running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel④">in parallel</a>.</p>
      <li data-md>
       <p><a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-global-task" id="ref-for-queue-a-global-task④">Queue a global task</a> on the <a data-link-type="dfn" href="#ai-task-source" id="ref-for-ai-task-source④">AI task source</a> given <var>promise</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global" id="ref-for-concept-relevant-global⑤">relevant global object</a> to perform the following steps:</p>
       <ol>
@@ -1215,7 +1294,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="compute-summarizer-options-availability">compute summarizer options availability</dfn> given an <code class="idl"><a data-link-type="idl" href="#dictdef-aisummarizercreatecoreoptions" id="ref-for-dictdef-aisummarizercreatecoreoptions③">AISummarizerCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They return either an <code class="idl"><a data-link-type="idl" href="#enumdef-aicapabilityavailability" id="ref-for-enumdef-aicapabilityavailability②">AICapabilityAvailability</a></code> value or null, and they mutate <var>options</var> in place to update language tags to their best-fit matches. 
     <ol>
      <li data-md>
-      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑥">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑥">in parallel</a>.</p>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑤">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑥">in parallel</a>.</p>
      <li data-md>
       <p>Let <var>availability</var> be the <a data-link-type="dfn" href="#summarizer-non-language-options-availability" id="ref-for-summarizer-non-language-options-availability">summarizer non-language options availability</a> given <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreatecoreoptions-type" id="ref-for-dom-aisummarizercreatecoreoptions-type①">type</a></code>"], <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreatecoreoptions-format" id="ref-for-dom-aisummarizercreatecoreoptions-format①">format</a></code>"], and <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreatecoreoptions-length" id="ref-for-dom-aisummarizercreatecoreoptions-length①">length</a></code>"].</p>
      <li data-md>
@@ -1305,7 +1384,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
         </ol>
       </ol>
      <li data-md>
-      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑦">Assert</a>: <var>availability</var> is either "<code class="idl"><a data-link-type="idl" href="#dom-aicapabilityavailability-readily" id="ref-for-dom-aicapabilityavailability-readily②">readily</a></code>" or "<code class="idl"><a data-link-type="idl" href="#dom-aicapabilityavailability-after-download" id="ref-for-dom-aicapabilityavailability-after-download⑥">after-download</a></code>".</p>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑥">Assert</a>: <var>availability</var> is either "<code class="idl"><a data-link-type="idl" href="#dom-aicapabilityavailability-readily" id="ref-for-dom-aicapabilityavailability-readily②">readily</a></code>" or "<code class="idl"><a data-link-type="idl" href="#dom-aicapabilityavailability-after-download" id="ref-for-dom-aicapabilityavailability-after-download⑥">after-download</a></code>".</p>
      <li data-md>
       <p>Return <var>availability</var>.</p>
     </ol>
@@ -1314,7 +1393,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      The <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="summarizer-non-language-options-availability">summarizer non-language options availability</dfn>, given a <code class="idl"><a data-link-type="idl" href="#enumdef-aisummarizertype" id="ref-for-enumdef-aisummarizertype②">AISummarizerType</a></code> <var>type</var>, <code class="idl"><a data-link-type="idl" href="#enumdef-aisummarizerformat" id="ref-for-enumdef-aisummarizerformat②">AISummarizerFormat</a></code> <var>format</var>, and an <code class="idl"><a data-link-type="idl" href="#enumdef-aisummarizerlength" id="ref-for-enumdef-aisummarizerlength②">AISummarizerLength</a></code> <var>length</var>, is given by the following steps. They return an <code class="idl"><a data-link-type="idl" href="#enumdef-aicapabilityavailability" id="ref-for-enumdef-aicapabilityavailability③">AICapabilityAvailability</a></code> value or null. 
     <ol>
      <li data-md>
-      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑧">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑦">in parallel</a>.</p>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑦">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑦">in parallel</a>.</p>
      <li data-md>
       <p>If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the <a data-link-type="dfn" href="#summarizer-non-language-options-availability" id="ref-for-summarizer-non-language-options-availability①">summarizer non-language options availability</a> could stop producing such an error), then return null.</p>
      <li data-md>
@@ -1345,7 +1424,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      The <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="summarizer-language-availabilities">summarizer language availabilities</dfn> are given by the following steps. They return a <a data-link-type="dfn" href="#language-availabilities" id="ref-for-language-availabilities">language availabilities</a> or null. 
     <ol>
      <li data-md>
-      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑨">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑧">in parallel</a>.</p>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑧">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑧">in parallel</a>.</p>
      <li data-md>
       <p>If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the <a data-link-type="dfn" href="#summarizer-language-availabilities" id="ref-for-summarizer-language-availabilities①">summarizer language availabilities</a> could stop producing such an error), then return null.</p>
      <li data-md>
@@ -1373,7 +1452,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-iterate" id="ref-for-list-iterate⑤">For each</a> human language <var>languageTag</var>, represented as a <a data-link-type="dfn" href="https://tc39.es/ecma402/#sec-language-tags" id="ref-for-sec-language-tags②">Unicode canonicalized locale identifier</a>, for which the user agent believes it can support <var>purpose</var>, but only after performing a download (e.g., of an AI model or fine-tuning):</p>
       <ol>
        <li data-md>
-        <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①⓪">Assert</a>: <var>readilyAvailableLanguages</var> does not <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-contain" id="ref-for-list-contain③">contain</a> <var>languageTag</var>.</p>
+        <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑨">Assert</a>: <var>readilyAvailableLanguages</var> does not <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-contain" id="ref-for-list-contain③">contain</a> <var>languageTag</var>.</p>
        <li data-md>
         <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#set-append" id="ref-for-set-append③">Append</a> <var>languageTag</var> to <var>afterDownloadAvailableLanguages</var>.</p>
       </ol>
@@ -1686,7 +1765,7 @@ inputLangAvailability<c- p>(</c-><c- u>"zh-Kana"</c-><c- p>)</c-> <c- o>===</c->
      To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="summarize">summarize</dfn> a string <var>input</var>, given a string-or-null <var>sharedContext</var>, a string-or-null <var>context</var>, an <code class="idl"><a data-link-type="idl" href="#enumdef-aisummarizertype" id="ref-for-enumdef-aisummarizertype④">AISummarizerType</a></code> <var>type</var>, an <code class="idl"><a data-link-type="idl" href="#enumdef-aisummarizerformat" id="ref-for-enumdef-aisummarizerformat④">AISummarizerFormat</a></code> <var>format</var>, an <code class="idl"><a data-link-type="idl" href="#enumdef-aisummarizerlength" id="ref-for-enumdef-aisummarizerlength④">AISummarizerLength</a></code> <var>length</var>, a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#string" id="ref-for-string④">string</a>-or-null <var>outputLanguage</var>, an algorithm <var>chunkProduced</var> that takes a string and returns nothing, an algorithm <var>done</var> that takes no arguments and returns nothing, an algorithm <var>error</var> that takes <a data-link-type="dfn" href="#summarization-error-information" id="ref-for-summarization-error-information②">summarization error information</a> and returns nothing, and an algorithm <var>stopProducing</var> that takes no arguments and returns a boolean: 
     <ol>
      <li data-md>
-      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①①">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel①⑤">in parallel</a>.</p>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①⓪">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel①⑤">in parallel</a>.</p>
      <li data-md>
       <p>In an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined①">implementation-defined</a> manner, subject to the following guidelines, begin the processs of summarizing <var>input</var> into a string.</p>
       <p>If they are non-null, <var>sharedContext</var> and <var>context</var> should be used to aid in the summarization by providing context on how the web developer wishes the input to be summarized.</p>
@@ -2287,6 +2366,11 @@ inputLangAvailability<c- p>(</c-><c- u>"zh-Kana"</c-><c- p>)</c-> <c- o>===</c->
      <li><span class="dfn-paneled" id="93e4c9ae">Unicode canonicalized locale identifier</span>
     </ul>
    <li>
+    <a data-link-type="biblio">[ECMASCRIPT]</a> defines the following terms:
+    <ul>
+     <li><span class="dfn-paneled" id="0f3172b2">floor</span>
+    </ul>
+   <li>
     <a data-link-type="biblio">[HR-TIME-3]</a> defines the following terms:
     <ul>
      <li><span class="dfn-paneled" id="28716de1">monotonic clock</span>
@@ -2399,6 +2483,8 @@ inputLangAvailability<c- p>(</c-><c- u>"zh-Kana"</c-><c- p>)</c-> <c- o>===</c->
    <dd>Anne van Kesteren. <a href="https://dom.spec.whatwg.org/"><cite>DOM Standard</cite></a>. Living Standard. URL: <a href="https://dom.spec.whatwg.org/">https://dom.spec.whatwg.org/</a>
    <dt id="biblio-ecma-402">[ECMA-402]
    <dd><a href="https://tc39.es/ecma402/"><cite>ECMAScript Internationalization API Specification</cite></a>. URL: <a href="https://tc39.es/ecma402/">https://tc39.es/ecma402/</a>
+   <dt id="biblio-ecmascript">[ECMASCRIPT]
+   <dd><a href="https://tc39.es/ecma262/multipage/"><cite>ECMAScript Language Specification</cite></a>. URL: <a href="https://tc39.es/ecma262/multipage/">https://tc39.es/ecma262/multipage/</a>
    <dt id="biblio-hr-time-3">[HR-TIME-3]
    <dd>Yoav Weiss. <a href="https://w3c.github.io/hr-time/"><cite>High Resolution Time</cite></a>. URL: <a href="https://w3c.github.io/hr-time/">https://w3c.github.io/hr-time/</a>
    <dt id="biblio-html">[HTML]
@@ -2793,6 +2879,7 @@ let dfnPanelData = {
 "0be3911e": {"dfnID":"0be3911e","dfnText":"NotReadableError","external":true,"refSections":[{"refs":[{"id":"ref-for-notreadableerror"}],"title":"3.5. Errors"}],"url":"https://webidl.spec.whatwg.org/#notreadableerror"},
 "0e3ba9f8": {"dfnID":"0e3ba9f8","dfnText":"fully active","external":true,"refSections":[{"refs":[{"id":"ref-for-fully-active"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-fully-active\u2460"}],"title":"3.2. Availability"},{"refs":[{"id":"ref-for-fully-active\u2461"},{"id":"ref-for-fully-active\u2462"}],"title":"3.3. The AISummarizer class"}],"url":"https://html.spec.whatwg.org/multipage/document-sequences.html#fully-active"},
 "0e5dca01": {"dfnID":"0e5dca01","dfnText":"LookupMatchingLocaleByBestFit","external":true,"refSections":[{"refs":[{"id":"ref-for-sec-lookupmatchinglocalebybestfit"},{"id":"ref-for-sec-lookupmatchinglocalebybestfit\u2460"},{"id":"ref-for-sec-lookupmatchinglocalebybestfit\u2461"},{"id":"ref-for-sec-lookupmatchinglocalebybestfit\u2462"},{"id":"ref-for-sec-lookupmatchinglocalebybestfit\u2463"},{"id":"ref-for-sec-lookupmatchinglocalebybestfit\u2464"},{"id":"ref-for-sec-lookupmatchinglocalebybestfit\u2465"},{"id":"ref-for-sec-lookupmatchinglocalebybestfit\u2466"},{"id":"ref-for-sec-lookupmatchinglocalebybestfit\u2467"}],"title":"3.2. Availability"}],"url":"https://tc39.es/ecma402/#sec-lookupmatchinglocalebybestfit"},
+"0f3172b2": {"dfnID":"0f3172b2","dfnText":"floor","external":true,"refSections":[{"refs":[{"id":"ref-for-eqn-floor"}],"title":"3.1. Creation"}],"url":"https://tc39.es/ecma262/#eqn-floor"},
 "10ce5f6f": {"dfnID":"10ce5f6f","dfnText":"invoke","external":true,"refSections":[{"refs":[{"id":"ref-for-invoke-a-callback-function"}],"title":"3.1. Creation"}],"url":"https://webidl.spec.whatwg.org/#invoke-a-callback-function"},
 "1243a891": {"dfnID":"1243a891","dfnText":"exist","external":true,"refSections":[{"refs":[{"id":"ref-for-map-exists"},{"id":"ref-for-map-exists\u2460"},{"id":"ref-for-map-exists\u2461"},{"id":"ref-for-map-exists\u2462"},{"id":"ref-for-map-exists\u2463"},{"id":"ref-for-map-exists\u2464"},{"id":"ref-for-map-exists\u2465"},{"id":"ref-for-map-exists\u2466"},{"id":"ref-for-map-exists\u2467"},{"id":"ref-for-map-exists\u2468"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-map-exists\u2460\u24ea"},{"id":"ref-for-map-exists\u2460\u2460"},{"id":"ref-for-map-exists\u2460\u2461"},{"id":"ref-for-map-exists\u2460\u2462"},{"id":"ref-for-map-exists\u2460\u2463"},{"id":"ref-for-map-exists\u2460\u2464"}],"title":"3.3. The AISummarizer class"}],"url":"https://infra.spec.whatwg.org/#map-exists"},
 "15e48c39": {"dfnID":"15e48c39","dfnText":"set","external":true,"refSections":[{"refs":[{"id":"ref-for-ordered-set"},{"id":"ref-for-ordered-set\u2460"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-ordered-set\u2461"},{"id":"ref-for-ordered-set\u2462"},{"id":"ref-for-ordered-set\u2463"},{"id":"ref-for-ordered-set\u2464"}],"title":"3.2. Availability"}],"url":"https://infra.spec.whatwg.org/#ordered-set"},
@@ -2813,7 +2900,7 @@ let dfnPanelData = {
 "479aeb1d": {"dfnID":"479aeb1d","dfnText":"unsafe current time","external":true,"refSections":[{"refs":[{"id":"ref-for-monotonic-clock-unsafe-current-time"},{"id":"ref-for-monotonic-clock-unsafe-current-time\u2460"},{"id":"ref-for-monotonic-clock-unsafe-current-time\u2461"}],"title":"3.1. Creation"}],"url":"https://w3c.github.io/hr-time/#monotonic-clock-unsafe-current-time"},
 "48438eb3": {"dfnID":"48438eb3","dfnText":"queue a global task","external":true,"refSections":[{"refs":[{"id":"ref-for-queue-a-global-task"},{"id":"ref-for-queue-a-global-task\u2460"},{"id":"ref-for-queue-a-global-task\u2461"},{"id":"ref-for-queue-a-global-task\u2462"},{"id":"ref-for-queue-a-global-task\u2463"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-queue-a-global-task\u2464"},{"id":"ref-for-queue-a-global-task\u2465"},{"id":"ref-for-queue-a-global-task\u2466"},{"id":"ref-for-queue-a-global-task\u2467"},{"id":"ref-for-queue-a-global-task\u2468"},{"id":"ref-for-queue-a-global-task\u2460\u24ea"}],"title":"3.3. The AISummarizer class"}],"url":"https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-global-task"},
 "535dd335": {"dfnID":"535dd335","dfnText":"aborted","external":true,"refSections":[{"refs":[{"id":"ref-for-abortsignal-aborted"},{"id":"ref-for-abortsignal-aborted\u2460"},{"id":"ref-for-abortsignal-aborted\u2461"},{"id":"ref-for-abortsignal-aborted\u2462"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-abortsignal-aborted\u2463"},{"id":"ref-for-abortsignal-aborted\u2464"}],"title":"3.3. The AISummarizer class"}],"url":"https://dom.spec.whatwg.org/#abortsignal-aborted"},
-"5528aefc": {"dfnID":"5528aefc","dfnText":"loaded","external":true,"refSections":[{"refs":[{"id":"ref-for-dom-progressevent-loaded"}],"title":"3.1. Creation"}],"url":"https://xhr.spec.whatwg.org/#dom-progressevent-loaded"},
+"5528aefc": {"dfnID":"5528aefc","dfnText":"loaded","external":true,"refSections":[{"refs":[{"id":"ref-for-dom-progressevent-loaded"},{"id":"ref-for-dom-progressevent-loaded\u2460"},{"id":"ref-for-dom-progressevent-loaded\u2461"}],"title":"3.1. Creation"}],"url":"https://xhr.spec.whatwg.org/#dom-progressevent-loaded"},
 "554817f6": {"dfnID":"554817f6","dfnText":"IsStructurallyValidLanguageTag","external":true,"refSections":[{"refs":[{"id":"ref-for-sec-isstructurallyvalidlanguagetag"},{"id":"ref-for-sec-isstructurallyvalidlanguagetag\u2460"},{"id":"ref-for-sec-isstructurallyvalidlanguagetag\u2461"}],"title":"3.1. Creation"}],"url":"https://tc39.es/ecma402/#sec-isstructurallyvalidlanguagetag"},
 "56f81a8e": {"dfnID":"56f81a8e","dfnText":"new","external":true,"refSections":[{"refs":[{"id":"ref-for-new"}],"title":"2. Shared AI APIs and infrastructure"},{"refs":[{"id":"ref-for-new\u2460"}],"title":"3. The summarizer API"},{"refs":[{"id":"ref-for-new\u2461"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-new\u2462"}],"title":"3.3. The AISummarizer class"}],"url":"https://webidl.spec.whatwg.org/#new"},
 "5991ccfb": {"dfnID":"5991ccfb","dfnText":"relevant realm","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-relevant-realm"}],"title":"2. Shared AI APIs and infrastructure"},{"refs":[{"id":"ref-for-concept-relevant-realm\u2460"}],"title":"3. The summarizer API"},{"refs":[{"id":"ref-for-concept-relevant-realm\u2461"},{"id":"ref-for-concept-relevant-realm\u2462"},{"id":"ref-for-concept-relevant-realm\u2463"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-concept-relevant-realm\u2464"}],"title":"3.2. Availability"},{"refs":[{"id":"ref-for-concept-relevant-realm\u2465"},{"id":"ref-for-concept-relevant-realm\u2466"}],"title":"3.3. The AISummarizer class"}],"url":"https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-realm"},
@@ -2836,7 +2923,7 @@ let dfnPanelData = {
 "70d2311e": {"dfnID":"70d2311e","dfnText":"[[AvailableLocales]]","external":true,"refSections":[{"refs":[{"id":"ref-for-sec-internal-slots"}],"title":"3.2. Availability"}],"url":"https://tc39.es/ecma402/#sec-internal-slots"},
 "715f22e4": {"dfnID":"715f22e4","dfnText":"if aborted","external":true,"refSections":[{"refs":[{"id":"ref-for-if-aborted"}],"title":"3.1. Creation"}],"url":"https://infra.spec.whatwg.org/#if-aborted"},
 "775945f7": {"dfnID":"775945f7","dfnText":"lengthComputable","external":true,"refSections":[{"refs":[{"id":"ref-for-dom-progressevent-lengthcomputable"}],"title":"3.1. Creation"}],"url":"https://xhr.spec.whatwg.org/#dom-progressevent-lengthcomputable"},
-"77b4c09a": {"dfnID":"77b4c09a","dfnText":"assert","external":true,"refSections":[{"refs":[{"id":"ref-for-assert"},{"id":"ref-for-assert\u2460"},{"id":"ref-for-assert\u2461"},{"id":"ref-for-assert\u2462"},{"id":"ref-for-assert\u2463"},{"id":"ref-for-assert\u2464"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-assert\u2465"},{"id":"ref-for-assert\u2466"},{"id":"ref-for-assert\u2467"},{"id":"ref-for-assert\u2468"},{"id":"ref-for-assert\u2460\u24ea"}],"title":"3.2. Availability"},{"refs":[{"id":"ref-for-assert\u2460\u2460"}],"title":"3.3. The AISummarizer class"}],"url":"https://infra.spec.whatwg.org/#assert"},
+"77b4c09a": {"dfnID":"77b4c09a","dfnText":"assert","external":true,"refSections":[{"refs":[{"id":"ref-for-assert"},{"id":"ref-for-assert\u2460"},{"id":"ref-for-assert\u2461"},{"id":"ref-for-assert\u2462"},{"id":"ref-for-assert\u2463"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-assert\u2464"},{"id":"ref-for-assert\u2465"},{"id":"ref-for-assert\u2466"},{"id":"ref-for-assert\u2467"},{"id":"ref-for-assert\u2468"}],"title":"3.2. Availability"},{"refs":[{"id":"ref-for-assert\u2460\u24ea"}],"title":"3.3. The AISummarizer class"}],"url":"https://infra.spec.whatwg.org/#assert"},
 "797018a7": {"dfnID":"797018a7","dfnText":"InvalidStateError","external":true,"refSections":[{"refs":[{"id":"ref-for-invalidstateerror"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-invalidstateerror\u2460"}],"title":"3.2. Availability"},{"refs":[{"id":"ref-for-invalidstateerror\u2461"},{"id":"ref-for-invalidstateerror\u2462"}],"title":"3.3. The AISummarizer class"}],"url":"https://webidl.spec.whatwg.org/#invalidstateerror"},
 "7b0d918d": {"dfnID":"7b0d918d","dfnText":"break","external":true,"refSections":[{"refs":[{"id":"ref-for-iteration-break"}],"title":"3.1. Creation"},{"refs":[{"id":"ref-for-iteration-break\u2460"},{"id":"ref-for-iteration-break\u2461"},{"id":"ref-for-iteration-break\u2462"}],"title":"3.3. The AISummarizer class"}],"url":"https://infra.spec.whatwg.org/#iteration-break"},
 "7b0dc914": {"dfnID":"7b0dc914","dfnText":"ProgressEvent","external":true,"refSections":[{"refs":[{"id":"ref-for-progressevent"}],"title":"3.1. Creation"}],"url":"https://xhr.spec.whatwg.org/#progressevent"},
@@ -3037,7 +3124,7 @@ let dfnPanelData = {
 "enumdef-aiwriterformat": {"dfnID":"enumdef-aiwriterformat","dfnText":"AIWriterFormat","external":false,"refSections":[{"refs":[{"id":"ref-for-enumdef-aiwriterformat"},{"id":"ref-for-enumdef-aiwriterformat\u2460"}],"title":"4. The writer API"}],"url":"#enumdef-aiwriterformat"},
 "enumdef-aiwriterlength": {"dfnID":"enumdef-aiwriterlength","dfnText":"AIWriterLength","external":false,"refSections":[{"refs":[{"id":"ref-for-enumdef-aiwriterlength"},{"id":"ref-for-enumdef-aiwriterlength\u2460"}],"title":"4. The writer API"}],"url":"#enumdef-aiwriterlength"},
 "enumdef-aiwritertone": {"dfnID":"enumdef-aiwritertone","dfnText":"AIWriterTone","external":false,"refSections":[{"refs":[{"id":"ref-for-enumdef-aiwritertone"},{"id":"ref-for-enumdef-aiwritertone\u2460"}],"title":"4. The writer API"}],"url":"#enumdef-aiwritertone"},
-"eventdef-aicreatemonitor-downloadprogress": {"dfnID":"eventdef-aicreatemonitor-downloadprogress","dfnText":"downloadprogress","external":false,"refSections":[{"refs":[{"id":"ref-for-eventdef-aicreatemonitor-downloadprogress"}],"title":"3.1. Creation"}],"url":"#eventdef-aicreatemonitor-downloadprogress"},
+"eventdef-aicreatemonitor-downloadprogress": {"dfnID":"eventdef-aicreatemonitor-downloadprogress","dfnText":"downloadprogress","external":false,"refSections":[{"refs":[{"id":"ref-for-eventdef-aicreatemonitor-downloadprogress"},{"id":"ref-for-eventdef-aicreatemonitor-downloadprogress\u2460"}],"title":"3.1. Creation"}],"url":"#eventdef-aicreatemonitor-downloadprogress"},
 "f0951476": {"dfnID":"f0951476","dfnText":"EventHandler","external":true,"refSections":[{"refs":[{"id":"ref-for-eventhandler"}],"title":"2. Shared AI APIs and infrastructure"}],"url":"https://html.spec.whatwg.org/multipage/webappapis.html#eventhandler"},
 "f937b7b6": {"dfnID":"f937b7b6","dfnText":"continue","external":true,"refSections":[{"refs":[{"id":"ref-for-iteration-continue"},{"id":"ref-for-iteration-continue\u2460"}],"title":"3.2. Availability"}],"url":"https://infra.spec.whatwg.org/#iteration-continue"},
 "fill-language-availabilities": {"dfnID":"fill-language-availabilities","dfnText":"fill language availabilities","external":false,"refSections":[{"refs":[{"id":"ref-for-fill-language-availabilities"},{"id":"ref-for-fill-language-availabilities\u2460"},{"id":"ref-for-fill-language-availabilities\u2461"}],"title":"3.2. Availability"}],"url":"#fill-language-availabilities"},
@@ -3594,6 +3681,7 @@ let refsData = {
 "https://streams.spec.whatwg.org/#readablestream-set-up": {"displayText":"set up","export":true,"for_":["ReadableStream"],"level":"1","normative":true,"shortname":"streams","spec":"streams","status":"current","text":"set up","type":"dfn","url":"https://streams.spec.whatwg.org/#readablestream-set-up"},
 "https://streams.spec.whatwg.org/#readablestream-set-up-cancelalgorithm": {"displayText":"cancelAlgorithm","export":true,"for_":["ReadableStream/set up"],"level":"1","normative":true,"shortname":"streams","spec":"streams","status":"current","text":"cancelalgorithm","type":"dfn","url":"https://streams.spec.whatwg.org/#readablestream-set-up-cancelalgorithm"},
 "https://streams.spec.whatwg.org/#rs-cancel": {"displayText":"cancel()","export":true,"for_":["ReadableStream"],"level":"1","normative":true,"shortname":"streams","spec":"streams","status":"current","text":"cancel()","type":"method","url":"https://streams.spec.whatwg.org/#rs-cancel"},
+"https://tc39.es/ecma262/#eqn-floor": {"displayText":"floor","export":true,"for_":[],"level":"262","normative":true,"shortname":"ecma","spec":"ecma-262","status":"anchor-block","text":"floor","type":"abstract-op","url":"https://tc39.es/ecma262/#eqn-floor"},
 "https://tc39.es/ecma402/#sec-canonicalizeunicodelocaleid": {"displayText":"CanonicalizeUnicodeLocaleId","export":true,"for_":[],"level":"402","normative":true,"shortname":"ecma","spec":"ecma-402","status":"anchor-block","text":"CanonicalizeUnicodeLocaleId","type":"abstract-op","url":"https://tc39.es/ecma402/#sec-canonicalizeunicodelocaleid"},
 "https://tc39.es/ecma402/#sec-internal-slots": {"displayText":"[[AvailableLocales]]","export":true,"for_":[],"level":"402","normative":true,"shortname":"ecma","spec":"ecma-402","status":"anchor-block","text":"[[availablelocales]]","type":"dfn","url":"https://tc39.es/ecma402/#sec-internal-slots"},
 "https://tc39.es/ecma402/#sec-isstructurallyvalidlanguagetag": {"displayText":"IsStructurallyValidLanguageTag","export":true,"for_":[],"level":"402","normative":true,"shortname":"ecma","spec":"ecma-402","status":"anchor-block","text":"IsStructurallyValidLanguageTag","type":"abstract-op","url":"https://tc39.es/ecma402/#sec-isstructurallyvalidlanguagetag"},
