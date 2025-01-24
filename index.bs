@@ -42,7 +42,7 @@ p + dl.props { margin-top: -0.5em; }
 
 <h2 id="intro">Introduction</h2>
 
-For now, see the [explainer]([REPOSITORYURL]).
+For now, see the [explainer](https://github.com/webmachinelearning/writing-assistance-apis/blob/main/README.md).
 
 <h2 id="shared-ai-api">Shared AI APIs and infrastructure</h2>
 
