@@ -219,11 +219,11 @@ For cases where using the API is only possible after a download, you can monitor
 const writer = await ai.writer.create({
   ...otherOptions,
   monitor(m) {
-    m.addEventListener("downloadprogress", e => {
+    m.addEventListener("downloadprogress", (e) => {
       console.log(`Downloaded ${e.loaded * 100}%`);
     });
-  }
-);
+  },
+});
 ```
 
 If the download fails, then `downloadprogress` events will stop being fired, and the promise returned by `create()` will be rejected with a `"NetworkError"` `DOMException`.
