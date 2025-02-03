@@ -8,7 +8,7 @@
   <meta content="Bikeshed version c2797e6ab, updated Thu Jan 30 16:24:26 2025 -0800" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="0464e6f9b9b159808e3e7ad307dd912190cdacd3" name="revision">
+  <meta content="cd392990542dcd68ef8a944ec105cc58436f517c" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -1769,6 +1769,7 @@ inputLangAvailability<c- p>(</c-><c- u>"zh-Kana"</c-><c- p>)</c-> <c- o>===</c->
      <li data-md>
       <p>In an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined①">implementation-defined</a> manner, subject to the following guidelines, begin the processs of summarizing <var>input</var> into a string.</p>
       <p>If they are non-null, <var>sharedContext</var> and <var>context</var> should be used to aid in the summarization by providing context on how the web developer wishes the input to be summarized.</p>
+      <p>If <var>input</var> is the empty string, or otherwise consists of no summarizable content (e.g., only contains whitespace, or control characters), then the resulting summary should be the empty string. In such cases, <var>sharedContext</var>, <var>context</var>, <var>type</var>, <var>format</var>, <var>length</var>, and <var>outputLanguage</var> should be ignored.</p>
       <p>The summarization should conform to the guidance given by <var>type</var>, <var>format</var>, and <var>length</var>, in the definitions of each of their enumeration values.</p>
       <p>If <var>outputLanguage</var> is non-null, the summarization should be in that language. Otherwise, it should be in the language of <var>input</var> (which might not match that of <var>context</var> or <var>sharedContext</var>). If <var>input</var> contains multiple languages, or the language of <var>input</var> cannot be detected, then either the output language is <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined②">implementation-defined</a>, or the implementation may treat this as an error, per the guidance in <a href="#summarizer-errors">§ 3.5 Errors</a>.</p>
      <li data-md>
