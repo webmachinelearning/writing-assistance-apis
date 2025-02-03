@@ -919,6 +919,8 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
      If they are non-null, |sharedContext| and |context| should be used to aid in the summarization by providing context on how the web developer wishes the input to be summarized.
 
+     If |input| is the empty string, or otherwise consists of no summarizable content (e.g., only contains whitespace, or control characters), then the resulting summary should be the empty string. In such cases, |sharedContext|, |context|, |type|, |format|, |length|, and |outputLanguage| should be ignored.
+
      The summarization should conform to the guidance given by |type|, |format|, and |length|, in the definitions of each of their enumeration values.
 
      If |outputLanguage| is non-null, the summarization should be in that language. Otherwise, it should be in the language of |input| (which might not match that of |context| or |sharedContext|). If |input| contains multiple languages, or the language of |input| cannot be detected, then either the output language is [=implementation-defined=], or the implementation may treat this as an error, per the guidance in [[#summarizer-errors]].
