@@ -223,7 +223,7 @@ const writer = await ai.writer.create({
       console.log(`Downloaded ${e.loaded * 100}%`);
     });
   }
-);
+});
 ```
 
 If the download fails, then `downloadprogress` events will stop being fired, and the promise returned by `create()` will be rejected with a `"NetworkError"` `DOMException`.
