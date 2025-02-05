@@ -17,9 +17,6 @@ Indent: 2
 Die On: warning
 </pre>
 
-<pre class="link-defaults">
-spec:infra; type:dfn; text:user agent
-</pre>
 <pre class="anchors">
 urlPrefix: https://tc39.es/ecma402/; spec: ECMA-402
   type: dfn
@@ -47,7 +44,7 @@ p + dl.props { margin-top: -0.5em; }
 
 For now, see the [explainer](https://github.com/webmachinelearning/writing-assistance-apis/blob/main/README.md).
 
-<h2 id="shared-ai-api">Shared AI APIs and infrastructure</h2>
+<h2 id="shared-apis">Shared APIs</h2>
 
 <xmp class="idl">
 partial interface WindowOrWorkerGlobalScope {
@@ -70,31 +67,15 @@ enum AIAvailability {
   "downloading",
   "available"
 };
+
+interface mixin AIDestroyable {
+  undefined destroy();
+};
 </xmp>
-
-<div algorithm>
-  The <dfn for="AIAvailability">minimum availability</dfn> given a [=list=] of {{AIAvailability}}-or-null values |availabilities| is:
-
-  1. If |availabilities| [=list/contains=] null, then return null.
-
-  1. If |availabilities| [=list/contains=] "{{AIAvailability/unavailable}}", then return "{{AIAvailability/unavailable}}".
-
-  1. If |availabilities| [=list/contains=] "{{AIAvailability/downloading}}", then return "{{AIAvailability/downloading}}".
-
-  1. If |availabilities| [=list/contains=] "{{AIAvailability/downloadable}}", then return "{{AIAvailability/downloadable}}".
-
-  1. Return "{{AIAvailability/available}}".
-</div>
-
-<hr>
 
 Each {{WindowOrWorkerGlobalScope}} has an <dfn for="WindowOrWorkerGlobalScope">AI namespace</dfn>, an {{AI}} object. Upon creation of the {{WindowOrWorkerGlobalScope}} object, its [=WindowOrWorkerGlobalScope/AI namespace=] must be set to a [=new=] {{AI}} object created in the {{WindowOrWorkerGlobalScope}} object's [=relevant realm=].
 
 The <dfn attribute for="WindowOrWorkerGlobalScope">ai</dfn> getter steps are to return [=this=]'s [=WindowOrWorkerGlobalScope/AI namespace=].
-
-<hr>
-
-[=Tasks=] queued by this specification use the <dfn>AI task source</dfn>.
 
 <hr>
 
@@ -110,6 +91,35 @@ The following are the [=event handlers=] (and their corresponding [=event handle
       <td><dfn attribute for="AICreateMonitor">ondownloadprogress</dfn>
       <td><dfn event for="AICreateMonitor">downloadprogress</dfn>
 </table>
+
+<hr>
+
+Every interface implementing the {{AIDestroyable}} interface mixin has a <dfn for="AIDestroyable">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
+
+<p class="note">The [=AIDestroyable/destruction abort controller=] is only used internally, as a way of tracking calls to {{AIDestroyable/destroy()}}. Since it is easy to combine multiple {{AbortSignal}}s using [=create a dependent abort signal=], this lets us centralize handling of any {{AbortSignal}} the web developer provides to specific method calls, with any calls to {{AIDestroyable/destroy()}}.
+
+<div algorithm>
+  To <dfn>initialize as a destroyable</dfn> an {{AIDestroyable}} object |destroyable|, perform the following steps:
+
+  1. Let |controller| be a [=new=] {{AbortController}} created in |destroyable|'s [=relevant realm=].
+
+  1. Set |controller|'s [=AbortController/signal=] to a [=new=] {{AbortSignal}} created in |destroyable|'s [=relevant realm=].
+
+  1. Set |destroyable|'s [=AIDestroyable/destruction abort controller=] to |controller|.
+</div>
+
+<div algorithm>
+  <p>The <dfn method for="AIDestroyable">destroy()</dfn> method steps are to [=AIDestroyable/destroy=] [=this=] given a new "{{AbortError}}" {{DOMException}}.
+</div>
+
+<div algorithm>
+  To <dfn for="AIDestroyable">destroy</dfn> an {{AIDestroyable}} |destroyable|, given a JavaScript value |reason|:
+
+  1. [=AbortController/Signal abort=] given |destroyable|'s [=AIDestroyable/destruction abort controller=] and |reason|.
+
+  1. The user agent should release any resources associated with |destroyable|, such as AI models loaded to support its operation, as long as those resources are not needed for other ongoing operations.
+</div>
+
 
 <h2 id="summarizer-api">The summarizer API</h2>
 
@@ -143,9 +153,8 @@ interface AISummarizer {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
-
-  undefined destroy();
 };
+AISummarizer includes AIDestroyable;
 
 dictionary AISummarizerCreateCoreOptions {
   AISummarizerType type = "key-points";
@@ -187,311 +196,78 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
   1. If |options|["{{AISummarizerCreateOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["{{AISummarizerCreateOptions/signal}}"]'s [=AbortSignal/abort reason=].
 
-  1. [=Validate and canonicalize language tags=] given |options|. If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
+  1. [=Validate and canonicalize summarizer options=] given |options|. If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
 
      <p class="note">This can mutate |options|.
 
-  1. Let |fireProgressEvent| be an algorithm taking two arguments that does nothing.
-
-  1. If |options|["{{AISummarizerCreateOptions/monitor}}"] [=map/exists=], then:
-
-    1. Let |monitor| be a [=new=] {{AICreateMonitor}} created in [=this=]'s [=relevant realm=].
-
-    1. [=Invoke=] |options|["{{AISummarizerCreateOptions/monitor}}"] with « |monitor| » and "`rethrow`".
-
-      If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
-
-    1. Set |fireProgressEvent| to an algorithm taking argument |loaded|, which performs the following steps:
-
-      1. [=Assert=]: this algorithm is running [=in parallel=].
-
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-        1. [=Fire an event=] named {{AICreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to 1, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
-
-          <p class="advisement">This assumes <a href="https://github.com/whatwg/xhr/pull/394">whatwg/xhr#394</a> is merged so that passing non-integer values for {{ProgressEvent/loaded}} works as expected.</p>
-
-  1. Let |abortedDuringDownload| be false.
-
-    <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
-
-  1. If |options|["{{AISummarizerCreateOptions/signal}}"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["{{AISummarizerCreateOptions/signal}}"]:
-
-    1. Set |abortedDuringDownload| to true.
-
-  1. Let |promise| be [=a new promise=] created in [=this=]'s [=relevant realm=].
-
-  1. [=In parallel=]:
-
-    1. Let |availability| be the result of [=computing summarizer options availability=] given |options|.
-
-       <p class="note">This can mutate |options|.
-
-    1. Switch on |availability|:
-
-    <dl class="switch">
-      : null
-      ::
-        1. [=Reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
-
-        1. Abort these steps.
-
-      : "{{AIAvailability/unavailable}}"
-      ::
-        1. [=Reject=] |promise| with a "{{NotSupportedError}}" {{DOMException}}.
-
-        1. Abort these steps.
-
-      : "{{AIAvailability/available}}"
-      ::
-        1. If [=initializing the summarization model=] given |promise| and |options| returns false, then abort these steps.
-
-        1. Perform |fireProgressEvent| given 0.
-
-        1. Perform |fireProgressEvent| given 1.
-
-        1. [=Finalize summarizer creation=] given |promise| and |options|.
-
-      : "{{AIAvailability/downloading}}"
-      : "{{AIAvailability/downloadable}}"
-      ::
-        1. If |availability| is "{{AIAvailability/downloadable}}", then initiate the download process for everything the user agent needs to summarize text according to |options|.
-
-        1. Run the following steps, but [=abort when=] |abortedDuringDownload| becomes true:
-
-          1. Wait for the total number of bytes to be downloaded to become determined, and let that number be |totalBytes|.
-
-          1. Let |lastProgressTime| be the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
-
-          1. Perform |fireProgressEvent| given 0.
-
-          1. While true:
-
-            1. If one or more bytes have been downloaded, then:
-
-              1. If the [=monotonic clock=]'s [=monotonic clock/unsafe current time=] minus |lastProgressTime| is greater than 50 ms, then:
-
-                1. Let |bytesSoFar| be the number of bytes downloaded so far.
-
-                1. [=Assert=]: |bytesSoFar| is greater than 0 and less than or equal to |totalBytes|.
-
-                1. Let |rawProgressFraction| be |bytesSoFar| divided by |totalBytes|.
-
-                1. Let |progressFraction| be [$floor$](|rawProgressFraction| &times; 65,536) &divide; 65,536.
-
-                1. Perform |fireProgressEvent| given |progressFraction|.
-
-                   <div class="note">
-                    <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
-
-                    <p>|progressFraction| is calculated from |rawProgressFraction| to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the {{ProgressEvent/loaded}} value will be different from the previous one that was fired ~50 milliseconds ago.</p>
-
-                    <details>
-                      <summary>Full calculation</summary>
-
-                      <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from [this source](https://worldpopulationreview.com/country-rankings/internet-speeds-by-country)). Then, downloading 5 GiB will take:</p>
-
-                      <math style="display:block math">
-                        <mtable>
-                          <mtr>
-                            <mtd></mtd>
-                            <mtd style="text-align: left">
-                              <mn>5</mn>
-                              <mtext>&nbsp;GiB</mtext>
-
-                              <mo>×</mo>
-                              <mfrac>
-                                <mrow>
-                                  <msup>
-                                    <mn>2</mn>
-                                    <mn>30</mn>
-                                  </msup>
-                                  <mtext>&nbsp;bytes</mtext>
-                                </mrow>
-                                <mtext>GiB</mtext>
-                              </mfrac>
-
-                              <mo>×</mo>
-                              <mfrac>
-                                <mrow>
-                                  <mn>8</mn>
-                                  <mtext>&nbsp;bits</mtext>
-                                </mrow>
-                                <mtext>bytes</mtext>
-                              </mfrac>
-
-                              <mo>÷</mo>
-                              <mfrac>
-                                <mrow>
-                                  <mn>20</mn>
-                                  <mo>×</mo>
-                                  <msup>
-                                    <mn>10</mn>
-                                    <mn>6</mn>
-                                  </msup>
-                                  <mtext>&nbsp;bits</mtext>
-                                </mrow>
-                                <mtext>s</mtext>
-                              </mfrac>
-
-                              <mo>×</mo>
-                              <mfrac>
-                                <mrow>
-                                  <mn>1000</mn>
-                                  <mtext>&nbsp;ms</mtext>
-                                </mrow>
-                                <mtext>s</mtext>
-                              </mfrac>
-
-                              <mo>÷</mo>
-                              <mfrac>
-                                <mrow>
-                                  <mn>50</mn>
-                                  <mtext>&nbsp;ms</mtext>
-                                </mrow>
-                                <mtext>interval</mtext>
-                              </mfrac>
-                            </mtd>
-                          </mtr>
-
-                          <mtr>
-                            <mtd>
-                              <mo>=</mo>
-                            </mtd>
-                            <mtd style="text-align: left">
-                              <mn>49,950</mn>
-                              <mtext>&nbsp;intervals</mtext>
-                            </mtd>
-                          </mtr>
-                        </mtable>
-                      </math>
-
-                      Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.
-                    </details>
-                  </div>
-
-                1. If |bytesSoFar| equals |totalBytes|, then [=iteration/break=].
-
-                  <p class="note">Since this is the only exit condition for the loop, we are guaranteed to fire a {{AICreateMonitor/downloadprogress}} event for the 100% mark.</p>
-
-                1. Set |lastProgressTime| to the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
-
-            1. Otherwise, if downloading has failed and cannot continue, then:
-
-              1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to [=reject=] |promise| with a "{{NetworkError}}" {{DOMException}}.
-
-              1. Abort these steps.
-
-        1. [=If aborted=], then:
-          1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-            1. [=Assert=]: |options|["{{AISummarizerCreateOptions/signal}}"]'s is [=AbortSignal/aborted=].
-
-            1. [=Reject=] |promise| with |options|["{{AISummarizerCreateOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-          1. Abort these steps.
-
-        1. If [=initializing the summarization model=] given |promise| and |options| returns false, then abort these steps.
-
-        1. [=Finalize summarizer creation=] given |promise| and |options|.
-    </dl>
-
-  1. Return |promise|.
+  1. Return the result of [=creating an AI model object=] given [=this=]'s [=relevant realm=], |options|, [=computing summarizer options availability=], [=download the summarization model=], [=initialize the summarization model=], and [=create a summarizer object=].
 </div>
 
 <div algorithm>
-  To <dfn>initialize the summarization model</dfn>, given a {{Promise}} |promise| and an {{AISummarizerCreateOptions}} |options|:
+  To <dfn>validate and canonicalize summarizer options</dfn> given an {{AISummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+
+  1. [=Validate and canonicalize language tags=] given |options| and "{{AISummarizerCreateCoreOptions/expectedInputLanguages}}".
+
+  1. [=Validate and canonicalize language tags=] given |options| and "{{AISummarizerCreateCoreOptions/expectedContextLanguages}}".
+
+  1. [=Validate and canonicalize language tags=] given |options| and "{{AISummarizerCreateCoreOptions/outputLanguage}}".
+</div>
+
+<div algoriothm>
+  To <dfn>download the summarization model</dfn>, given an {{AISummarizerCreateCoreOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
-  1. Perform any necessary initialization operations for the AI model backing the [=user agent=]'s summarization capabilities.
+  1. Initiate the download process for everything the user agent needs to summarize text according to |options|. This could include a base AI model, fine-tunings for specific languages or option values, or other resources.
 
-    This could include loading the model into memory, loading |options|["{{AISummarizerCreateOptions/sharedContext}}"] into the model's context window, or loading any fine-tunings necessary to support the other options expressed by |options|.
-
-  1. If initialization failed for any reason, then:
-
-    1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to [=reject=] |promise| with an "{{OperationError}}" {{DOMException}}.
-
-    1. Return false.
+  1. If the download process cannot be started for any reason, then return false.
 
   1. Return true.
 </div>
 
 <div algorithm>
-  To <dfn>finalize summarizer creation</dfn>, given a {{Promise}} |promise| and an {{AISummarizerCreateOptions}} |options|:
+  To <dfn>initialize the summarization model</dfn>, given an {{AISummarizerCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
-  1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to perform the following steps:
+  1. Perform any necessary initialization operations for the AI model backing the user agent's summarization capabilities.
 
-    1. If |options|["{{AISummarizerCreateOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then:
+    This could include loading the model into memory, loading |options|["{{AISummarizerCreateOptions/sharedContext}}"] into the model's context window, or loading any fine-tunings necessary to support the other options expressed by |options|.
 
-      1. [=Reject=] |promise| with |options|["{{AISummarizerCreateOptions/signal}}"]'s [=AbortSignal/abort reason=].
+  1. If initialization failed for any reason, then return false.
 
-      1. Abort these steps.
-
-      <p class="note">This check is necessary in case any code running on the [=agent/event loop=] caused the {{AbortSignal}} to become [=AbortSignal/aborted=] before this [=task=] ran.
-
-    1. Let |summarizer| be a new {{AISummarizer}} object, created in |promise|'s [=relevant realm=], with
-
-      <dl class="props">
-        : [=AISummarizer/shared context=]
-        :: |options|["{{AISummarizerCreateOptions/sharedContext}}"] if it [=map/exists=]; otherwise null
-
-        : [=AISummarizer/summary type=]
-        :: |options|["{{AISummarizerCreateCoreOptions/type}}"]
-
-        : [=AISummarizer/summary format=]
-        :: |options|["{{AISummarizerCreateCoreOptions/format}}"]
-
-        : [=AISummarizer/summary length=]
-        :: |options|["{{AISummarizerCreateCoreOptions/length}}"]
-
-        : [=AISummarizer/expected input languages=]
-        :: the result of [=creating a frozen array=] given |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
-
-        : [=AISummarizer/expected context languages=]
-        :: the result of [=creating a frozen array=] given |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
-
-        : [=AISummarizer/output language=]
-        :: |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] if it [=map/exists=]; otherwise null
-      </dl>
-
-    1. If |options|["{{AISummarizerCreateOptions/signal}}"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["{{AISummarizerCreateOptions/signal}}"]:
-
-      1. [=AISummarizer/Destroy=] |summarizer| with |options|["{{AISummarizerCreateOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-    1. [=Resolve=] |promise| with |summarizer|.
+  1. Return true.
 </div>
 
 <div algorithm>
-  To <dfn>validate and canonicalize language tags</dfn> given an {{AISummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+  To <dfn>create a summarizer object</dfn>, given a [=ECMAScript/realm=] |realm| and an {{AISummarizerCreateOptions}} |options|:
 
-  1. Let |expectedInputLanguages| be an empty [=ordered set=].
+  1. [=Assert=]: these steps are running on |realm|'s [=ECMAScript/surrounding agent=]'s [=agent/event loop=].
 
-  1. If |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] [=map/exists=], then [=list/for each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"]:
+  1. Return a new {{AISummarizer}} object, created in |realm|, with
 
-    1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
+    <dl class="props">
+      : [=AISummarizer/shared context=]
+      :: |options|["{{AISummarizerCreateOptions/sharedContext}}"] if it [=map/exists=]; otherwise null
 
-    1. [=set/Append=] [$CanonicalizeUnicodeLocaleId$](|languageTag|) to |expectedInputLanguages|.
+      : [=AISummarizer/summary type=]
+      :: |options|["{{AISummarizerCreateCoreOptions/type}}"]
 
-  1. Set |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] to |expectedInputLanguages|.
+      : [=AISummarizer/summary format=]
+      :: |options|["{{AISummarizerCreateCoreOptions/format}}"]
 
-  1. Let |expectedContextLanguages| be an empty [=ordered set=].
+      : [=AISummarizer/summary length=]
+      :: |options|["{{AISummarizerCreateCoreOptions/length}}"]
 
-  1. If |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] [=map/exists=], then [=list/for each=] |languageTag| of |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"]:
+      : [=AISummarizer/expected input languages=]
+      :: the result of [=creating a frozen array=] given |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
 
-    1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
+      : [=AISummarizer/expected context languages=]
+      :: the result of [=creating a frozen array=] given |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
 
-    1. [=set/Append=] [$CanonicalizeUnicodeLocaleId$](|languageTag|) to |expectedContextLanguages|.
-
-  1. Set |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] to |expectedContextLanguages|.
-
-  1. If |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] [=map/exists=], then:
-
-    1. If [$IsStructurallyValidLanguageTag$](|options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]) is false, then throw a {{TypeError}}.
-
-    1. Set |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] to [$CanonicalizeUnicodeLocaleId$](|options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"]).
+      : [=AISummarizer/output language=]
+      :: |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] if it [=map/exists=]; otherwise null
+    </dl>
 </div>
 
 <h3 id="summarizer-availability">Availability</h3>
@@ -501,7 +277,7 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
   1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
-  1. [=Validate and canonicalize language tags=] given |options|.
+  1. [=Validate and canonicalize summarizer options=] given |options|.
 
   1. Let |promise| be [=a new promise=] created in [=this=]'s [=relevant realm=].
 
@@ -509,9 +285,11 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
     1. Let |availability| be the result of [=computing summarizer options availability=] given |options|.
 
-    1. If |availability| is null, then [=reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
+    1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
 
-    1. Otherwise, [=resolve=] |promise| with |availability|.
+      1. If |availability| is null, then [=reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
+
+      1. Otherwise, [=resolve=] |promise| with |availability|.
 </div>
 
 <div algorithm>
@@ -643,22 +421,22 @@ All of these [=struct/items=] are [=maps=] from {{AIAvailability}} values to [=s
     Combined with the use of [$LookupMatchingLocaleByBestFit$], this means {{AISummarizerFactory/availability()}} will give the following answers:
 
     <xmp class="language-js">
-    function inputLangAvailability(languageTag) {
+    function a(languageTag) {
       return ai.summarizer.availability({
         expectedInputLanguages: [languageTag]
       });
     }
 
-    inputLangAvailability("zh") === "downloadable";
-    inputLangAvailability("zh-Hant") === "available";
-    inputLangAvailability("zh-Hans") === "downloadable";
+    await a("zh") === "downloadable";
+    await a("zh-Hant") === "available";
+    await a("zh-Hans") === "downloadable";
 
-    inputLangAvailability("zh-TW") === "available";      // zh-TW will best-fit to zh-Hant
-    inputLangAvailability("zh-HK") === "available";      // zh-HK will best-fit to zh-Hant
-    inputLangAvailability("zh-CN") === "downloadable";   // zh-CN will best-fit to zh-Hans
+    await a("zh-TW") === "available";      // zh-TW will best-fit to zh-Hant
+    await a("zh-HK") === "available";      // zh-HK will best-fit to zh-Hant
+    await a("zh-CN") === "downloadable";   // zh-CN will best-fit to zh-Hans
 
-    inputLangAvailability("zh-BR") === "downloadable";   // zh-BR will best-fit to zh
-    inputLangAvailability("zh-Kana") === "downloadable"; // zh-Kana will best-fit to zh
+    await a("zh-BR") === "downloadable";   // zh-BR will best-fit to zh
+    await a("zh-Kana") === "downloadable"; // zh-Kana will best-fit to zh
     </xmp>
   </div>
 </div>
@@ -678,12 +456,6 @@ Every {{AISummarizer}} has an <dfn for="AISummarizer">expected input languages</
 Every {{AISummarizer}} has an <dfn for="AISummarizer">expected context languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
 
 Every {{AISummarizer}} has an <dfn for="AISummarizer">output language</dfn>, a [=string=] or null, set during creation.
-
-Every {{AISummarizer}} has a <dfn for="AISummarizer">destruction reason</dfn>, a JavaScript value, initially undefined.
-
-Every {{AISummarizer}} has a <dfn for="AISummarizer">destroyed</dfn> boolean, initially false.
-
-<p class="note">This value is separate from the [=AISummarizer/destruction reason=] so that it can be read from [=in parallel=] during the summarization process.
 
 <hr>
 
@@ -706,187 +478,43 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 <div algorithm>
   The <dfn method for="AISummarizer">summarize(|input|, |options|)</dfn> method steps are:
 
-  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
-
-  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then return [=a promise rejected with=] [=this=]'s [=AISummarizer/destruction reason=].
-
-  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-  1. Let |abortedDuringSummarization| be false.
-
-    <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
-
-  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["{{AISummarizerSummarizeOptions/signal}}"]:
-
-    1. Set |abortedDuringSummarization| to true.
-
-  1. Let |promise| be [=a new promise=] created in [=this=]'s [=relevant realm=].
-
   1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
 
-  1. [=In parallel=]:
+  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], |chunkProduced|, |done|, |error|, and |stopProducing|.
 
-    1. Let |summary| be the empty string.
-
-    1. Let |chunkProduced| be the following steps given a [=string=] |chunk|:
-
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-        1. If |abortedDuringSummarization| is true, then:
-
-          1. [=Reject=] |promise| with |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-          1. Abort these steps.
-
-        1. If [=this=]'s [=AISummarizer/destroyed=] is true, then:
-
-          1. [=Reject=] |promise| with [=this=]'s [=AISummarizer/destruction reason=].
-
-          1. Abort these steps.
-
-        1. Append |chunk| to |summary|.
-
-    1. Let |done| be the following steps:
-
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-        1. If |abortedDuringSummarization| is true, then:
-
-          1. [=Reject=] |promise| with |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-          1. Abort these steps.
-
-        1. If [=this=]'s [=AISummarizer/destroyed=] is true, then:
-
-          1. [=Reject=] |promise| with [=this=]'s [=AISummarizer/destruction reason=].
-
-          1. Abort these steps.
-
-        1. [=Resolve=] |promise| with |summary|.
-
-    1. Let |error| be the following steps given [=summarization error information=] |errorInfo|:
-
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-        1. If |abortedDuringSummarization| is true, then:
-
-          1. [=Reject=] |promise| with |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-          1. Abort these steps.
-
-        1. Let |exception| be the result of [=exception/creating=] a {{DOMException}} with name given by |errorInfo|'s [=summarization error information/error name=], using |errorInfo|'s [=summarization error information/error information=] to populate the message appropriately.
-
-        1. [=Reject=] |promise| with |exception|.
-
-    1. Let |stopProducing| be the following steps:
-
-      1. Return |abortedDuringSummarization|.
-
-    1. [=Summarize=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], |chunkProduced|, |done|, |error|, and |stopProducing|.
-
-  1. Return |promise|.
+  1. Return the result of [=getting an aggregated AI model result=] given [=this=], |options|, and |operation|.
 </div>
 
 <div algorithm>
   The <dfn method for="AISummarizer">summarizeStreaming(|input|, |options|)</dfn> method steps are:
 
-  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then throw an "{{InvalidStateError}}" {{DOMException}}.
-
-  1. If [=this=]'s [=AISummarizer/destroyed=] is true, then throw [=this=]'s [=AISummarizer/destruction reason=].
-
-  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then throw |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-  1. Let |abortedDuringSummarization| be false.
-
-    <p class="note">This variable tracks web developer aborts via the |options|["{{AISummarizerSummarizeOptions/signal}}"] {{AbortSignal}}, which are surfaced as errors. It will be written to from the [=event loop=], but sometimes read from [=in parallel=].
-
-  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["{{AISummarizerSummarizeOptions/signal}}"]:
-
-    1. Set |abortedDuringSummarization| to true.
-
-  1. Let |stream| be a [=new=] {{ReadableStream}} created in [=this=]'s [=relevant realm=].
-
-  1. Let |canceledDuringSummarization| be false.
-
-    <p class="note">This variable tracks web developer [=ReadableStream/cancel|stream cancelations=] via {{ReadableStream/cancel()|stream.cancel()}}, which are not surfaced as errors.  It will be written to from the [=event loop=], but sometimes read from [=in parallel=].
-
-  1. [=ReadableStream/Set up=] |stream| with <i>[=ReadableStream/set up/cancelAlgorithm=]</i> set to the following steps (ignoring the <var ignore>reason</var> argument):
-
-    1. Set |canceledDuringSummarization| to true.
-
   1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
 
-  1. [=In parallel=]:
+  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], |chunkProduced|, |done|, |error|, and |stopProducing|.
 
-    1. Let |chunkProduced| be the following steps given a [=string=] |chunk|:
-
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-        1. If |abortedDuringSummarization| is true, then:
-
-          1. [=ReadableStream/Error=] |stream| with |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-          1. Abort these steps.
-
-        1. If [=this=]'s [=AISummarizer/destroyed=] is true, then:
-
-          1. [=ReadableStream/Error=] |stream| with [=this=]'s [=AISummarizer/destruction reason=].
-
-          1. Abort these steps.
-
-        1. [=ReadableStream/Enqueue=] |chunk| into |stream|.
-
-    1. Let |done| be the following steps:
-
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-        1. If |abortedDuringSummarization| is true, then:
-
-          1. [=ReadableStream/Error=] |stream| with |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-          1. Abort these steps.
-
-        1. If [=this=]'s [=AISummarizer/destroyed=] is true, then:
-
-          1. [=ReadableStream/Error=] |stream| with [=this=]'s [=AISummarizer/destruction reason=].
-
-          1. Abort these steps.
-
-        1. [=ReadableStream/Close=] |stream|.
-
-    1. Let |error| be the following steps given [=summarization error information=] |errorInfo|:
-
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-        1. If |abortedDuringSummarization| is true, then:
-
-          1. [=ReadableStream/Error=] |stream| with |options|["{{AISummarizerSummarizeOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-          1. Abort these steps.
-
-        1. If [=this=]'s [=AISummarizer/destroyed=] is true, then:
-
-          1. [=ReadableStream/Error=] |stream| with [=this=]'s [=AISummarizer/destruction reason=].
-
-          1. Abort these steps.
-
-        1. Let |exception| be the result of [=exception/creating=] a {{DOMException}} with name given by |errorInfo|'s [=summarization error information/error name=], using |errorInfo|'s [=summarization error information/error information=] to populate the message appropriately.
-
-        1. [=ReadableStream/Error=] |stream| with |exception|.
-
-    1. Let |stopProducing| be the following steps:
-
-      1. If any of |abortedDuringSummarization|, |canceledDuringSummarization|, or [=this=]'s [=AISummarizer/destroyed=] are true, then return true.
-
-      1. Return false.
-
-    1. [=Summarize=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], |chunkProduced|, |done|, |error|, and |stopProducing|.
-
-  1. Return |stream|.
+  1. Return the result of [=getting a streaming AI model result=] given [=this=], |options|, and |operation|.
 </div>
 
+<h3 id="summarizer-summarization">Summarization</h3>
+
+<h4 id="summarizer-algorithm">The algorithm</h4>
+
 <div algorithm>
-  To <dfn>summarize</dfn> a string |input|, given a string-or-null |sharedContext|, a string-or-null |context|, an {{AISummarizerType}} |type|, an {{AISummarizerFormat}} |format|, an {{AISummarizerLength}} |length|, a [=string=]-or-null |outputLanguage|, an algorithm |chunkProduced| that takes a string and returns nothing, an algorithm |done| that takes no arguments and returns nothing, an algorithm |error| that takes [=summarization error information=] and returns nothing, and an algorithm |stopProducing| that takes no arguments and returns a boolean:
+  To <dfn>summarize</dfn> given:
+
+  * a [=string=] |input|,
+  * a [=string=]-or-null |sharedContext|,
+  * a [=string=]-or-null |context|,
+  * an {{AISummarizerType}} |type|,
+  * an {{AISummarizerFormat}} |format|,
+  * an {{AISummarizerLength}} |length|,
+  * a [=string=]-or-null |outputLanguage|,
+  * an algorithm |chunkProduced| that takes a [=string=] and returns nothing,
+  * an algorithm |done| that takes no arguments and returns nothing,
+  * an algorithm |error| that takes [=error information=] and returns nothing, and
+  * an algorithm |stopProducing| that takes no arguments and returns a boolean,
+
+  perform the following steps:
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
@@ -918,34 +546,16 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
     1. Otherwise, if |stopProducing| returns true, then [=iteration/break=].
 
-       <p class="note">The caller will handle signaling cancelation or aborting as necessary.
-
     1. Otherwise, if an error occurred during summarization:
 
-      1. Let the error be represented as [=summarization error information=] |errorInfo| according to the guidance in [[#summarizer-errors]].
+      1. Let the error be represented as [=error information=] |errorInfo| according to the guidance in [[#summarizer-errors]].
 
       1. Perform |error| given |errorInfo|.
 
       1. [=iteration/Break=].
 </div>
 
-<hr>
-
-<div algorithm>
-  <p>The <dfn method for="AISummarizer">destroy()</dfn> method steps are to [=AISummarizer/destroy=] [=this=] given a new "{{AbortError}}" {{DOMException}}.
-</div>
-
-<div algorithm>
-  To <dfn for="AISummarizer">destroy</dfn> an {{AISummarizer}} |summarizer|, given a JavaScript value |reason|:
-
-  1. Set |summarizer|'s [=AISummarizer/destroyed=] to true.
-
-  1. Set |summarizer|'s [=AISummarizer/destruction reason=] to |reason|.
-
-  1. The user agent should release any resources associated with |summarizer|, such as AI models loaded during [=initialize the summarization model=], as long as those resources are not needed for other ongoing operations.
-</div>
-
-<h3 id="summarizer-options">Options</h3>
+<h4 id="summarizer-options">Options</h4>
 
 The [=summarize=] algorithm's details are [=implementation-defined=], as they are expected to be powered by an AI model. However, it is intended to be controllable by the web developer through the {{AISummarizerType}}, {{AISummarizerFormat}}, and {{AISummarizerLength}} enumerations.
 
@@ -1046,14 +656,7 @@ This section gives normative guidance on how the implementation of [=summarize=]
         <p>The summary should be formatted using the Markdown markup language, ideally as valid CommonMark. [[!COMMONMARK]]
 </table>
 
-<h3 id="summarizer-errors">Errors</h3>
-
-A <dfn>summarization error information</dfn> is a [=struct=] with the following [=struct/items=]:
-
-: <dfn for="summarization error information">error name</dfn>
-:: a [=string=] that will be used for the {{DOMException}}'s [=DOMException/name=].
-: <dfn for="summarization error information">error information</dfn>
-:: other information necessary to create a useful {{DOMException}} for the web developer. (Typically, just an exception message.)
+<h4 id="summarizer-errors">Errors</h4>
 
 When summarization fails, the following possible reasons may be surfaced to the web developer. This table lists the possible {{DOMException}} [=DOMException/names=] and the cases in which an implementation should use them:
 
@@ -1089,7 +692,7 @@ When summarization fails, the following possible reasons may be surfaced to the 
         <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
 </table>
 
-<p class="note">This table does not give the complete list of exceptions that can be surfaced by {{AISummarizer/summarize()|summarizer.summarize()}} and {{AISummarizer/summarize()|summarizer.summarizeStreaming()}}. It only contains those which can come from the [=implementation-defined=] [=summarize=] algorithm.
+<p class="note">This table does not give the complete list of exceptions that can be surfaced by {{AISummarizer/summarize()|summarizer.summarize()}} and {{AISummarizer/summarizeStreaming()|summarizer.summarizeStreaming()}}. It only contains those which can come from the [=implementation-defined=] [=summarize=] algorithm.
 
 <h2 id="writer-api">The writer API</h2>
 
@@ -1115,9 +718,8 @@ interface AIWriter {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
-
-  undefined destroy();
 };
+AIWriter includes AIDestroyable;
 
 dictionary AIWriterCreateCoreOptions {
   AIWriterTone tone = "neutral";
@@ -1170,9 +772,8 @@ interface AIRewriter {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
-
-  undefined destroy();
 };
+AIRewriter includes AIDestroyable;
 
 dictionary AIRewriterCreateCoreOptions {
   AIRewriterTone tone = "as-is";
@@ -1200,3 +801,453 @@ enum AIRewriterTone { "as-is", "more-formal", "more-casual" };
 enum AIRewriterFormat { "as-is", "plain-text", "markdown" };
 enum AIRewriterLength { "as-is", "shorter", "longer" };
 </xmp>
+
+<h2 id="supporting">Shared infrastructure</h2>
+
+<h3 id="supporting-creation">Creation</h3>
+
+<div algorithm>
+  To <dfn>create an AI model object</dfn> given:
+
+  * a [=ECMAScript/realm=] |realm|,
+  * an [=ordered map=] |options|,
+  * an algorithm |getAvailability| taking an [=ordered map=] and returning an {{AIAvailability}} or null,
+  * an algorithm |startDownload| taking an [=ordered map=] and returning a boolean,
+  * an algorithm |initialize| taking an [=ordered map=] and returning a boolean, and
+  * an algorithm |create| taking a [=ECMAScript/realm=] and an [=ordered map=] and return a Web IDL object representing the model,
+
+  perform the following steps:
+
+  1. Let |fireProgressEvent| be an algorithm taking two arguments that does nothing.
+
+  1. If |options|["`monitor`"] [=map/exists=], then:
+
+    1. Let |monitor| be a [=new=] {{AICreateMonitor}} created in |realm|.
+
+    1. [=Invoke=] |options|["`monitor`"] with « |monitor| » and "`rethrow`".
+
+      If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
+
+    1. Set |fireProgressEvent| to an algorithm taking argument |loaded|, which performs the following steps:
+
+      1. [=Assert=]: this algorithm is running [=in parallel=].
+
+      1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to perform the following steps:
+
+        1. [=Fire an event=] named {{AICreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to 1, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
+
+          <p class="advisement">This assumes <a href="https://github.com/whatwg/xhr/pull/394">whatwg/xhr#394</a> is merged so that passing non-integer values for {{ProgressEvent/loaded}} works as expected.</p>
+
+  1. Let |abortedDuringDownload| be false.
+
+    <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
+
+  1. If |options|["`signal`"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["`signal`"]:
+
+    1. Set |abortedDuringDownload| to true.
+
+  1. Let |promise| be [=a new promise=] created in |realm|.
+
+  1. [=In parallel=]:
+
+    1. Let |availability| be the result of performing |getAvailability| given |options|.
+
+       <p class="note">This can mutate |options|.
+
+    1. Switch on |availability|:
+
+    <dl class="switch">
+      : null
+      ::
+        1. [=Reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
+
+        1. Abort these steps.
+
+      : "{{AIAvailability/unavailable}}"
+      ::
+        1. [=Reject=] |promise| with a "{{NotSupportedError}}" {{DOMException}}.
+
+        1. Abort these steps.
+
+      : "{{AIAvailability/available}}"
+      ::
+        1. [=Initialize and return an AI model=] given |promise|, |options|, |fireProgressEvent|, |initialize|, and |create|.
+
+      : "{{AIAvailability/downloading}}"
+      : "{{AIAvailability/downloadable}}"
+      ::
+        1. If |availability| is "{{AIAvailability/downloadable}}", then let |startDownloadResult| be the result of performing |startDownload| given |options|.
+
+        1. If |startDownloadResult| is false, then:
+
+          1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NetworkError}}" {{DOMException}}.
+
+          1. Abort these steps.
+
+        1. Run the following steps, but [=abort when=] |abortedDuringDownload| becomes true:
+
+          1. Wait for the total number of bytes to be downloaded to become determined, and let that number be |totalBytes|.
+
+          1. Let |lastProgressTime| be the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
+
+          1. Perform |fireProgressEvent| given 0.
+
+          1. While true:
+
+            1. If one or more bytes have been downloaded, then:
+
+              1. If the [=monotonic clock=]'s [=monotonic clock/unsafe current time=] minus |lastProgressTime| is greater than 50 ms, then:
+
+                1. Let |bytesSoFar| be the number of bytes downloaded so far.
+
+                1. [=Assert=]: |bytesSoFar| is greater than 0 and less than or equal to |totalBytes|.
+
+                1. Let |rawProgressFraction| be |bytesSoFar| divided by |totalBytes|.
+
+                1. Let |progressFraction| be [$floor$](|rawProgressFraction| &times; 65,536) &divide; 65,536.
+
+                1. Perform |fireProgressEvent| given |progressFraction|.
+
+                   <div class="note">
+                    <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
+
+                    <p>|progressFraction| is calculated from |rawProgressFraction| to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the {{ProgressEvent/loaded}} value will be different from the previous one that was fired ~50 milliseconds ago.</p>
+
+                    <details>
+                      <summary>Full calculation</summary>
+
+                      <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from [this source](https://worldpopulationreview.com/country-rankings/internet-speeds-by-country)). Then, downloading 5 GiB will take:</p>
+
+                      <math style="display:block math">
+                        <mtable>
+                          <mtr>
+                            <mtd></mtd>
+                            <mtd style="text-align: left">
+                              <mn>5</mn>
+                              <mtext>&nbsp;GiB</mtext>
+
+                              <mo>×</mo>
+                              <mfrac>
+                                <mrow>
+                                  <msup>
+                                    <mn>2</mn>
+                                    <mn>30</mn>
+                                  </msup>
+                                  <mtext>&nbsp;bytes</mtext>
+                                </mrow>
+                                <mtext>GiB</mtext>
+                              </mfrac>
+
+                              <mo>×</mo>
+                              <mfrac>
+                                <mrow>
+                                  <mn>8</mn>
+                                  <mtext>&nbsp;bits</mtext>
+                                </mrow>
+                                <mtext>bytes</mtext>
+                              </mfrac>
+
+                              <mo>÷</mo>
+                              <mfrac>
+                                <mrow>
+                                  <mn>20</mn>
+                                  <mo>×</mo>
+                                  <msup>
+                                    <mn>10</mn>
+                                    <mn>6</mn>
+                                  </msup>
+                                  <mtext>&nbsp;bits</mtext>
+                                </mrow>
+                                <mtext>s</mtext>
+                              </mfrac>
+
+                              <mo>×</mo>
+                              <mfrac>
+                                <mrow>
+                                  <mn>1000</mn>
+                                  <mtext>&nbsp;ms</mtext>
+                                </mrow>
+                                <mtext>s</mtext>
+                              </mfrac>
+
+                              <mo>÷</mo>
+                              <mfrac>
+                                <mrow>
+                                  <mn>50</mn>
+                                  <mtext>&nbsp;ms</mtext>
+                                </mrow>
+                                <mtext>interval</mtext>
+                              </mfrac>
+                            </mtd>
+                          </mtr>
+
+                          <mtr>
+                            <mtd>
+                              <mo>=</mo>
+                            </mtd>
+                            <mtd style="text-align: left">
+                              <mn>49,950</mn>
+                              <mtext>&nbsp;intervals</mtext>
+                            </mtd>
+                          </mtr>
+                        </mtable>
+                      </math>
+
+                      Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.
+                    </details>
+                  </div>
+
+                1. If |bytesSoFar| equals |totalBytes|, then [=iteration/break=].
+
+                  <p class="note">Since this is the only exit condition for the loop, we are guaranteed to fire a {{AICreateMonitor/downloadprogress}} event for the 100% mark.</p>
+
+                1. Set |lastProgressTime| to the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
+
+            1. Otherwise, if downloading has failed and cannot continue, then:
+
+              1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NetworkError}}" {{DOMException}}.
+
+              1. Abort these steps.
+
+        1. [=If aborted=], then:
+
+          1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to perform the following steps:
+
+            1. [=Assert=]: |options|["`signal`"] is [=AbortSignal/aborted=].
+
+            1. [=Reject=] |promise| with |options|["`signal`"]'s [=AbortSignal/abort reason=].
+
+          1. Abort these steps.
+
+        1. [=Initialize and return an AI model=] given |promise|, |options|, a no-op algorithm, |initialize|, and |create|.
+    </dl>
+
+  1. Return |promise|.
+</div>
+
+<div algorithm>
+  To <dfn>initialize and return an AI model</dfn> given a {{Promise}} |promise|, an [=ordered map=] |options|, and algorithms |fireProgressEvent|, |initialize|, and |create|:
+
+  1. [=Assert=]: these steps are running [=in parallel=].
+
+  1. Perform |fireProgressEvent| given 0.
+
+  1. Perform |fireProgressEvent| given 1.
+
+  1. If performing |initialize| given |options| returns false, then:
+
+    1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to [=reject=] |promise| with an "{{OperationError}}" {{DOMException}}.
+
+    1. Return.
+
+  1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to perform the following steps:
+
+    1. If |options|["`signal`"] [=map/exists=] and is [=AbortSignal/aborted=], then:
+
+      1. [=Reject=] |promise| with |options|["`signal`"]'s [=AbortSignal/abort reason=].
+
+      1. Abort these steps.
+
+      <p class="note">This check is necessary in case any code running on the [=agent/event loop=] caused the {{AbortSignal}} to become [=AbortSignal/aborted=] before this [=task=] ran.
+
+    1. Let |model| be the result of performing |create| given |promise|'s [=relevant global object=] and |options|.
+
+    1. [=Assert=]: |model| [=implements=] an [=interface=] that [=interface/includes=] {{AIDestroyable}}.
+
+    1. [=Initialize as a destroyable=] given |model|.
+
+    1. If |options|["`signal`"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["`signal`"]:
+
+      1. [=AIDestroyable/Destroy=] |model| given |options|["`signal`"]'s [=AbortSignal/abort reason=].
+
+    1. [=Resolve=] |promise| with |model|.
+</div>
+
+<h3 id="supporting-results">Obtaining results</h3>
+
+An <dfn>error information</dfn> is a [=struct=] used to communicate error information from [=in parallel=] to the [=event loop=]. It has the following [=struct/items=]:
+
+: <dfn for="error information">error name</dfn>
+:: a [=string=] that will be used for the {{DOMException}}'s [=DOMException/name=].
+: <dfn for="error information">error information</dfn>
+:: other information necessary to create a useful {{DOMException}} for the web developer. (Typically, just an exception message.)
+
+<div algorithm>
+  To <dfn>get an aggregated AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
+
+  1. If modelObject's [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+
+  1. Let |signals| be « |modelObject|'s [=AIDestroyable/destruction abort controller=]'s [=AbortController/signal=] ».
+
+  1. If |options|["`signal`"] [=map/exists=], then [=set/append=] it to |signals|.
+
+  1. Let |compositeSignal| be the result of [=creating a dependent abort signal=] given |signals| using {{AbortSignal}} and |modelObject|'s [=relevant realm=].
+
+  1. If |compositeSignal| is [=AbortSignal/aborted=], then return [=a promise rejected with=] |compositeSignal|'s [=AbortSignal/abort reason=].
+
+  1. Let |abortedDuringOperation| be false.
+
+    <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
+
+  1. [=AbortSignal/add|Add the following abort steps=] to |compositeSignal|:
+
+    1. Set |abortedDuringOperation| to true.
+
+  1. Let |promise| be [=a new promise=] created in |modelObject|'s [=relevant realm=].
+
+  1. [=In parallel=]:
+
+    1. Let |result| be the empty string.
+
+    1. Let |chunkProduced| be the following steps given a [=string=] |chunk|:
+
+      1. [=Queue a global task=] on the [=AI task source=] given |modelObject|'s [=relevant global object=] to perform the following steps:
+
+        1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
+
+        1. Otherwise, append |chunk| to |result|.
+
+    1. Let |done| be the following steps:
+
+      1. [=Queue a global task=] on the [=AI task source=] given |modelObject|'s [=relevant global object=] to perform the following steps:
+
+        1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
+
+        1. Otherwise, [=resolve=] |promise| with |result|.
+
+    1. Let |error| be the following steps given [=error information=] |errorInfo|:
+
+      1. [=Queue a global task=] on the [=AI task source=] given |modelObject|'s [=relevant global object=] to perform the following steps:
+
+        1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
+
+        1. Otherwise, [=reject=] |promise| with the result of [=exception/creating=] a {{DOMException}} with name given by |errorInfo|'s [=error information/error name=], using |errorInfo|'s [=error information/error information=] to populate the message appropriately.
+
+    1. Let |stopProducing| be the following steps:
+
+      1. Return |abortedDuringOperation|.
+
+    1. Perform |operation| given |chunkProduced|, |done|, |error|, and |stopProducing|.
+
+  1. Return |promise|.
+</div>
+
+<div algorithm>
+  To <dfn>get a streaming AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
+
+  1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then throw an "{{InvalidStateError}}" {{DOMException}}.
+
+  1. Let |signals| be « |modelObject|'s [=AIDestroyable/destruction abort controller=]'s [=AbortController/signal=] ».
+
+  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=], then [=set/append=] it to |signals|.
+
+  1. Let |compositeSignal| be the result of [=creating a dependent abort signal=] given |signals| using {{AbortSignal}} and |modelObject|'s [=relevant realm=].
+
+  1. If |compositeSignal| is [=AbortSignal/aborted=], then return [=a promise rejected with=] |compositeSignal|'s [=AbortSignal/abort reason=].
+
+  1. Let |abortedDuringOperation| be false.
+
+    <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
+
+  1. [=AbortSignal/add|Add the following abort steps=] to |compositeSignal|:
+
+    1. Set |abortedDuringOperation| to true.
+
+  1. Let |stream| be a [=new=] {{ReadableStream}} created in [=this=]'s [=relevant realm=].
+
+  1. Let |canceledDuringOperation| be false.
+
+    <p class="note">This variable tracks web developer [=ReadableStream/cancel|stream cancelations=] via {{ReadableStream/cancel()|stream.cancel()}}, which are not surfaced as errors.  It will be written to from the [=event loop=], but sometimes read from [=in parallel=].
+
+  1. [=ReadableStream/Set up=] |stream| with <i>[=ReadableStream/set up/cancelAlgorithm=]</i> set to the following steps (ignoring the <var ignore>reason</var> argument):
+
+    1. Set |canceledDuringOperation| to true.
+
+  1. [=In parallel=]:
+
+    1. Let |chunkProduced| be the following steps given a [=string=] |chunk|:
+
+      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
+
+        1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
+
+        1. Otherwise, [=ReadableStream/enqueue=] |chunk| into |stream|.
+
+    1. Let |done| be the following steps:
+
+      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
+
+        1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
+
+        1. Otherwise, [=ReadableStream/close=] |stream|.
+
+    1. Let |error| be the following steps given [=error information=] |errorInfo|:
+
+      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
+
+        1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
+
+        1. Otherwise, [=ReadableStream/error=] |stream| with the result of [=exception/creating=] a {{DOMException}} with name given by |errorInfo|'s [=error information/error name=], using |errorInfo|'s [=error information/error information=] to populate the message appropriately.
+
+    1. Let |stopProducing| be the following steps:
+
+      1. If either |abortedDuringOperation| or |canceledDuringOperation| are true, then return true.
+
+      1. Return false.
+
+    1. Perform |operation| given |chunkProduced|, |done|, |error|, and |stopProducing|.
+
+  1. Return |stream|.
+</div>
+
+<h3 id="supporting-language-tags">Language tags</h3>
+
+<div algorithm>
+  To <dfn>validate and canonicalize language tags</dfn> given a [=ordered map=] |options| and a [=string=] |key|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags found in |options|[|key|], and throw a {{TypeError}} if any are invalid.
+
+  1. [=Assert=]: |options|[|key|] [=map/exists=].
+
+  1. If |options|[|key|] is a [=string=], then set |options|[|key|] to the result of [=validating and canonicalizing a single language tag=] given |options|[|key|].
+
+  1. Otherwise:
+
+    1. [=Assert=]: |options|[|key|] either does not [=map/exist=], or it is a [=list=] of [=strings=].
+
+    1. Let |languageTags| be an empty [=ordered set=].
+
+    1. If |options|[|key|] [=map/exists=], then [=list/for each=] |languageTag| of |options|[|key|]:
+
+      1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
+
+      1. [=set/Append=] the result of [=validating and canonicalizing a single language tag=] to |languageTags|.
+
+    1. Set |options|[|key|] to |languageTags|.
+</div>
+
+<div algorithm>
+  To <dfn lt="validate and canonicalize a single language tag|validating and canonicalizing a single language tag">validate and canonicalize a single language tag</dfn> given a [=string=] |potentialLanguageTag|:
+
+  1. If [$IsStructurallyValidLanguageTag$](|potentialLanguageTag|) is false, then throw a {{TypeError}}.
+
+  1. Return [$CanonicalizeUnicodeLocaleId$](|potentialLanguageTag|).
+</div>
+
+<h3 id="supporting-availability">Availability</h3>
+
+<div algorithm>
+  The <dfn for="AIAvailability">minimum availability</dfn> given a [=list=] of {{AIAvailability}}-or-null values |availabilities| is:
+
+  1. If |availabilities| [=list/contains=] null, then return null.
+
+  1. If |availabilities| [=list/contains=] "{{AIAvailability/unavailable}}", then return "{{AIAvailability/unavailable}}".
+
+  1. If |availabilities| [=list/contains=] "{{AIAvailability/downloading}}", then return "{{AIAvailability/downloading}}".
+
+  1. If |availabilities| [=list/contains=] "{{AIAvailability/downloadable}}", then return "{{AIAvailability/downloadable}}".
+
+  1. Return "{{AIAvailability/available}}".
+</div>
+
+<h3 id="supporting-task-source">Task source</h3>
+
+[=Tasks=] queued by this specification use the <dfn>AI task source</dfn>.
