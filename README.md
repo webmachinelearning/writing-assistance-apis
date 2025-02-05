@@ -185,20 +185,21 @@ In the simple case, web developers should call `create()`, and handle failures g
 
 The method will return a promise that fulfills with one of the following availability values:
 
-* "`no`" means that the implementation does not support the requested options.
-* "`after-download`" means that the implementation supports the requested options, but it will have to download something (e.g. a machine learning model or fine-tuning) before it can do anything.
-* "`readily`" means that the implementation supports the requested options without requiring any new downloads.
+* "`unavailable`" means that the implementation does not support the requested options.
+* "`downloadable`" means that the implementation supports the requested options, but it will have to download something (e.g. a machine learning model or fine-tuning) before it can do anything.
+* "`downloading`" means that the implementation supports the requested options, but it will have to finish an ongoing download before it can do anything.
+* "`available`" means that the implementation supports the requested options without requiring any new downloads.
 
 An example usage is the following:
 
 ```js
 const options = { type: "teaser", expectedInputLanguages: ["ja"] };
 
-const supportsOurUseCase = await ai.summarizer.availability(options);
+const availability = await ai.summarizer.availability(options);
 
-if (supportsOurUseCase !== "no") {
+if (availability !== "unavailable") {
   // We're good! Let's do the summarization using the built-in API.
-  if (supportsOurUseCase === "after-download") {
+  if (availability !== "available") {
     console.log("Sit tight, we need to do some downloading...");
   }
 
@@ -327,8 +328,6 @@ However, we believe that streaming input would not be a good fit for these APIs.
 
 In [the TAG review of the translation and language detection APIs](https://github.com/w3ctag/design-reviews/issues/948), some TAG members suggested slightly different patterns than the `ai.something.create()` pattern, such as `AISomething.create()` or `Something.create()`.
 
-Similarly, in [an issue on the translation and language detection APIs repository](https://github.com/webmachinelearning/translation-api/issues/12), a member of the W3C Internationalization Working Group suggested that the word "readily" might not be understood easily by non-native English speakers, and something less informative but more common (such as "yes") might be better. And in [another issue](https://github.com/webmachinelearning/translation-api/issues/7), we're wondering if the empty string would be better than `"no"`, since the empty string is falsy.
-
 We are open to such surface-level tweaks to the API entry points, and intend to gather more data from web developers on what they find more understandable and clear.
 
 ### Directly exposing a "prompt API"
@@ -353,7 +352,7 @@ Finally, we intend to prohibit (in the specification) any use of user-specific i
 
 ### Detecting available options
 
-The [`availability()` API](#testing-available-options-before-creation) specified here provide some bits of fingerprinting information, since the availability status of each option and language can be one of three values, and those values are expected to be shared across a user's browser or browsing profile. In theory, this could be up to ~5.5 bits for the current set of summarizer options, plus an unknown number more based on the number of supported languages, and then this would be roughly tripled by including writer and rewriter.
+The [`availability()` API](#testing-available-options-before-creation) specified here provide some bits of fingerprinting information, since the availability status of each option and language can be one of four values, and those values are expected to be shared across a user's browser or browsing profile. In theory, this could be up to ~6.6 bits for the current set of summarizer options, plus an unknown number more based on the number of supported languages, and then this would be roughly tripled by including writer and rewriter. <!-- log_2(4 (availability) * 4 (type) * 3 (length) * 2 (format)) = ~6.6 -->
 
 In practice, we expect the number of bits to be much smaller, as implementations will likely not have separate, independently-downloadable pieces of collateral for each option value. (For example, in Chrome's case, we anticipate having a single download for all three APIs.) But we need the API design to be robust to a variety of implementation choices, and have purposefully designed it to allow such independent-download architectures so as not to lock implementers into a single strategy.
 
@@ -365,7 +364,7 @@ There are a variety of solutions here, with varying tradeoffs, such as:
 
 We'll continue to investigate the best solutions here. And the specification will at a minimum allow user agents to add prompts and UI, or reject downloads entirely, as they see fit to preserve privacy.
 
-It's also worth noting that a download cannot be evicted by web developers. Thus the availability states can only be toggled in one direction, from `"after-download"` to `"readily"`. And it doesn't provide an identifier that is very stable over time, as by browsing other sites, users will gradually toggle more and more of the availability states to `"readily"`.
+It's also worth noting that a download cannot be evicted by web developers. Thus the availability states can only be toggled in one direction, from `"downloadable"` to `"downloading"` to `"available"`. And it doesn't provide an identifier that is very stable over time, as by browsing other sites, users will gradually toggle more and more of the availability states to `"availale"`.
 
 ## Stakeholder feedback
 
