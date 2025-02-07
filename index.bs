@@ -213,7 +213,7 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
   1. [=Validate and canonicalize language tags=] given |options| and "{{AISummarizerCreateCoreOptions/outputLanguage}}".
 </div>
 
-<div algoriothm>
+<div algorithm>
   To <dfn>download the summarization model</dfn>, given an {{AISummarizerCreateCoreOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
