@@ -73,7 +73,7 @@ interface mixin AIDestroyable {
 };
 </xmp>
 
-Each {{WindowOrWorkerGlobalScope}} has an <dfn for="WindowOrWorkerGlobalScope">AI namespace</dfn>, an {{AI}} object. Upon creation of the {{WindowOrWorkerGlobalScope}} object, its [=WindowOrWorkerGlobalScope/AI namespace=] must be set to a [=new=] {{AI}} object created in the {{WindowOrWorkerGlobalScope}} object's [=relevant realm=].
+Every {{WindowOrWorkerGlobalScope}} has an <dfn for="WindowOrWorkerGlobalScope">AI namespace</dfn>, an {{AI}} object. Upon creation of the {{WindowOrWorkerGlobalScope}} object, its [=WindowOrWorkerGlobalScope/AI namespace=] must be set to a [=new=] {{AI}} object created in the {{WindowOrWorkerGlobalScope}} object's [=relevant realm=].
 
 The <dfn attribute for="WindowOrWorkerGlobalScope">ai</dfn> getter steps are to return [=this=]'s [=WindowOrWorkerGlobalScope/AI namespace=].
 
@@ -94,12 +94,12 @@ The following are the [=event handlers=] (and their corresponding [=event handle
 
 <hr>
 
-Every interface implementing the {{AIDestroyable}} interface mixin has a <dfn export for="AIDestroyable">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
+Every [=interface=] [=interface/including=] the {{AIDestroyable}} interface mixin has a <dfn export for="AIDestroyable">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
 
 <p class="note">The [=AIDestroyable/destruction abort controller=] is only used internally, as a way of tracking calls to {{AIDestroyable/destroy()}}. Since it is easy to combine multiple {{AbortSignal}}s using [=create a dependent abort signal=], this lets us centralize handling of any {{AbortSignal}} the web developer provides to specific method calls, with any calls to {{AIDestroyable/destroy()}}.
 
 <div algorithm>
-  To <dfn>initialize as a destroyable</dfn> an {{AIDestroyable}} object |destroyable|, perform the following steps:
+  To <dfn>initialize as a destroyable</dfn> an {{AIDestroyable}} object |destroyable|:
 
   1. Let |controller| be a [=new=] {{AbortController}} created in |destroyable|'s [=relevant realm=].
 
@@ -183,7 +183,7 @@ enum AISummarizerFormat { "plain-text", "markdown" };
 enum AISummarizerLength { "short", "medium", "long" };
 </xmp>
 
-Each {{AI}} has an <dfn for="AI">summarizer factory</dfn>, an {{AISummarizerFactory}} object. Upon creation of the {{AI}} object, its [=AI/summarizer factory=] must be set to a [=new=] {{AISummarizerFactory}} object created in the {{AI}} object's [=relevant realm=].
+Every {{AI}} has an <dfn for="AI">summarizer factory</dfn>, an {{AISummarizerFactory}} object. Upon creation of the {{AI}} object, its [=AI/summarizer factory=] must be set to a [=new=] {{AISummarizerFactory}} object created in the {{AI}} object's [=relevant realm=].
 
 The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]'s [=AI/summarizer factory=].
 
@@ -375,7 +375,7 @@ All of these [=struct/items=] are [=maps=] from {{AIAvailability}} values to [=s
 </div>
 
 <div algorithm>
-  To <dfn>fill language availabilities</dfn> given a [=map=] |languagesMap| and a description of the purpose for which we're checking language availability, perform the following steps:
+  To <dfn>fill language availabilities</dfn> given a [=map=] |languagesMap| and a description of the purpose for which we're checking language availability:
 
   1. Set |languagesMap|["{{AIAvailability/available}}"], |languagesMap|["{{AIAvailability/downloading}}"], and |languagesMap|["{{AIAvailability/downloadable}}"] to empty [=sets=].
 
@@ -1054,7 +1054,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
     1. [=Assert=]: |model| [=implements=] an [=interface=] that [=interface/includes=] {{AIDestroyable}}.
 
-    1. [=Initialize as a destroyable=] given |model|.
+    1. [=Initialize as a destroyable=] |model|.
 
     1. If |options|["`signal`"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["`signal`"]:
 
