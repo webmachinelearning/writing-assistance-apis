@@ -94,7 +94,7 @@ The following are the [=event handlers=] (and their corresponding [=event handle
 
 <hr>
 
-Every interface implementing the {{AIDestroyable}} interface mixin has a <dfn for="AIDestroyable">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
+Every interface implementing the {{AIDestroyable}} interface mixin has a <dfn export for="AIDestroyable">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
 
 <p class="note">The [=AIDestroyable/destruction abort controller=] is only used internally, as a way of tracking calls to {{AIDestroyable/destroy()}}. Since it is easy to combine multiple {{AbortSignal}}s using [=create a dependent abort signal=], this lets us centralize handling of any {{AbortSignal}} the web developer provides to specific method calls, with any calls to {{AIDestroyable/destroy()}}.
 
@@ -807,7 +807,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 <h3 id="supporting-creation">Creation</h3>
 
 <div algorithm>
-  To <dfn>create an AI model object</dfn> given:
+  To <dfn export>create an AI model object</dfn> given:
 
   * a [=ECMAScript/realm=] |realm|,
   * an [=ordered map=] |options|,
@@ -871,7 +871,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
       : "{{AIAvailability/available}}"
       ::
-        1. [=Initialize and return an AI model=] given |promise|, |options|, |fireProgressEvent|, |initialize|, and |create|.
+        1. [=Initialize and return an AI model object=] given |promise|, |options|, |fireProgressEvent|, |initialize|, and |create|.
 
       : "{{AIAvailability/downloading}}"
       : "{{AIAvailability/downloadable}}"
@@ -1019,14 +1019,14 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
           1. Abort these steps.
 
-        1. [=Initialize and return an AI model=] given |promise|, |options|, a no-op algorithm, |initialize|, and |create|.
+        1. [=Initialize and return an AI model object=] given |promise|, |options|, a no-op algorithm, |initialize|, and |create|.
     </dl>
 
   1. Return |promise|.
 </div>
 
 <div algorithm>
-  To <dfn>initialize and return an AI model</dfn> given a {{Promise}} |promise|, an [=ordered map=] |options|, and algorithms |fireProgressEvent|, |initialize|, and |create|:
+  To <dfn>initialize and return an AI model object</dfn> given a {{Promise}} |promise|, an [=ordered map=] |options|, and algorithms |fireProgressEvent|, |initialize|, and |create|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
@@ -1065,15 +1065,15 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
 <h3 id="supporting-results">Obtaining results</h3>
 
-An <dfn>error information</dfn> is a [=struct=] used to communicate error information from [=in parallel=] to the [=event loop=]. It has the following [=struct/items=]:
+An <dfn export>error information</dfn> is a [=struct=] used to communicate error information from [=in parallel=] to the [=event loop=]. It has the following [=struct/items=]:
 
-: <dfn for="error information">error name</dfn>
+: <dfn export for="error information">error name</dfn>
 :: a [=string=] that will be used for the {{DOMException}}'s [=DOMException/name=].
-: <dfn for="error information">error information</dfn>
+: <dfn export for="error information">error information</dfn>
 :: other information necessary to create a useful {{DOMException}} for the web developer. (Typically, just an exception message.)
 
 <div algorithm>
-  To <dfn>get an aggregated AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
+  To <dfn export>get an aggregated AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
 
   1. If modelObject's [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
@@ -1133,7 +1133,7 @@ An <dfn>error information</dfn> is a [=struct=] used to communicate error inform
 </div>
 
 <div algorithm>
-  To <dfn>get a streaming AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
+  To <dfn export>get a streaming AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
 
   1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then throw an "{{InvalidStateError}}" {{DOMException}}.
 
@@ -1203,7 +1203,7 @@ An <dfn>error information</dfn> is a [=struct=] used to communicate error inform
 <h3 id="supporting-language-tags">Language tags</h3>
 
 <div algorithm>
-  To <dfn>validate and canonicalize language tags</dfn> given a [=ordered map=] |options| and a [=string=] |key|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags found in |options|[|key|], and throw a {{TypeError}} if any are invalid.
+  To <dfn export>validate and canonicalize language tags</dfn> given a [=ordered map=] |options| and a [=string=] |key|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags found in |options|[|key|], and throw a {{TypeError}} if any are invalid.
 
   1. [=Assert=]: |options|[|key|] [=map/exists=].
 
@@ -1235,7 +1235,7 @@ An <dfn>error information</dfn> is a [=struct=] used to communicate error inform
 <h3 id="supporting-availability">Availability</h3>
 
 <div algorithm>
-  The <dfn for="AIAvailability">minimum availability</dfn> given a [=list=] of {{AIAvailability}}-or-null values |availabilities| is:
+  The <dfn export for="AIAvailability">minimum availability</dfn> given a [=list=] of {{AIAvailability}}-or-null values |availabilities| is:
 
   1. If |availabilities| [=list/contains=] null, then return null.
 
@@ -1250,4 +1250,4 @@ An <dfn>error information</dfn> is a [=struct=] used to communicate error inform
 
 <h3 id="supporting-task-source">Task source</h3>
 
-[=Tasks=] queued by this specification use the <dfn>AI task source</dfn>.
+[=Tasks=] queued by this specification use the <dfn export>AI task source</dfn>.
