@@ -814,7 +814,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
   * an algorithm |getAvailability| taking an [=ordered map=] and returning an {{AIAvailability}} or null,
   * an algorithm |startDownload| taking an [=ordered map=] and returning a boolean,
   * an algorithm |initialize| taking an [=ordered map=] and returning a boolean, and
-  * an algorithm |create| taking a [=ECMAScript/realm=] and an [=ordered map=] and return a Web IDL object representing the model,
+  * an algorithm |create| taking a [=ECMAScript/realm=] and an [=ordered map=] and returning a Web IDL object representing the model,
 
   perform the following steps:
 
