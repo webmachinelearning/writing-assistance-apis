@@ -301,6 +301,8 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
   1. Let |languageAvailabilities| be the [=summarizer language availabilities=].
 
+  1. If |languageAvailabilities| is null, then return null.
+
   1. Let |inputLanguageAvailability| be the result of [=computing summarizer language availability=] given |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] and |languageAvailabilities|'s [=language availabilities/input languages=].
 
   1. Let |contextLanguagesAvailability| be the result of [=computing summarizer language availability=] given |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] and |languageAvailabilities|'s [=language availabilities/context languages=].
