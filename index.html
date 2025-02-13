@@ -8,7 +8,7 @@
   <meta content="Bikeshed version 97a1608be, updated Mon Feb 3 16:09:34 2025 -0800" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="eb4ad6d603cf5686a18a9ef791aa67eae44ef5f6" name="revision">
+  <meta content="00f6bd15de8d05be0ade8a969fb79eda5069fc4b" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -1075,6 +1075,8 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
       <p>Let <var>availability</var> be the <a data-link-type="dfn" href="#summarizer-non-language-options-availability" id="ref-for-summarizer-non-language-options-availability">summarizer non-language options availability</a> given <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreatecoreoptions-type" id="ref-for-dom-aisummarizercreatecoreoptions-type①">type</a></code>"], <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreatecoreoptions-format" id="ref-for-dom-aisummarizercreatecoreoptions-format①">format</a></code>"], and <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreatecoreoptions-length" id="ref-for-dom-aisummarizercreatecoreoptions-length①">length</a></code>"].</p>
      <li data-md>
       <p>Let <var>languageAvailabilities</var> be the <a data-link-type="dfn" href="#summarizer-language-availabilities" id="ref-for-summarizer-language-availabilities">summarizer language availabilities</a>.</p>
+     <li data-md>
+      <p>If <var>languageAvailabilities</var> is null, then return null.</p>
      <li data-md>
       <p>Let <var>inputLanguageAvailability</var> be the result of <a data-link-type="dfn" href="#compute-summarizer-language-availability" id="ref-for-compute-summarizer-language-availability">computing summarizer language availability</a> given <var>options</var>["<code class="idl"><a data-link-type="idl" href="#dom-aisummarizercreatecoreoptions-expectedinputlanguages" id="ref-for-dom-aisummarizercreatecoreoptions-expectedinputlanguages②">expectedInputLanguages</a></code>"] and <var>languageAvailabilities</var>’s <a data-link-type="dfn" href="#language-availabilities-input-languages" id="ref-for-language-availabilities-input-languages">input languages</a>.</p>
      <li data-md>
