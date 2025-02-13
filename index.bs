@@ -317,19 +317,27 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 <div algorithm>
   To <dfn>compute summarizer language availability</dfn> given an [=ordered set=] of strings |requestedLanguages| and a [=map=] from {{AIAvailability}} values to [=sets=] of strings |availabilities|, perform the following steps. They return an {{AIAvailability}} value, and they mutate |requestedLanguages| in place to update language tags to their best-fit matches.
 
-  1. [=set/For each=] |languageTag| of |requestedLanguages|:
+  1. Let |availability| be "{{AIAvailability/available}}".
+
+  1. [=set/For each=] |language| of |requestedLanguages|:
 
     1. [=list/For each=] |availabilityToCheck| of « "{{AIAvailability/available}}", "{{AIAvailability/downloading}}", "{{AIAvailability/downloadable}}" »:
 
-      1. Let |bestMatch| be [$LookupMatchingLocaleByBestFit$](|availabilities|[|availabilityToCheck|], « |languageTag| »).
+      1. Let |languagesWithThisAvailability| be |availabilities|[|availabilityToCheck|].
+
+      1. Let |bestMatch| be [$LookupMatchingLocaleByBestFit$](|languagesWithThisAvailability|, « |language| »).
 
       1. If |bestMatch| is not undefined, then:
 
-        1. [=list/Replace=] |languageTag| with |bestMatch|.\[[locale]] in |requestedLanguages|.
+        1. [=list/Replace=] |language| with |bestMatch|.\[[locale]] in |requestedLanguages|.
 
-        1. Return |availabilityToCheck|.
+        1. Set |availability| to the [=AIAvailability/minimum availability=] given |availability| and |availabilityToCheck|.
+
+        1. [=iteration/Break=].
 
     1. Return "{{AIAvailability/unavailable}}".
+
+  1. Return |availability|.
 </div>
 
 <div algorithm>
