@@ -1048,7 +1048,7 @@ An <dfn export>error information</dfn> is a [=struct=] used to communicate error
 <div algorithm>
   To <dfn export>get an aggregated AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
 
-  1. If modelObject's [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+  1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
   1. Let |signals| be « |modelObject|'s [=AIDestroyable/destruction abort controller=]'s [=AbortController/signal=] ».
 
