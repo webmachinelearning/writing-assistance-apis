@@ -362,7 +362,7 @@ A <dfn>language availabilities</dfn> is a [=struct=] with the following [=struct
 * <dfn for="language availabilities">context languages</dfn>
 * <dfn for="language availabilities">output languages</dfn>
 
-All of these [=struct/items=] are [=maps=] from {{AIAvailability}} values to [=sets=] of strings representing [=Unicode canonicalized locale identifiers=], initially empty maps. Their [=map/keys=] will always be one of "{{AIAvailability/downloading}}", "{{AIAvailability/downloadable}}", or "{{AIAvailability/available}}" (i.e., they will never be "{{AIAvailability/unavailable}}"). [[!ECMA-402]]
+All of these [=struct/items=] are [=maps=] from {{AIAvailability}} values to [=sets=] of strings representing [=Unicode canonicalized locale identifiers=]. Their [=map/keys=] will always be one of "{{AIAvailability/downloading}}", "{{AIAvailability/downloadable}}", or "{{AIAvailability/available}}" (i.e., they will never be "{{AIAvailability/unavailable}}"). [[!ECMA-402]]
 
 <div algorithm>
   The <dfn>summarizer language availabilities</dfn> are given by the following steps. They return a [=language availabilities=] or null.
@@ -371,82 +371,45 @@ All of these [=struct/items=] are [=maps=] from {{AIAvailability}} values to [=s
 
   1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=summarizer language availabilities=] could stop producing such an error), then return null.
 
-  1. Let |availabilities| be a [=language availabilities=].
+  1. Return a [=language availabilities=] with:
 
-  1. [=Fill language availabilities=] given |availabilities|'s [=language availabilities/input languages=] and the purpose of summarizing text written in that language.
+    <dl class="props">
+      : [=language availabilities/input languages=]
+      :: the result of [=getting language availabilities=] given the purpose of summarizing text written in that language
 
-  1. [=Fill language availabilities=] given |availabilities|'s [=language availabilities/context languages=] and the purpose of summarizing text using web-developer provided context information written in that language.
+      : [=language availabilities/context languages=]
+      :: the result of [=getting language availabilities=] given the purpose of summarizing text using web-developer provided context information written in that language
 
-  1. [=Fill language availabilities=] given |availabilities|'s [=language availabilities/output languages=] and the purpose of producing text summaries in that language.
-
-  1. Return |availabilities|.
+      : [=language availabilities/output languages=]
+      :: the result of [=getting language availabilities=] given the purpose of producing text summaries in that language
+    </dl>
 </div>
 
-<div algorithm>
-  To <dfn>fill language availabilities</dfn> given a [=map=] |languagesMap| and a description of the purpose for which we're checking language availability:
+<div class="example" id="example-subtags-chinese">
+  A common setup seen in today's software is to support two types of written Chinese: "traditional Chinese" and "simplified Chinese". Let's suppose that the user agent supports summarizing text written in traditional Chinese with no downloads, and simplified Chinese after a download.
 
-  1. Set |languagesMap|["{{AIAvailability/available}}"], |languagesMap|["{{AIAvailability/downloading}}"], and |languagesMap|["{{AIAvailability/downloadable}}"] to empty [=sets=].
+  One way this could be implemented would be for [=summarizer language availabilities=] to return that "`zh-Hant`" is in the [=language availabilities/input languages=]["{{AIAvailability/available}}"] set, and "`zh`" and "`zh-Hans`" are in the [=language availabilities/input languages=]["{{AIAvailability/downloadable}}"] set. This return value conforms to the requirements of the [=language tag set completeness rules=], in ensuring that "`zh`" is present. Per <a class="allow-2119" href="#language-tag-completeness-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "`zh`" belongs in the set of downloadable input languages, with "`zh-Hans`", instead of in the set of available input languages, with "`zh-Hant`".
 
-  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent supports |purpose|, without performing any downloading operations:
+  Combined with the use of [$LookupMatchingLocaleByBestFit$], this means {{AISummarizerFactory/availability()}} will give the following answers:
 
-    1. [=set/Append=] |languageTag| to |languagesMap|["{{AIAvailability/available}}"].
+  <xmp class="language-js">
+  function a(languageTag) {
+    return ai.summarizer.availability({
+      expectedInputLanguages: [languageTag]
+    });
+  }
 
-  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent is currently downloading material (e.g., an AI model or fine-tuning) to support |purpose|:
+  await a("zh") === "downloadable";
+  await a("zh-Hant") === "available";
+  await a("zh-Hans") === "downloadable";
 
-    1. [=set/Append=] |languageTag| to |languagesMap|["{{AIAvailability/downloading}}"].
+  await a("zh-TW") === "available";      // zh-TW will best-fit to zh-Hant
+  await a("zh-HK") === "available";      // zh-HK will best-fit to zh-Hant
+  await a("zh-CN") === "downloadable";   // zh-CN will best-fit to zh-Hans
 
-  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent believes it can support |purpose|, but only after performing a not-currently-ongoing download (e.g., of an AI model or fine-tuning):
-
-    1. [=set/Append=] |languageTag| to |languagesMap|["{{AIAvailability/downloadable}}"].
-
-  1. [=Assert=]: |languagesMap|["{{AIAvailability/available}}"], |languagesMap|["{{AIAvailability/downloading}}"], and |languagesMap|["{{AIAvailability/downloadable}}"] are disjoint.
-
-  1. If the [=set/union=] of |languagesMap|["{{AIAvailability/available}}"], |languagesMap|["{{AIAvailability/downloading}}"], and |languagesMap|["{{AIAvailability/downloadable}}"] does not meet the [=language tag set completeness rules=], then:
-
-    1. Let |missingLanguageTags| be the [=set=] of missing language tags necessary to meet the [=language tag set completeness rules=].
-
-    1. [=set/For each=] |languageTag| of |missingLanguageTags|:
-
-      1. <span id="language-tag-completeness-implementation-defined"></span> [=set/Append=] |languageTag| to one of the three sets. Which of the sets to append to is [=implementation-defined=], and should be guided by considerations similar to that of [$LookupMatchingLocaleByBestFit$] in terms of keeping "best fallback languages" together.
-</div>
-
-<div algorithm>
-  The <dfn>language tag set completeness rules</dfn> state that for every [=set/item=] |languageTag|, if |languageTag| has more than one subtag, then the set must also contain a less narrow language tag with the same language subtag and a strict subset of the same following subtags (i.e., omitting one or more).
-
-  <p class="note">This definition is intended to align with that of [=[[AvailableLocales]]=] in <cite>ECMAScript Internationalization API Specification</cite>. [[ECMA-402]]
-
-  <div class="example" id="example-subtags-intro">
-    This means that if an implementation supports summarization of "`de-DE`" input text, it will also count as supporting "`de`" input text.
-
-    The converse direction is supported not by the [=language tag set completeness rules=], but instead by the use of [$LookupMatchingLocaleByBestFit$], which ensures that if an implementation supports summarizing "`de`" input text, it also counts as supporting summarization of "`de-CH`", "`de-Latn-CH`", etc.
-  </div>
-
-  <div class="example" id="example-subtags-chinese">
-    A common setup seen in today's software is to support two types of written Chinese: "traditional Chinese" and "simplified Chinese". Let's suppose that the user agent supports summarizing text written in traditional Chinese with no downloads, and simplified Chinese after a download.
-
-    One way this could be implemented would be for [=summarizer language availabilities=] to return that "`zh-Hant`" is in the [=language availabilities/input languages=]["{{AIAvailability/available}}"] set, and "`zh`" and "`zh-Hans`" are in the [=language availabilities/input languages=]["{{AIAvailability/downloadable}}"] set. This return value conforms to the requirements of the [=language tag set completeness rules=], in ensuring that "`zh`" is present. Per <a class="allow-2119" href="#language-tag-completeness-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "`zh`" belongs in the set of downloadable input languages, with "`zh-Hans`", instead of in the set of available input languages, with "`zh-Hant`".
-
-    Combined with the use of [$LookupMatchingLocaleByBestFit$], this means {{AISummarizerFactory/availability()}} will give the following answers:
-
-    <xmp class="language-js">
-    function a(languageTag) {
-      return ai.summarizer.availability({
-        expectedInputLanguages: [languageTag]
-      });
-    }
-
-    await a("zh") === "downloadable";
-    await a("zh-Hant") === "available";
-    await a("zh-Hans") === "downloadable";
-
-    await a("zh-TW") === "available";      // zh-TW will best-fit to zh-Hant
-    await a("zh-HK") === "available";      // zh-HK will best-fit to zh-Hant
-    await a("zh-CN") === "downloadable";   // zh-CN will best-fit to zh-Hans
-
-    await a("zh-BR") === "downloadable";   // zh-BR will best-fit to zh
-    await a("zh-Kana") === "downloadable"; // zh-Kana will best-fit to zh
-    </xmp>
-  </div>
+  await a("zh-BR") === "downloadable";   // zh-BR will best-fit to zh
+  await a("zh-Kana") === "downloadable"; // zh-Kana will best-fit to zh
+  </xmp>
 </div>
 
 <h3 id="the-aisummarizer-class">The {{AISummarizer}} class</h3>
@@ -1238,6 +1201,48 @@ An <dfn export>error information</dfn> is a [=struct=] used to communicate error
   1. If [$IsStructurallyValidLanguageTag$](|potentialLanguageTag|) is false, then throw a {{TypeError}}.
 
   1. Return [$CanonicalizeUnicodeLocaleId$](|potentialLanguageTag|).
+</div>
+
+<div algorithm>
+  To <dfn export>get language availabilities</dfn> given a description |purpose| of the purpose for which we're checking language availability:
+
+  1. Let |availabilities| be «[ "{{AIAvailability/available}}" → an empty [=set=], "{{AIAvailability/downloading}}" → an empty [=set=], "{{AIAvailability/downloadable}}" → an empty [=set=] ]».
+
+  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent supports |purpose|, without performing any downloading operations:
+
+    1. [=set/Append=] |languageTag| to |availabilities|["{{AIAvailability/available}}"].
+
+  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent is currently downloading material (e.g., an AI model or fine-tuning) to support |purpose|:
+
+    1. [=set/Append=] |languageTag| to |availabilities|["{{AIAvailability/downloading}}"].
+
+  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent believes it can support |purpose|, but only after performing a not-currently-ongoing download (e.g., of an AI model or fine-tuning):
+
+    1. [=set/Append=] |languageTag| to |availabilities|["{{AIAvailability/downloadable}}"].
+
+  1. [=Assert=]: |availabilities|["{{AIAvailability/available}}"], |availabilities|["{{AIAvailability/downloading}}"], and |availabilities|["{{AIAvailability/downloadable}}"] are disjoint.
+
+  1. If the [=set/union=] of |availabilities|["{{AIAvailability/available}}"], |availabilities|["{{AIAvailability/downloading}}"], and |availabilities|["{{AIAvailability/downloadable}}"] does not meet the [=language tag set completeness rules=], then:
+
+    1. Let |missingLanguageTags| be the [=set=] of missing language tags necessary to meet the [=language tag set completeness rules=].
+
+    1. [=set/For each=] |languageTag| of |missingLanguageTags|:
+
+      1. <span id="language-tag-completeness-implementation-defined"></span> [=set/Append=] |languageTag| to one of the three sets. Which of the sets to append to is [=implementation-defined=], and should be guided by considerations similar to that of [$LookupMatchingLocaleByBestFit$] in terms of keeping "best fallback languages" together.
+
+    1. Return |availabilities|.
+</div>
+
+<div algorithm>
+  The <dfn>language tag set completeness rules</dfn> state that for every [=set/item=] |languageTag|, if |languageTag| has more than one subtag, then the set must also contain a less narrow language tag with the same language subtag and a strict subset of the same following subtags (i.e., omitting one or more).
+
+  <p class="note">This definition is intended to align with that of [=[[AvailableLocales]]=] in <cite>ECMAScript Internationalization API Specification</cite>. [[ECMA-402]]
+
+  <div class="example" id="example-subtags-intro">
+    This means that if an implementation supports summarization of "`de-DE`" input text, it will also count as supporting "`de`" input text.
+
+    The converse direction is supported not by the [=language tag set completeness rules=], but instead by the use of [$LookupMatchingLocaleByBestFit$], which ensures that if an implementation supports summarizing "`de`" input text, it also counts as supporting summarization of "`de-CH`", "`de-Latn-CH`", etc.
+  </div>
 </div>
 
 <h3 id="supporting-availability">Availability</h3>
