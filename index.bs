@@ -321,7 +321,7 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
     1. [=list/For each=] |availabilityToCheck| of « "{{AIAvailability/available}}", "{{AIAvailability/downloading}}", "{{AIAvailability/downloadable}}" »:
 
-      1. Let |bestMatch| be [$LookupMatchingLocaleByBestFit$](|availabilities|[|availabilityToCheck|], |languageTag|).
+      1. Let |bestMatch| be [$LookupMatchingLocaleByBestFit$](|availabilities|[|availabilityToCheck|], « |languageTag| »).
 
       1. If |bestMatch| is not undefined, then:
 
