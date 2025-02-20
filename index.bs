@@ -861,126 +861,130 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
           1. Wait for the total number of bytes to be downloaded to become determined, and let that number be |totalBytes|.
 
+          1. Let |lastProgressFraction| be 0.
+
           1. Let |lastProgressTime| be the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
 
           1. Perform |fireProgressEvent| given 0.
 
+          1. Wait for at least one byte to be downloaded, or for downloading to fail.
+
           1. While true:
 
-            1. If one or more bytes have been downloaded, then:
-
-              1. If the [=monotonic clock=]'s [=monotonic clock/unsafe current time=] minus |lastProgressTime| is greater than 50 ms, then:
-
-                1. Let |bytesSoFar| be the number of bytes downloaded so far.
-
-                1. [=Assert=]: |bytesSoFar| is greater than 0 and less than or equal to |totalBytes|.
-
-                1. Let |rawProgressFraction| be |bytesSoFar| divided by |totalBytes|.
-
-                1. Let |progressFraction| be [$floor$](|rawProgressFraction| &times; 65,536) &divide; 65,536.
-
-                1. Perform |fireProgressEvent| given |progressFraction|.
-
-                   <div class="note">
-                    <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
-
-                    <p>|progressFraction| is calculated from |rawProgressFraction| to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the {{ProgressEvent/loaded}} value will be different from the previous one that was fired ~50 milliseconds ago.</p>
-
-                    <details>
-                      <summary>Full calculation</summary>
-
-                      <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from [this source](https://worldpopulationreview.com/country-rankings/internet-speeds-by-country)). Then, downloading 5 GiB will take:</p>
-
-                      <math style="display:block math">
-                        <mtable>
-                          <mtr>
-                            <mtd></mtd>
-                            <mtd style="text-align: left">
-                              <mn>5</mn>
-                              <mtext>&nbsp;GiB</mtext>
-
-                              <mo>×</mo>
-                              <mfrac>
-                                <mrow>
-                                  <msup>
-                                    <mn>2</mn>
-                                    <mn>30</mn>
-                                  </msup>
-                                  <mtext>&nbsp;bytes</mtext>
-                                </mrow>
-                                <mtext>GiB</mtext>
-                              </mfrac>
-
-                              <mo>×</mo>
-                              <mfrac>
-                                <mrow>
-                                  <mn>8</mn>
-                                  <mtext>&nbsp;bits</mtext>
-                                </mrow>
-                                <mtext>bytes</mtext>
-                              </mfrac>
-
-                              <mo>÷</mo>
-                              <mfrac>
-                                <mrow>
-                                  <mn>20</mn>
-                                  <mo>×</mo>
-                                  <msup>
-                                    <mn>10</mn>
-                                    <mn>6</mn>
-                                  </msup>
-                                  <mtext>&nbsp;bits</mtext>
-                                </mrow>
-                                <mtext>s</mtext>
-                              </mfrac>
-
-                              <mo>×</mo>
-                              <mfrac>
-                                <mrow>
-                                  <mn>1000</mn>
-                                  <mtext>&nbsp;ms</mtext>
-                                </mrow>
-                                <mtext>s</mtext>
-                              </mfrac>
-
-                              <mo>÷</mo>
-                              <mfrac>
-                                <mrow>
-                                  <mn>50</mn>
-                                  <mtext>&nbsp;ms</mtext>
-                                </mrow>
-                                <mtext>interval</mtext>
-                              </mfrac>
-                            </mtd>
-                          </mtr>
-
-                          <mtr>
-                            <mtd>
-                              <mo>=</mo>
-                            </mtd>
-                            <mtd style="text-align: left">
-                              <mn>49,950</mn>
-                              <mtext>&nbsp;intervals</mtext>
-                            </mtd>
-                          </mtr>
-                        </mtable>
-                      </math>
-
-                      Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.
-                    </details>
-                  </div>
-
-                1. If |bytesSoFar| equals |totalBytes|, then [=iteration/break=].
-
-                  <p class="note">Since this is the only exit condition for the loop, we are guaranteed to fire a {{AICreateMonitor/downloadprogress}} event for the 100% mark.</p>
-
-                1. Set |lastProgressTime| to the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
-
-            1. Otherwise, if downloading has failed and cannot continue, then:
+            1. If downloading has failed, then:
 
               1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NetworkError}}" {{DOMException}}.
 
               1. Abort these steps.
+
+            1. Let |bytesSoFar| be the number of bytes downloaded so far.
+
+            1. [=Assert=]: |bytesSoFar| is greater than 0 and less than or equal to |totalBytes|.
+
+            1. If the [=monotonic clock=]'s [=monotonic clock/unsafe current time=] minus |lastProgressTime| is greater than 50 ms, or |bytesSoFar| equals |totalBytes|, then:
+
+              1. Let |rawProgressFraction| be |bytesSoFar| divided by |totalBytes|.
+
+              1. Let |progressFraction| be [$floor$](|rawProgressFraction| &times; 65,536) &divide; 65,536.
+
+                  <div class="note">
+                  <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
+
+                  <p>|progressFraction| is calculated from |rawProgressFraction| to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the {{ProgressEvent/loaded}} value will be different from the previous one that was fired ~50 milliseconds ago.</p>
+
+                  <details>
+                    <summary>Full calculation</summary>
+
+                    <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from [this source](https://worldpopulationreview.com/country-rankings/internet-speeds-by-country)). Then, downloading 5 GiB will take:</p>
+
+                    <math style="display:block math">
+                      <mtable>
+                        <mtr>
+                          <mtd></mtd>
+                          <mtd style="text-align: left">
+                            <mn>5</mn>
+                            <mtext>&nbsp;GiB</mtext>
+
+                            <mo>×</mo>
+                            <mfrac>
+                              <mrow>
+                                <msup>
+                                  <mn>2</mn>
+                                  <mn>30</mn>
+                                </msup>
+                                <mtext>&nbsp;bytes</mtext>
+                              </mrow>
+                              <mtext>GiB</mtext>
+                            </mfrac>
+
+                            <mo>×</mo>
+                            <mfrac>
+                              <mrow>
+                                <mn>8</mn>
+                                <mtext>&nbsp;bits</mtext>
+                              </mrow>
+                              <mtext>bytes</mtext>
+                            </mfrac>
+
+                            <mo>÷</mo>
+                            <mfrac>
+                              <mrow>
+                                <mn>20</mn>
+                                <mo>×</mo>
+                                <msup>
+                                  <mn>10</mn>
+                                  <mn>6</mn>
+                                </msup>
+                                <mtext>&nbsp;bits</mtext>
+                              </mrow>
+                              <mtext>s</mtext>
+                            </mfrac>
+
+                            <mo>×</mo>
+                            <mfrac>
+                              <mrow>
+                                <mn>1000</mn>
+                                <mtext>&nbsp;ms</mtext>
+                              </mrow>
+                              <mtext>s</mtext>
+                            </mfrac>
+
+                            <mo>÷</mo>
+                            <mfrac>
+                              <mrow>
+                                <mn>50</mn>
+                                <mtext>&nbsp;ms</mtext>
+                              </mrow>
+                              <mtext>interval</mtext>
+                            </mfrac>
+                          </mtd>
+                        </mtr>
+
+                        <mtr>
+                          <mtd>
+                            <mo>=</mo>
+                          </mtd>
+                          <mtd style="text-align: left">
+                            <mn>49,950</mn>
+                            <mtext>&nbsp;intervals</mtext>
+                          </mtd>
+                        </mtr>
+                      </mtable>
+                    </math>
+
+                    Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.
+                  </details>
+                </div>
+
+              1. If |progressFraction| is not equal to |lastProgressFraction|, then perform |fireProgressEvent| given |progressFraction|.
+
+              1. If |bytesSoFar| equals |totalBytes|, then [=iteration/break=].
+
+                <p class="note">Since this is the only exit condition for the loop, we are guaranteed to fire a {{AICreateMonitor/downloadprogress}} event for the 100% mark.</p>
+
+              1. Set |lastProgressFraction| to |progressFraction|.
+
+              1. Set |lastProgressTime| to the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
 
         1. [=If aborted=], then:
 
