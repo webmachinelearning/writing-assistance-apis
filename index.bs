@@ -867,8 +867,6 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
           1. Perform |fireProgressEvent| given 0.
 
-          1. Wait for at least one byte to be downloaded, or for downloading to fail.
-
           1. While true:
 
             1. If downloading has failed, then:
@@ -879,7 +877,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
             1. Let |bytesSoFar| be the number of bytes downloaded so far.
 
-            1. [=Assert=]: |bytesSoFar| is greater than 0 and less than or equal to |totalBytes|.
+            1. [=Assert=]: |bytesSoFar| is greater than or equal to 0, and less than or equal to |totalBytes|.
 
             1. If the [=monotonic clock=]'s [=monotonic clock/unsafe current time=] minus |lastProgressTime| is greater than 50 ms, or |bytesSoFar| equals |totalBytes|, then:
 
@@ -980,7 +978,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
               1. If |bytesSoFar| equals |totalBytes|, then [=iteration/break=].
 
-                <p class="note">Since this is the only exit condition for the loop, we are guaranteed to fire a {{AICreateMonitor/downloadprogress}} event for the 100% mark.</p>
+                <p class="note">Since this is the only non-failure exit condition for the loop, we will never miss firing a {{AICreateMonitor/downloadprogress}} event for the 100% mark.</p>
 
               1. Set |lastProgressFraction| to |progressFraction|.
 
