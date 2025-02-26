@@ -5,10 +5,10 @@
   <title>Writing Assistance APIs</title>
   <meta content="CG-DRAFT" name="w3c-status">
   <link href="https://www.w3.org/StyleSheets/TR/2021/cg-draft" rel="stylesheet">
-  <meta content="Bikeshed version 97a1608be, updated Mon Feb 3 16:09:34 2025 -0800" name="generator">
+  <meta content="Bikeshed version 60c422380, updated Thu Feb 20 19:11:22 2025 -0800" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="41216b3a80cd4c1f4549bfd7ea69b7dfceb3ea51" name="revision">
+  <meta content="45d5677beaec6f81c963df7bfd81f941e4b15119" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -747,7 +747,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
   <div class="head">
    <p data-fill-with="logo"><a class="logo" href="https://webmachinelearning.github.io/"> <img alt="Logo" height="100" src="https://webmachinelearning.github.io/webmachinelearning-logo.png" width="100"> </a> </p>
    <h1 class="p-name no-ref" id="title">Writing Assistance APIs</h1>
-   <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>, <time class="dt-updated" datetime="2025-02-13">13 February 2025</time></p>
+   <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>, <time class="dt-updated" datetime="2025-02-26">26 February 2025</time></p>
    <details open>
     <summary>More details about this document</summary>
     <div data-fill-with="spec-metadata">
@@ -1646,6 +1646,13 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
           <ol>
            <li data-md>
             <p>Wait for the total number of bytes to be downloaded to become determined, and let that number be <var>totalBytes</var>.</p>
+            <p>This number must be equal to the number of bytes that the user agent needs to download at the present time, not including any that have already been downloaded.</p>
+            <div class="note" role="note">
+             <p>For example, if another tab has started the download and it is 90% finished, and the user agent is planning to share the model across all tabs, then <var>totalBytes</var> will be 10% of the size of the model, not 100% of the size of the model. </p>
+             <p>This prevents the web developer-perceived progress from suddenly jumping from 0% to 90%, and then taking a long time to go from 90% to 100%. It also provides some protection against the (admittedly not very powerful) fingerprinting vector of measuring the current download progress across multiple sites. </p>
+            </div>
+           <li data-md>
+            <p>Let <var>lastProgressFraction</var> be 0.</p>
            <li data-md>
             <p>Let <var>lastProgressTime</var> be the <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#dfn-monotonic-clock" id="ref-for-dfn-monotonic-clock">monotonic clock</a>’s <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#monotonic-clock-unsafe-current-time" id="ref-for-monotonic-clock-unsafe-current-time">unsafe current time</a>.</p>
            <li data-md>
@@ -1654,112 +1661,110 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
             <p>While true:</p>
             <ol>
              <li data-md>
-              <p>If one or more bytes have been downloaded, then:</p>
-              <ol>
-               <li data-md>
-                <p>If the <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#dfn-monotonic-clock" id="ref-for-dfn-monotonic-clock①">monotonic clock</a>’s <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#monotonic-clock-unsafe-current-time" id="ref-for-monotonic-clock-unsafe-current-time①">unsafe current time</a> minus <var>lastProgressTime</var> is greater than 50 ms, then:</p>
-                <ol>
-                 <li data-md>
-                  <p>Let <var>bytesSoFar</var> be the number of bytes downloaded so far.</p>
-                 <li data-md>
-                  <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑧">Assert</a>: <var>bytesSoFar</var> is greater than 0 and less than or equal to <var>totalBytes</var>.</p>
-                 <li data-md>
-                  <p>Let <var>rawProgressFraction</var> be <var>bytesSoFar</var> divided by <var>totalBytes</var>.</p>
-                 <li data-md>
-                  <p>Let <var>progressFraction</var> be <a data-link-type="abstract-op" href="https://tc39.es/ecma262/#eqn-floor" id="ref-for-eqn-floor">floor</a>(<var>rawProgressFraction</var> × 65,536) ÷ 65,536.</p>
-                 <li data-md>
-                  <p>Perform <var>fireProgressEvent</var> given <var>progressFraction</var>.</p>
-                  <div class="note" role="note">
-                   <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
-                   <p><var>progressFraction</var> is calculated from <var>rawProgressFraction</var> to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-loaded" id="ref-for-dom-progressevent-loaded②">loaded</a></code> value will be different from the previous one that was fired ~50 milliseconds ago.</p>
-                   <details>
-                    <summary>Full calculation</summary>
-                    <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from <a href="https://worldpopulationreview.com/country-rankings/internet-speeds-by-country">this source</a>). Then, downloading 5 GiB will take:</p>
-                    <math style="display:block math">
-                     <mtable>
-                      <mtr>
-                       <mtd></mtd>
-                       <mtd style="text-align: left">
-                        <mn>5</mn>
-                        <mtext> GiB</mtext>
-                        <mo>×</mo>
-                        <mfrac>
-                         <mrow>
-                          <msup>
-                           <mn>2</mn>
-                           <mn>30</mn>
-                          </msup>
-                          <mtext> bytes</mtext>
-                         </mrow>
-                         <mtext>GiB</mtext>
-                        </mfrac>
-                        <mo>×</mo>
-                        <mfrac>
-                         <mrow>
-                          <mn>8</mn>
-                          <mtext> bits</mtext>
-                         </mrow>
-                         <mtext>bytes</mtext>
-                        </mfrac>
-                        <mo>÷</mo>
-                        <mfrac>
-                         <mrow>
-                          <mn>20</mn>
-                          <mo>×</mo>
-                          <msup>
-                           <mn>10</mn>
-                           <mn>6</mn>
-                          </msup>
-                          <mtext> bits</mtext>
-                         </mrow>
-                         <mtext>s</mtext>
-                        </mfrac>
-                        <mo>×</mo>
-                        <mfrac>
-                         <mrow>
-                          <mn>1000</mn>
-                          <mtext> ms</mtext>
-                         </mrow>
-                         <mtext>s</mtext>
-                        </mfrac>
-                        <mo>÷</mo>
-                        <mfrac>
-                         <mrow>
-                          <mn>50</mn>
-                          <mtext> ms</mtext>
-                         </mrow>
-                         <mtext>interval</mtext>
-                        </mfrac>
-                       </mtd>
-                      </mtr>
-                      <mtr>
-                       <mtd>
-                        <mo>=</mo>
-                       </mtd>
-                       <mtd style="text-align: left">
-                        <mn>49,950</mn>
-                        <mtext> intervals</mtext>
-                       </mtd>
-                      </mtr>
-                     </mtable>
-                    </math>
-                    <p>Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.</p>
-                   </details>
-                  </div>
-                 <li data-md>
-                  <p>If <var>bytesSoFar</var> equals <var>totalBytes</var>, then <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#iteration-break" id="ref-for-iteration-break④">break</a>.</p>
-                  <p class="note" role="note">Since this is the only exit condition for the loop, we are guaranteed to fire a <code class="idl"><a data-link-type="idl" href="#eventdef-aicreatemonitor-downloadprogress" id="ref-for-eventdef-aicreatemonitor-downloadprogress①">downloadprogress</a></code> event for the 100% mark.</p>
-                 <li data-md>
-                  <p>Set <var>lastProgressTime</var> to the <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#dfn-monotonic-clock" id="ref-for-dfn-monotonic-clock②">monotonic clock</a>’s <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#monotonic-clock-unsafe-current-time" id="ref-for-monotonic-clock-unsafe-current-time②">unsafe current time</a>.</p>
-                </ol>
-              </ol>
-             <li data-md>
-              <p>Otherwise, if downloading has failed and cannot continue, then:</p>
+              <p>If downloading has failed, then:</p>
               <ol>
                <li data-md>
                 <p><a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-global-task" id="ref-for-queue-a-global-task③">Queue a global task</a> on the <a data-link-type="dfn" href="#ai-task-source" id="ref-for-ai-task-source③">AI task source</a> given <var>realm</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-global" id="ref-for-concept-realm-global②">global object</a> to <a data-link-type="dfn" href="https://webidl.spec.whatwg.org/#reject" id="ref-for-reject④">reject</a> <var>promise</var> with a "<code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#networkerror" id="ref-for-networkerror①">NetworkError</a></code>" <code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#idl-DOMException" id="ref-for-idl-DOMException⑨">DOMException</a></code>.</p>
                <li data-md>
                 <p>Abort these steps.</p>
+              </ol>
+             <li data-md>
+              <p>Let <var>bytesSoFar</var> be the number of bytes downloaded so far.</p>
+             <li data-md>
+              <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑧">Assert</a>: <var>bytesSoFar</var> is greater than or equal to 0, and less than or equal to <var>totalBytes</var>.</p>
+             <li data-md>
+              <p>If the <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#dfn-monotonic-clock" id="ref-for-dfn-monotonic-clock①">monotonic clock</a>’s <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#monotonic-clock-unsafe-current-time" id="ref-for-monotonic-clock-unsafe-current-time①">unsafe current time</a> minus <var>lastProgressTime</var> is greater than 50 ms, or <var>bytesSoFar</var> equals <var>totalBytes</var>, then:</p>
+              <ol>
+               <li data-md>
+                <p>Let <var>rawProgressFraction</var> be <var>bytesSoFar</var> divided by <var>totalBytes</var>.</p>
+               <li data-md>
+                <p>Let <var>progressFraction</var> be <a data-link-type="abstract-op" href="https://tc39.es/ecma262/#eqn-floor" id="ref-for-eqn-floor">floor</a>(<var>rawProgressFraction</var> × 65,536) ÷ 65,536.</p>
+                <div class="note" role="note">
+                 <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
+                 <p><var>progressFraction</var> is calculated from <var>rawProgressFraction</var> to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-progressevent-loaded" id="ref-for-dom-progressevent-loaded②">loaded</a></code> value will be different from the previous one that was fired ~50 milliseconds ago.</p>
+                 <details>
+                  <summary>Full calculation</summary>
+                  <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from <a href="https://worldpopulationreview.com/country-rankings/internet-speeds-by-country">this source</a>). Then, downloading 5 GiB will take:</p>
+                  <math style="display:block math">
+                   <mtable>
+                    <mtr>
+                     <mtd></mtd>
+                     <mtd style="text-align: left">
+                      <mn>5</mn>
+                      <mtext> GiB</mtext>
+                      <mo>×</mo>
+                      <mfrac>
+                       <mrow>
+                        <msup>
+                         <mn>2</mn>
+                         <mn>30</mn>
+                        </msup>
+                        <mtext> bytes</mtext>
+                       </mrow>
+                       <mtext>GiB</mtext>
+                      </mfrac>
+                      <mo>×</mo>
+                      <mfrac>
+                       <mrow>
+                        <mn>8</mn>
+                        <mtext> bits</mtext>
+                       </mrow>
+                       <mtext>bytes</mtext>
+                      </mfrac>
+                      <mo>÷</mo>
+                      <mfrac>
+                       <mrow>
+                        <mn>20</mn>
+                        <mo>×</mo>
+                        <msup>
+                         <mn>10</mn>
+                         <mn>6</mn>
+                        </msup>
+                        <mtext> bits</mtext>
+                       </mrow>
+                       <mtext>s</mtext>
+                      </mfrac>
+                      <mo>×</mo>
+                      <mfrac>
+                       <mrow>
+                        <mn>1000</mn>
+                        <mtext> ms</mtext>
+                       </mrow>
+                       <mtext>s</mtext>
+                      </mfrac>
+                      <mo>÷</mo>
+                      <mfrac>
+                       <mrow>
+                        <mn>50</mn>
+                        <mtext> ms</mtext>
+                       </mrow>
+                       <mtext>interval</mtext>
+                      </mfrac>
+                     </mtd>
+                    </mtr>
+                    <mtr>
+                     <mtd>
+                      <mo>=</mo>
+                     </mtd>
+                     <mtd style="text-align: left">
+                      <mn>49,950</mn>
+                      <mtext> intervals</mtext>
+                     </mtd>
+                    </mtr>
+                   </mtable>
+                  </math>
+                  <p>Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.</p>
+                 </details>
+                </div>
+               <li data-md>
+                <p>If <var>progressFraction</var> is not equal to <var>lastProgressFraction</var>, then perform <var>fireProgressEvent</var> given <var>progressFraction</var>.</p>
+               <li data-md>
+                <p>If <var>bytesSoFar</var> equals <var>totalBytes</var>, then <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#iteration-break" id="ref-for-iteration-break④">break</a>.</p>
+                <p class="note" role="note">Since this is the only non-failure exit condition for the loop, we will never miss firing a <code class="idl"><a data-link-type="idl" href="#eventdef-aicreatemonitor-downloadprogress" id="ref-for-eventdef-aicreatemonitor-downloadprogress①">downloadprogress</a></code> event for the 100% mark.</p>
+               <li data-md>
+                <p>Set <var>lastProgressFraction</var> to <var>progressFraction</var>.</p>
+               <li data-md>
+                <p>Set <var>lastProgressTime</var> to the <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#dfn-monotonic-clock" id="ref-for-dfn-monotonic-clock②">monotonic clock</a>’s <a data-link-type="dfn" href="https://w3c.github.io/hr-time/#monotonic-clock-unsafe-current-time" id="ref-for-monotonic-clock-unsafe-current-time②">unsafe current time</a>.</p>
               </ol>
             </ol>
           </ol>
@@ -3902,7 +3907,12 @@ function hideRefHint(refHint) {
 function showRefHint(link) {
     if(link.classList.contains("dfn-link")) return;
     const url = link.getAttribute("href");
-    const ref = refsData[url];
+    const refHintKey = link.getAttribute("data-refhint-key");
+    let key = url;
+    if(refHintKey) {
+        key = refHintKey + "_" + url;
+    }
+    const ref = refsData[key];
     if(!ref) return;
 
     hideAllRefHints(); // Only display one at this time.
