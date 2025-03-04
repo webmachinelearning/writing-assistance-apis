@@ -29,6 +29,12 @@ urlPrefix: https://tc39.es/ecma402/; spec: ECMA-402
 urlPrefix: https://tc39.es/ecma262/; spec: ECMA-262
   type: abstract-op
     text: floor; url: eqn-floor
+urlPrefix: https://whatpr.org/webidl/1465.html; spec: WEBIDL
+  type: interface
+    text: QuotaExceededError; url: quotaexceedederror
+  type: dfn; for: QuotaExceededError
+    text: requested; url: quotaexceedederror-requested
+    text: quota; url: quotaexceedederror-quota
 </pre>
 
 <style>
@@ -153,6 +159,12 @@ interface AISummarizer {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
+
+  Promise<unsigned long long> measureInputUsage(
+    DOMString input,
+    optional AISummarizerSummarizeOptions options = {}
+  );
+  readonly attribute unsigned long long inputQuota;
 };
 AISummarizer includes AIDestroyable;
 
@@ -234,15 +246,31 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
     This could include loading the model into memory, loading |options|["{{AISummarizerCreateOptions/sharedContext}}"] into the model's context window, or loading any fine-tunings necessary to support the other options expressed by |options|.
 
-  1. If initialization failed for any reason, then return false.
+  1. If initialization failed because the process of loading |options| resulted in using up all of the model's input quota, then:
 
-  1. Return true.
+    1. Let |requested| be the amount of input usage needed to encode |options|. The encoding of |options| as input is [=implementation-defined=].
+
+      <p class="note" id="note-options-input-usage-encoding">This could be the amount of tokens needed to represent these options in a in a <a href="https://arxiv.org/abs/2404.08335">language model tokenization scheme</a>, possibly with prompt engineering. Or it could be 0, if the implementation plans to send the options to the underlying model with every [=summarize=] operation.
+
+    1. Let |quota| be the maximum input quota that the user agent supports for encoding |options|.
+
+    1. [=Assert=]: |requested| is greater than |quota|. (That is how we reached this error branch.)
+
+    1. Return a [=quota exceeded error information=] whose [=QuotaExceededError/requested=] is |requested| and [=QuotaExceededError/quota=] is |quota|.
+
+  1. If initialization failed for any other reason, then return a [=DOMException error information=] whose [=DOMException error information/name=] is "{{OperationError}}" and whose [=DOMException error information/details=] contain appropriate detail.
+
+  1. Return null.
 </div>
 
 <div algorithm>
   To <dfn>create a summarizer object</dfn>, given a [=ECMAScript/realm=] |realm| and an {{AISummarizerCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running on |realm|'s [=ECMAScript/surrounding agent=]'s [=agent/event loop=].
+
+  1. Let |inputQuota| be the amount of input quota that is available to the user agent for future [=summarize|summarization=] operations. (This value is [=implementation-defined=], and may be +∞ if there are no specific limits beyond, e.g., the user's memory, or the limits of JavaScript strings.)
+
+    <p class="note">This will generally vary for each {{AISummarizer}} instance, depending on how much input quota was used by encoding |options|. See <a href="note-options-input-usage-encoding">this note</a> on that encoding.
 
   1. Return a new {{AISummarizer}} object, created in |realm|, with
 
@@ -267,6 +295,9 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
       : [=AISummarizer/output language=]
       :: |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] if it [=map/exists=]; otherwise null
+
+      : [=AISummarizer/input quota=]
+      :: |inputQuota|
     </dl>
 </div>
 
@@ -430,6 +461,8 @@ Every {{AISummarizer}} has an <dfn for="AISummarizer">expected context languages
 
 Every {{AISummarizer}} has an <dfn for="AISummarizer">output language</dfn>, a [=string=] or null, set during creation.
 
+Every {{AISummarizer}} has a <dfn for="AISummarizer">input quota</dfn>, a number, set during creation.
+
 <hr>
 
 The <dfn attribute for="AISummarizer">sharedContext</dfn> getter steps are to return [=this=]'s [=AISummarizer/shared context=].
@@ -446,6 +479,8 @@ The <dfn attribute for="AISummarizer">expectedContextLanguages</dfn> getter step
 
 The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to return [=this=]'s [=AISummarizer/output language=].
 
+The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to return [=this=]'s [=AISummarizer/input quota=].
+
 <hr>
 
 <div algorithm>
@@ -453,7 +488,7 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
   1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
 
-  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], |chunkProduced|, |done|, |error|, and |stopProducing|.
+  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], [=this=]'s [=AISummarizer/input quota=], |chunkProduced|, |done|, |error|, and |stopProducing|.
 
   1. Return the result of [=getting an aggregated AI model result=] given [=this=], |options|, and |operation|.
 </div>
@@ -463,9 +498,19 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
 
   1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
 
-  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], |chunkProduced|, |done|, |error|, and |stopProducing|.
+  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], [=this=]'s [=AISummarizer/input quota=], |chunkProduced|, |done|, |error|, and |stopProducing|.
 
   1. Return the result of [=getting a streaming AI model result=] given [=this=], |options|, and |operation|.
+</div>
+
+<div algorithm>
+  The <dfn method for="AISummarizer">measureInputUsage(|input|, |options|)</dfn> method steps are:
+
+  1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
+
+  1. Let |measureUsage| be an algorithm step which takes argument |stopMeasuring|, and returns the result of [=measuring summarizer input usage=] given |input|, [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], and |stopMeasuring|.
+
+  1. Return the result of [=measuring AI model input usage=] given [=this=], |options|, and |measureUsage|.
 </div>
 
 <h3 id="summarizer-summarization">Summarization</h3>
@@ -482,6 +527,7 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
   * an {{AISummarizerFormat}} |format|,
   * an {{AISummarizerLength}} |length|,
   * a [=string=]-or-null |outputLanguage|,
+  * a [=number=] |inputQuota|,
   * an algorithm |chunkProduced| that takes a [=string=] and returns nothing,
   * an algorithm |done| that takes no arguments and returns nothing,
   * an algorithm |error| that takes [=error information=] and returns nothing, and
@@ -490,6 +536,28 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
   perform the following steps:
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. Let |requested| be the result of [=measuring summarizer input usage=] given |input|, |sharedContext|, |context|, |type|, |format|, |length|, and |outputLanguage|.
+
+  1. If |requested| is null, then return.
+
+  1. If |requested| is an [=error information=], then:
+
+    1. Perform |error| given |requested|.
+
+    1. Return.
+
+  1. [=Assert=]: |requested| is a number.
+
+  1. If |requested| is greater than |inputQuota|, then:
+
+    1. Let |errorInfo| be a [=quota exceeded error information=] with a [=quota exceeded error information/requested=] of |requested| and a [=quota exceeded error information/quota=] of |inputQuota|.
+
+    1. Perform |error| given |errorInfo|.
+
+    1. Return.
+
+    <p class="note">In reality, we expect that implementations will check the input usage against the quota as part of the same call into the model as the summarization itself. The steps are only separated in the specification for ease of understanding.
 
   1. In an [=implementation-defined=] manner, subject to the following guidelines, begin the processs of summarizing |input| into a string.
 
@@ -526,6 +594,40 @@ The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to r
       1. Perform |error| given |errorInfo|.
 
       1. [=iteration/Break=].
+</div>
+<h4 id="summarizer-usage">Usage</h4>
+
+<div algorithm>
+  To <dfn>measure summarizer input usage</dfn>, given:
+
+  * a [=string=] |input|,
+  * a [=string=]-or-null |sharedContext|,
+  * a [=string=]-or-null |context|,
+  * an {{AISummarizerType}} |type|,
+  * an {{AISummarizerFormat}} |format|,
+  * an {{AISummarizerLength}} |length|,
+  * a [=string=]-or-null |outputLanguage|, and
+  * an algorithm |stopMeasuring| that takes no arguments and returns a boolean,
+
+  perform the following steps:
+
+  1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. Let |inputToModel| be the [=implementation-defined=] string that would be sent to the underlying model in order to [=summarize=] given |input|, |sharedContext|, |context|, |type|, |format|, |length|, and |outputLanguage|.
+
+    <p class="note" id="note-input-to-model">This might be something similar to the concatenation of |input| and |context|, if all of the other options were loaded into the model during initialization, and so the input usage for those was already accounted for when computing the [=AISummarizer/input quota=]. Or it might consist of more, if the options are sent along with every summarization call, or if there is a per-summarization wrapper prompt of some sort.
+
+    If during this process |stopMeasuring| starts returning true, then return null.
+
+    If an error occurs during this process, then return an appropriate [=error information=] according to the guidance in [[#summarizer-errors]].
+
+  1. Return the amount of input usage needed to represent |inputToModel| when given to the underlying model. The exact calculation procedure is [=implementation-defined=].
+
+    <p class="note" id="note-summarizer-input-usage">This might be the number of tokens needed to represent |input| in a <a href="https://arxiv.org/abs/2404.08335">language model tokenization scheme</a>, or it might be |input|'s [=string/code point length=]. It could also be some variation of these which also counts the usage of any prefixes or suffixes necessary to give to the model.
+
+    If during this process |stopMeasuring| starts returning true, then instead return null.
+
+    If an error occurs during this process, then instead return an appropriate [=error information=] according to the guidance in [[#summarizer-errors]].
 </div>
 
 <h4 id="summarizer-options">Options</h4>
@@ -656,16 +758,12 @@ When summarization fails, the following possible reasons may be surfaced to the 
 
         <p>The {{AISummarizerCreateCoreOptions/outputLanguage}} option was not set, and the language of the input text could not be determined, so the user agent did not have a good output language default available.
     <tr>
-      <td>"{{QuotaExceededError}}"
-      <td>
-        <p>The input to be summarized was too large for the user agent to handle.
-    <tr>
       <td>"{{UnknownError}}"
       <td>
         <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
 </table>
 
-<p class="note">This table does not give the complete list of exceptions that can be surfaced by {{AISummarizer/summarize()|summarizer.summarize()}} and {{AISummarizer/summarizeStreaming()|summarizer.summarizeStreaming()}}. It only contains those which can come from the [=implementation-defined=] [=summarize=] algorithm.
+<p class="note">This table does not give the complete list of exceptions that can be surfaced by the summarizer API. It only contains those which can come from certain [=implementation-defined=] steps.
 
 <h2 id="writer-api">The writer API</h2>
 
@@ -691,6 +789,12 @@ interface AIWriter {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
+
+  Promise<unsigned long long> measureInputUsage(
+    DOMString input,
+    optional AIWriterWriteOptions options = {}
+  );
+  readonly attribute unsigned long long inputQuota;
 };
 AIWriter includes AIDestroyable;
 
@@ -745,6 +849,12 @@ interface AIRewriter {
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
   readonly attribute DOMString? outputLanguage;
+
+  Promise<unsigned long long> measureInputUsage(
+    DOMString input,
+    optional AIRewriterRewriteOptions options = {}
+  );
+  readonly attribute unsigned long long inputQuota;
 };
 AIRewriter includes AIDestroyable;
 
@@ -786,7 +896,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
   * an [=ordered map=] |options|,
   * an algorithm |getAvailability| taking an [=ordered map=] and returning an {{AIAvailability}} or null,
   * an algorithm |startDownload| taking an [=ordered map=] and returning a boolean,
-  * an algorithm |initialize| taking an [=ordered map=] and returning a boolean, and
+  * an algorithm |initialize| taking an [=ordered map=] and returning an error information or null, and
   * an algorithm |create| taking a [=ECMAScript/realm=] and an [=ordered map=] and returning a Web IDL object representing the model,
 
   perform the following steps:
@@ -1017,11 +1127,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
   1. Perform |fireProgressEvent| given 1.
 
-  1. If performing |initialize| given |options| returns false, then:
-
-    1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to [=reject=] |promise| with an "{{OperationError}}" {{DOMException}}.
-
-    1. Return.
+  1. Let |result| be the result of performing |initialize| given |options|.
 
   1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to perform the following steps:
 
@@ -1032,6 +1138,12 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
       1. Abort these steps.
 
       <p class="note">This check is necessary in case any code running on the [=agent/event loop=] caused the {{AbortSignal}} to become [=AbortSignal/aborted=] before this [=task=] ran.
+
+    1. If |result| is an [=error information=], then:
+
+      1. [=Reject=] |promise| with the result of [=converting error information into an exception object=] given |result|.
+
+      1. Abort these steps.
 
     1. Let |model| be the result of performing |create| given |promise|'s [=relevant global object=] and |options|.
 
@@ -1046,14 +1158,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
     1. [=Resolve=] |promise| with |model|.
 </div>
 
-<h3 id="supporting-results">Obtaining results</h3>
-
-An <dfn export>error information</dfn> is a [=struct=] used to communicate error information from [=in parallel=] to the [=event loop=]. It has the following [=struct/items=]:
-
-: <dfn export for="error information">error name</dfn>
-:: a [=string=] that will be used for the {{DOMException}}'s [=DOMException/name=].
-: <dfn export for="error information">error information</dfn>
-:: other information necessary to create a useful {{DOMException}} for the web developer. (Typically, just an exception message.)
+<h3 id="supporting-results">Obtaining results and usage</h3>
 
 <div algorithm>
   To <dfn export>get an aggregated AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
@@ -1104,7 +1209,7 @@ An <dfn export>error information</dfn> is a [=struct=] used to communicate error
 
         1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
-        1. Otherwise, [=reject=] |promise| with the result of [=exception/creating=] a {{DOMException}} with name given by |errorInfo|'s [=error information/error name=], using |errorInfo|'s [=error information/error information=] to populate the message appropriately.
+        1. Otherwise, [=reject=] |promise| with the result [=converting error information into an exception object=] given |errorInfo|.
 
     1. Let |stopProducing| be the following steps:
 
@@ -1170,7 +1275,7 @@ An <dfn export>error information</dfn> is a [=struct=] used to communicate error
 
         1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
-        1. Otherwise, [=ReadableStream/error=] |stream| with the result of [=exception/creating=] a {{DOMException}} with name given by |errorInfo|'s [=error information/error name=], using |errorInfo|'s [=error information/error information=] to populate the message appropriately.
+        1. Otherwise, [=ReadableStream/error=] |stream| with the result of [=converting error information into an exception object=] given |errorInfo|.
 
     1. Let |stopProducing| be the following steps:
 
@@ -1181,6 +1286,52 @@ An <dfn export>error information</dfn> is a [=struct=] used to communicate error
     1. Perform |operation| given |chunkProduced|, |done|, |error|, and |stopProducing|.
 
   1. Return |stream|.
+</div>
+
+<div algorithm>
+  To <dfn export>measure AI model input usage</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |measure|:
+
+  1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+
+  1. Let |signals| be « |modelObject|'s [=AIDestroyable/destruction abort controller=]'s [=AbortController/signal=] ».
+
+  1. If |options|["`signal`"] [=map/exists=], then [=set/append=] it to |signals|.
+
+  1. Let |compositeSignal| be the result of [=creating a dependent abort signal=] given |signals| using {{AbortSignal}} and |modelObject|'s [=relevant realm=].
+
+  1. If |compositeSignal| is [=AbortSignal/aborted=], then return [=a promise rejected with=] |compositeSignal|'s [=AbortSignal/abort reason=].
+
+  1. Let |abortedDuringMeasurement| be false.
+
+    <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
+
+  1. [=AbortSignal/add|Add the following abort steps=] to |compositeSignal|:
+
+    1. Set |abortedDuringMeasurement| to true.
+
+  1. Let |promise| be [=a new promise=] created in |modelObject|'s [=relevant realm=].
+
+  1. [=In parallel=]:
+
+    1. Let |stopMeasuring| be the following steps:
+
+      1. Return |abortedDuringMeasurement|.
+
+    1. Let |result| be the result of performing |measure| given |stopMeasuring|.
+
+    1. [=Queue a global task=] on the [=AI task source=] given |modelObject|'s [=relevant global object=] to perform the following steps:
+
+      1. If |abortedDuringMeasurement| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
+
+      1. Otherwise, if |result| is an [=error information=], then [=reject=] |promise| with the result [=converting error information into an exception object=] given |result|.
+
+      1. Otherwise,
+
+        1. [=Assert=]: |result| is a number. (It is not null, since in that case |abortedDuringMeasurement| would have been true.)
+
+        1. [=Resolve=] |promise| with |result|.
+
+  1. Return |promise|.
 </div>
 
 <h3 id="supporting-language-tags">Language tags</h3>
@@ -1271,6 +1422,38 @@ An <dfn export>error information</dfn> is a [=struct=] used to communicate error
   1. If |availabilities| [=list/contains=] "{{AIAvailability/downloadable}}", then return "{{AIAvailability/downloadable}}".
 
   1. Return "{{AIAvailability/available}}".
+</div>
+
+<h3 id="supporting-errors">Errors</h3>
+
+An <dfn export>error information</dfn> is used to communicate error information from [=in parallel=] to the [=event loop=]. It is either a [=quota exceeded error information=] or a [=DOMException error information=].
+
+A <dfn>DOMException error information</dfn> is a [=struct=] with the following [=struct/items=]:
+
+: <dfn export for="DOMException error information">name</dfn>
+:: a [=string=] that will be used for the {{DOMException}}'s [=DOMException/name=].
+: <dfn export for="DOMException error information">details</dfn>
+:: other information necessary to create a useful {{DOMException}} for the web developer. (Typically, just an exception message.)
+
+A <dfn>quota exceeded error information</dfn> is a [=struct=] with the following [=struct/items=]:
+
+: <dfn export for="quota exceeded error information">requested</dfn>
+:: a [=number=] that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/requested=].
+: <dfn export for="quota exceeded error information">quota</dfn>
+:: a [=number=] that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/quota=].
+
+<p class="advisement">The parts of this specification related to quota exceeded errors assume that <a href="https://github.com/whatwg/webidl/pull/1465">whatwg/webidl#1465</a> will be merged.
+
+<div algorithm>
+  To <dfn>convert error information into an exception object</dfn>, given an [=error information=] |errorInfo|:
+
+  1. If |errorInfo| is a [=DOMException error information=], then return a new {{DOMException}} with name given by |errorInfo|'s [=DOMException error information/name=], using |errorInfo|'s [=DOMException error information/details=] to populate the message appropriately.
+
+  1. Otherwise:
+
+    1. [=Assert=]: |error| is a [=quota exceeded error information=].
+
+    1. Return a new {{QuotaExceededError}} whose [=QuotaExceededError/requested=] is |error|'s [=quota exceeded error information/requested=] and [=QuotaExceededError/quota=] is |error|'s [=quota exceeded error information/quota=].
 </div>
 
 <h3 id="supporting-task-source">Task source</h3>
