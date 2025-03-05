@@ -250,7 +250,7 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
     1. Let |requested| be the amount of input usage needed to encode |options|. The encoding of |options| as input is [=implementation-defined=].
 
-      <p class="note" id="note-options-input-usage-encoding">This could be the amount of tokens needed to represent these options in a in a <a href="https://arxiv.org/abs/2404.08335">language model tokenization scheme</a>, possibly with prompt engineering. Or it could be 0, if the implementation plans to send the options to the underlying model with every [=summarize=] operation.
+      <p class="note" id="note-options-input-usage-encoding">This could be the amount of tokens needed to represent these options in a <a href="https://arxiv.org/abs/2404.08335">language model tokenization scheme</a>, possibly with prompt engineering. Or it could be 0, if the implementation plans to send the options to the underlying model with every [=summarize=] operation.
 
     1. Let |quota| be the maximum input quota that the user agent supports for encoding |options|.
 
