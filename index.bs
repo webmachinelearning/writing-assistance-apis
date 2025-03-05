@@ -625,7 +625,7 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
     The returned input usage must be nonnegative and finite. It may be 0, if there are no usage quotas for the summarization process (i.e., if the [=AISummarizer/input quota=] is +∞). Otherwise, it should be roughly proportional to the [=code unit length=] of |inputToModel|.
 
-    <p class="note" id="note-summarizer-input-usage">This might be the number of tokens needed to represent |input| in a <a href="https://arxiv.org/abs/2404.08335">language model tokenization scheme</a>, or it might be |input|'s [=string/code point length=]. It could also be some variation of these which also counts the usage of any prefixes or suffixes necessary to give to the model.
+    <p class="note" id="note-summarizer-input-usage">This might be the number of tokens needed to represent |input| in a <a href="https://arxiv.org/abs/2404.08335">language model tokenization scheme</a>, or it might be |input|'s [=string/code unit length=]. It could also be some variation of these which also counts the usage of any prefixes or suffixes necessary to give to the model.
 
     If during this process |stopMeasuring| starts returning true, then instead return null.
 
