@@ -227,6 +227,8 @@ submitButton.addEventListener("click", () => {
 });
 ```
 
+Note that if an implementation does not have any limits, e.g. because it uses techniques to split up the input and process it a bit at a time, then `inputQuota` will be `+Infinity` and `measureInputUsage()` will always return 0.
+
 Developers need to be cautious not to over-use this API, however, as it requires a round-trip to the language model. That is, the following code is bad, as it performs two round trips with the same input:
 
 ```js
