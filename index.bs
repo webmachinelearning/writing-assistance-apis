@@ -620,7 +620,7 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
     If during this process |stopMeasuring| starts returning true, then return null.
 
-    If an error occurs during this process, then return an appropriate [=error information=] according to the guidance in [[#summarizer-errors]].
+    If an error occurs during this process, then return an appropriate [=DOMException error information=] according to the guidance in [[#summarizer-errors]].
 
   1. Return the amount of input usage needed to represent |inputToModel| when given to the underlying model. The exact calculation procedure is [=implementation-defined=], subject to the following constraints.
 
@@ -630,7 +630,7 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
     If during this process |stopMeasuring| starts returning true, then instead return null.
 
-    If an error occurs during this process, then instead return an appropriate [=error information=] according to the guidance in [[#summarizer-errors]].
+    If an error occurs during this process, then instead return an appropriate [=DOMException error information=] according to the guidance in [[#summarizer-errors]].
 </div>
 
 <h4 id="summarizer-options">Options</h4>
