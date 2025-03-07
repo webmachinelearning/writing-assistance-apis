@@ -270,7 +270,7 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
   1. Let |inputQuota| be the amount of input quota that is available to the user agent for future [=summarize|summarization=] operations. (This value is [=implementation-defined=], and may be +∞ if there are no specific limits beyond, e.g., the user's memory, or the limits of JavaScript strings.)
 
-    <p class="note">This will generally vary for each {{AISummarizer}} instance, depending on how much input quota was used by encoding |options|. See <a href="note-options-input-usage-encoding">this note</a> on that encoding.
+    <p class="note">For implementations that do not have infinite quota, this will generally vary for each {{AISummarizer}} instance, depending on how much input quota was used by encoding |options|. See <a href="#note-options-input-usage-encoding">this note</a> on that encoding.
 
   1. Return a new {{AISummarizer}} object, created in |realm|, with
 
@@ -623,7 +623,7 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
   1. Return the amount of input usage needed to represent |inputToModel| when given to the underlying model. The exact calculation procedure is [=implementation-defined=], subject to the following constraints.
 
-    The returned input usage must be nonnegative and finite. It may be 0, if there are no usage quotas for the summarization process (i.e., if the [=AISummarizer/input quota=] is +∞). Otherwise, it should be roughly proportional to the [=string/length=] of |inputToModel|.
+    The returned input usage must be nonnegative and finite. It must be 0, if there are no usage quotas for the summarization process (i.e., if the [=AISummarizer/input quota=] is +∞). Otherwise, it must be positive and should be roughly proportional to the [=string/length=] of |inputToModel|.
 
     <p class="note" id="note-summarizer-input-usage">This might be the number of tokens needed to represent |input| in a <a href="https://arxiv.org/abs/2404.08335">language model tokenization scheme</a>, or it might be |input|'s [=string/length=]. It could also be some variation of these which also counts the usage of any prefixes or suffixes necessary to give to the model.
 
