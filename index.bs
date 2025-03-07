@@ -1431,14 +1431,14 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
 An <dfn export>error information</dfn> is used to communicate error information from [=in parallel=] to the [=event loop=]. It is either a [=quota exceeded error information=] or a [=DOMException error information=].
 
-A <dfn>DOMException error information</dfn> is a [=struct=] with the following [=struct/items=]:
+A <dfn export>DOMException error information</dfn> is a [=struct=] with the following [=struct/items=]:
 
 : <dfn export for="DOMException error information">name</dfn>
 :: a [=string=] that will be used for the {{DOMException}}'s [=DOMException/name=].
 : <dfn export for="DOMException error information">details</dfn>
 :: other information necessary to create a useful {{DOMException}} for the web developer. (Typically, just an exception message.)
 
-A <dfn>quota exceeded error information</dfn> is a [=struct=] with the following [=struct/items=]:
+A <dfn export>quota exceeded error information</dfn> is a [=struct=] with the following [=struct/items=]:
 
 : <dfn export for="quota exceeded error information">requested</dfn>
 :: a [=number=] that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/requested=].
@@ -1448,7 +1448,7 @@ A <dfn>quota exceeded error information</dfn> is a [=struct=] with the following
 <p class="advisement">The parts of this specification related to quota exceeded errors assume that <a href="https://github.com/whatwg/webidl/pull/1465">whatwg/webidl#1465</a> will be merged.
 
 <div algorithm>
-  To <dfn>convert error information into an exception object</dfn>, given an [=error information=] |errorInfo|:
+  To <dfn export>convert error information into an exception object</dfn>, given an [=error information=] |errorInfo|:
 
   1. If |errorInfo| is a [=DOMException error information=], then return a new {{DOMException}} with name given by |errorInfo|'s [=DOMException error information/name=], using |errorInfo|'s [=DOMException error information/details=] to populate the message appropriately.
 
