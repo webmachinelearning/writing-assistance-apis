@@ -537,7 +537,7 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
-  1. Let |requested| be the result of [=measuring summarizer input usage=] given |input|, |sharedContext|, |context|, |type|, |format|, |length|, and |outputLanguage|.
+  1. Let |requested| be the result of [=measuring summarizer input usage=] given |input|, |sharedContext|, |context|, |type|, |format|, |length|, |outputLanguage|, and |stopProducing|.
 
   1. If |requested| is null, then return.
 
@@ -595,6 +595,7 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
       1. [=iteration/Break=].
 </div>
+
 <h4 id="summarizer-usage">Usage</h4>
 
 <div algorithm>
