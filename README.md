@@ -352,6 +352,18 @@ We understand this to be an active research area (on both sides), and it will be
 
 To ensure that the browser can give accurate answers about which options are available `"after-download"`, it must ship with some notion of what types/formats/input languages/etc. are available to download. In other words, the browser cannot download this information at the same time it downloads the language model. This could be done either by bundling that information with the browser binary, or via some out-of-band update mechanism that proactively stays up to date.
 
+### Permissions policy, iframes, and workers
+
+By default, these APIs are only available to top-level `Window`s, and to their same-origin iframes. Access to the APIs can be delegated to cross-origin iframes using the [Permissions Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Permissions_Policy) `allow=""` attribute:
+
+```html
+<iframe src="https://example.com/" allow="summarizer writer rewriter"></iframe>
+```
+
+These APIs are currently not available in workers, due to the complexity of establishing a responsible document for each worker in order to check the permissions policy status. See [this discussion](https://github.com/webmachinelearning/translation-api/issues/18#issuecomment-2705630392) for more. It may be possible to loosen this restriction over time, if use cases arise.
+
+Note that although the APIs are not exposed to web platform workers, a browser could expose them to extension service workers, which are outside the scope of web platform specifications and have a different permissions model.
+
 ### Specifications and tests
 
 [As the W3C mentions](https://www.w3.org/reports/ai-web-impact/#interop), it is as-yet unclear how much interoperability we can achieve on the writing assistance APIs, and how best to capture that in the usual vehicles like specifications and web platform tests. However, we are excited to explore this space and do our best to produce useful artifacts that encourage interoperability. Some early examples of the sort of things we are thinking about:
