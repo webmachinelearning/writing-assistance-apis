@@ -67,7 +67,9 @@ None.
 > 13.  How does this specification distinguish between behavior in first-party and
 >      third-party contexts?
 
-It does not currently distinguish, although some of the [anti-fingerprinting mitigations](./README.md#privacy-considerations) might involve partitioning download status, which is kind of like distinguishing between first- and third-party contexts.
+We use permissions policy to disallow the usage of these features by default in third-party (cross-origin) contexts. However, the top-level site can delegate to cross-origin iframes.
+
+Otherwise, it's possible that some of the [anti-fingerprinting mitigations](./README.md#privacy-considerations) might involve partitioning download status, which is kind of like distinguishing between first- and third-party contexts.
 
 > 14.  How do the features in this specification work in the context of a browser’s
 >      Private Browsing or Incognito mode?

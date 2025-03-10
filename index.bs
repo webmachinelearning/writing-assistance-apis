@@ -55,7 +55,7 @@ For now, see the [explainer](https://github.com/webmachinelearning/writing-assis
 <h2 id="shared-apis">Shared APIs</h2>
 
 <xmp class="idl">
-[Exposed=(Window,Worker), SecureContext]
+[Exposed=Window, SecureContext]
 interface CreateMonitor : EventTarget {
   attribute EventHandler ondownloadprogress;
 };
@@ -121,7 +121,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 <h2 id="summarizer-api">The summarizer API</h2>
 
 <xmp class="idl">
-[Exposed=(Window,Worker), SecureContext]
+[Exposed=Window, SecureContext]
 interface Summarizer {
   static Promise<Summarizer> create(optional SummarizerCreateOptions options = {});
   static Promise<Availability> availability(optional SummarizerCreateCoreOptions options = {});
@@ -184,7 +184,7 @@ enum SummarizerLength { "short", "medium", "long" };
 <div algorithm>
   The static <dfn method for="Summarizer">create(|options|)</dfn> method steps are:
 
-  1. Return the result of [=creating an AI model object=] given |options|, [=validate and canonicalize summarizer options=], [=computing summarizer options availability=], [=download the summarization model=], [=initialize the summarization model=], and [=create a summarizer object=].
+  1. Return the result of [=creating an AI model object=] given |options|, "{{summarizer}}", [=validate and canonicalize summarizer options=], [=computing summarizer options availability=], [=download the summarization model=], [=initialize the summarization model=], and [=create a summarizer object=].
 </div>
 
 <div algorithm>
@@ -278,7 +278,7 @@ enum SummarizerLength { "short", "medium", "long" };
 <div algorithm>
   The static <dfn method for="Summarizer">availability(|options|)</dfn> method steps are:
 
-  1. Return the result of [=computing AI model availability=] given |options|, [=validate and canonicalize summarizer options=], and [=compute summarizer options availability=].
+  1. Return the result of [=computing AI model availability=] given |options|, "{{summarizer}}", [=validate and canonicalize summarizer options=], and [=compute summarizer options availability=].
 </div>
 
 <div algorithm>
@@ -726,12 +726,16 @@ When summarization fails, the following possible reasons may be surfaced to the 
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the summarizer API. It only contains those which can come from certain [=implementation-defined=] steps.
 
+<h3 id="summarizer-permissions-policy">Permissions policy integration</h3>
+
+Access to the summarizer API is gated behind the [=policy-controlled feature=] "<dfn permission>summarizer</dfn>", which has a [=policy-controlled feature/default allowlist=] of <code>[=default allowlist/'self'=]</code>.
+
 <h2 id="writer-api">The writer API</h2>
 
 Just IDL for now; full spec coming!
 
 <xmp class="idl">
-[Exposed=(Window,Worker), SecureContext]
+[Exposed=Window, SecureContext]
 interface Writer {
   static Promise<Writer> create(optional WriterCreateOptions options = {});
   static Promise<Availability> availability(optional WriterCreateCoreOptions options = {});
@@ -794,7 +798,7 @@ enum WriterLength { "short", "medium", "long" };
 Just IDL for now; full spec coming!
 
 <xmp class="idl">
-[Exposed=(Window,Worker), SecureContext]
+[Exposed=Window, SecureContext]
 interface Rewriter {
   static Promise<Rewriter> create(optional RewriterCreateOptions options = {});
   static Promise<Availability> availability(optional RewriterCreateCoreOptions options = {});
@@ -860,6 +864,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
   To <dfn export>create an AI model object</dfn> given:
 
   * an [=ordered map=] |options|,
+  * a [=policy-controlled feature=] |permissionsPolicyFeature|,
   * an algorithm |validateAndCanonicalizeOptions| taking an [=ordered map=] and returning nothing,
   * an algorithm |getAvailability| taking an [=ordered map=] and returning an {{Availability}} or null,
   * an algorithm |startDownload| taking an [=ordered map=] and returning a boolean,
@@ -870,13 +875,19 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
   1. Let |realm| be the [=current realm=].
 
-  1. If |realm|'s [=realm/global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+  1. [=Assert=]: |realm|'s [=realm/global object=] is a {{Window}} object.
 
-  1. If |options|["`signal`"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["`signal`"]'s [=AbortSignal/abort reason=].
+  1. Let |document| be |realm|'s [=realm/global object=]'s [=associated Document=].
+
+  1. If |document| is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
   1. Perform |validateAndCanonicalizeOptions| given |options|. If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
 
      <p class="note">This can mutate |options|.
+
+  1. If |options|["`signal`"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["`signal`"]'s [=AbortSignal/abort reason=].
+
+  1. If |document| is not [=allowed to use=] |permissionsPolicyFeature|, then return [=a promise rejected with=] a "{{NotAllowedError}}" {{DOMException}}.
 
   1. Let |fireProgressEvent| be an algorithm taking two arguments that does nothing.
 
@@ -1388,15 +1399,21 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 <h3 id="supporting-availability">Availability</h3>
 
 <div algorithm>
-  To <dfn export>compute AI model availability</dfn> given |options|, an algorithm |validate|, and an algorithm |compute|:
+  To <dfn export>compute AI model availability</dfn> given |options|, a [=policy-controlled feature=] |permissionsPolicyFeature|, an algorithm |validate|, and an algorithm |compute|:
 
   1. Let |global| be the [=current global object=].
 
-  1. If |global| is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+  1. [=Assert=]: |global| is a {{Window}} object.
+
+  1. Let |document| be |global|'s [=associated Document=].
+
+  1. If |document| is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
   1. Perform |validate| given |options|.
 
-  1. Let |promise| be [=a new promise=] created in the [=current realm=].
+  1. If |document| is not [=allowed to use=] |permissionsPolicyFeature|, then return [=a promise resolved with=] "{{Availability/unavailable}}".
+
+  1. Let |promise| be [=a new promise=] created in |global|'s [=global object/realm=].
 
   1. [=In parallel=]:
 
