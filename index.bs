@@ -29,6 +29,8 @@ urlPrefix: https://tc39.es/ecma402/; spec: ECMA-402
 urlPrefix: https://tc39.es/ecma262/; spec: ECMA-262
   type: abstract-op
     text: floor; url: eqn-floor
+  type: dfn
+    text: current realm; url: current-realm
 urlPrefix: https://whatpr.org/webidl/1465.html; spec: WEBIDL
   type: interface
     text: QuotaExceededError; url: quotaexceedederror
@@ -53,39 +55,28 @@ For now, see the [explainer](https://github.com/webmachinelearning/writing-assis
 <h2 id="shared-apis">Shared APIs</h2>
 
 <xmp class="idl">
-partial interface WindowOrWorkerGlobalScope {
-  [Replaceable, SecureContext] readonly attribute AI ai;
-};
-
 [Exposed=(Window,Worker), SecureContext]
-interface AI {};
-
-[Exposed=(Window,Worker), SecureContext]
-interface AICreateMonitor : EventTarget {
+interface CreateMonitor : EventTarget {
   attribute EventHandler ondownloadprogress;
 };
 
-callback AICreateMonitorCallback = undefined (AICreateMonitor monitor);
+callback CreateMonitorCallback = undefined (CreateMonitor monitor);
 
-enum AIAvailability {
+enum Availability {
   "unavailable",
   "downloadable",
   "downloading",
   "available"
 };
 
-interface mixin AIDestroyable {
+interface mixin DestroyableModel {
   undefined destroy();
 };
 </xmp>
 
-Every {{WindowOrWorkerGlobalScope}} has an <dfn for="WindowOrWorkerGlobalScope">AI namespace</dfn>, an {{AI}} object. Upon creation of the {{WindowOrWorkerGlobalScope}} object, its [=WindowOrWorkerGlobalScope/AI namespace=] must be set to a [=new=] {{AI}} object created in the {{WindowOrWorkerGlobalScope}} object's [=relevant realm=].
-
-The <dfn attribute for="WindowOrWorkerGlobalScope">ai</dfn> getter steps are to return [=this=]'s [=WindowOrWorkerGlobalScope/AI namespace=].
-
 <hr>
 
-The following are the [=event handlers=] (and their corresponding [=event handler event types=]) that must be supported, as [=event handler IDL attributes=], by all {{AICreateMonitor}} objects:
+The following are the [=event handlers=] (and their corresponding [=event handler event types=]) that must be supported, as [=event handler IDL attributes=], by all {{CreateMonitor}} objects:
 
 <table>
   <thead>
@@ -94,34 +85,34 @@ The following are the [=event handlers=] (and their corresponding [=event handle
       <th>[=Event handler event type=]
   <tbody>
     <tr>
-      <td><dfn attribute for="AICreateMonitor">ondownloadprogress</dfn>
-      <td><dfn event for="AICreateMonitor">downloadprogress</dfn>
+      <td><dfn attribute for="CreateMonitor">ondownloadprogress</dfn>
+      <td><dfn event for="CreateMonitor">downloadprogress</dfn>
 </table>
 
 <hr>
 
-Every [=interface=] [=interface/including=] the {{AIDestroyable}} interface mixin has a <dfn export for="AIDestroyable">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
+Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface mixin has a <dfn export for="DestroyableModel">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
 
-<p class="note">The [=AIDestroyable/destruction abort controller=] is only used internally, as a way of tracking calls to {{AIDestroyable/destroy()}}. Since it is easy to combine multiple {{AbortSignal}}s using [=create a dependent abort signal=], this lets us centralize handling of any {{AbortSignal}} the web developer provides to specific method calls, with any calls to {{AIDestroyable/destroy()}}.
+<p class="note">The [=DestroyableModel/destruction abort controller=] is only used internally, as a way of tracking calls to {{DestroyableModel/destroy()}}. Since it is easy to combine multiple {{AbortSignal}}s using [=create a dependent abort signal=], this lets us centralize handling of any {{AbortSignal}} the web developer provides to specific method calls, with any calls to {{DestroyableModel/destroy()}}.
 
 <div algorithm>
-  To <dfn>initialize as a destroyable</dfn> an {{AIDestroyable}} object |destroyable|:
+  To <dfn>initialize as a destroyable</dfn> an {{DestroyableModel}} object |destroyable|:
 
   1. Let |controller| be a [=new=] {{AbortController}} created in |destroyable|'s [=relevant realm=].
 
   1. Set |controller|'s [=AbortController/signal=] to a [=new=] {{AbortSignal}} created in |destroyable|'s [=relevant realm=].
 
-  1. Set |destroyable|'s [=AIDestroyable/destruction abort controller=] to |controller|.
+  1. Set |destroyable|'s [=DestroyableModel/destruction abort controller=] to |controller|.
 </div>
 
 <div algorithm>
-  <p>The <dfn method for="AIDestroyable">destroy()</dfn> method steps are to [=AIDestroyable/destroy=] [=this=] given a new "{{AbortError}}" {{DOMException}}.
+  <p>The <dfn method for="DestroyableModel">destroy()</dfn> method steps are to [=DestroyableModel/destroy=] [=this=] given a new "{{AbortError}}" {{DOMException}}.
 </div>
 
 <div algorithm>
-  To <dfn for="AIDestroyable">destroy</dfn> an {{AIDestroyable}} |destroyable|, given a JavaScript value |reason|:
+  To <dfn for="DestroyableModel">destroy</dfn> an {{DestroyableModel}} |destroyable|, given a JavaScript value |reason|:
 
-  1. [=AbortController/Signal abort=] given |destroyable|'s [=AIDestroyable/destruction abort controller=] and |reason|.
+  1. [=AbortController/Signal abort=] given |destroyable|'s [=DestroyableModel/destruction abort controller=] and |reason|.
 
   1. The user agent should release any resources associated with |destroyable|, such as AI models loaded to support its operation, as long as those resources are not needed for other ongoing operations.
 </div>
@@ -130,31 +121,24 @@ Every [=interface=] [=interface/including=] the {{AIDestroyable}} interface mixi
 <h2 id="summarizer-api">The summarizer API</h2>
 
 <xmp class="idl">
-partial interface AI {
-  readonly attribute AISummarizerFactory summarizer;
-};
-
 [Exposed=(Window,Worker), SecureContext]
-interface AISummarizerFactory {
-  Promise<AISummarizer> create(optional AISummarizerCreateOptions options = {});
-  Promise<AIAvailability> availability(optional AISummarizerCreateCoreOptions options = {});
-};
+interface Summarizer {
+  static Promise<Summarizer> create(optional SummarizerCreateOptions options = {});
+  static Promise<Availability> availability(optional SummarizerCreateCoreOptions options = {});
 
-[Exposed=(Window,Worker), SecureContext]
-interface AISummarizer {
   Promise<DOMString> summarize(
     DOMString input,
-    optional AISummarizerSummarizeOptions options = {}
+    optional SummarizerSummarizeOptions options = {}
   );
   ReadableStream summarizeStreaming(
     DOMString input,
-    optional AISummarizerSummarizeOptions options = {}
+    optional SummarizerSummarizeOptions options = {}
   );
 
   readonly attribute DOMString sharedContext;
-  readonly attribute AISummarizerType type;
-  readonly attribute AISummarizerFormat format;
-  readonly attribute AISummarizerLength length;
+  readonly attribute SummarizerType type;
+  readonly attribute SummarizerFormat format;
+  readonly attribute SummarizerLength length;
 
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
@@ -162,71 +146,59 @@ interface AISummarizer {
 
   Promise<double> measureInputUsage(
     DOMString input,
-    optional AISummarizerSummarizeOptions options = {}
+    optional SummarizerSummarizeOptions options = {}
   );
   readonly attribute unrestricted double inputQuota;
 };
-AISummarizer includes AIDestroyable;
+Summarizer includes DestroyableModel;
 
-dictionary AISummarizerCreateCoreOptions {
-  AISummarizerType type = "key-points";
-  AISummarizerFormat format = "markdown";
-  AISummarizerLength length = "short";
+dictionary SummarizerCreateCoreOptions {
+  SummarizerType type = "key-points";
+  SummarizerFormat format = "markdown";
+  SummarizerLength length = "short";
 
   sequence<DOMString> expectedInputLanguages;
   sequence<DOMString> expectedContextLanguages;
   DOMString outputLanguage;
 };
 
-dictionary AISummarizerCreateOptions : AISummarizerCreateCoreOptions {
+dictionary SummarizerCreateOptions : SummarizerCreateCoreOptions {
   AbortSignal signal;
-  AICreateMonitorCallback monitor;
+  CreateMonitorCallback monitor;
 
   DOMString sharedContext;
 };
 
-dictionary AISummarizerSummarizeOptions {
+dictionary SummarizerSummarizeOptions {
   AbortSignal signal;
   DOMString context;
 };
 
-enum AISummarizerType { "tl;dr", "teaser", "key-points", "headline" };
-enum AISummarizerFormat { "plain-text", "markdown" };
-enum AISummarizerLength { "short", "medium", "long" };
+enum SummarizerType { "tl;dr", "teaser", "key-points", "headline" };
+enum SummarizerFormat { "plain-text", "markdown" };
+enum SummarizerLength { "short", "medium", "long" };
 </xmp>
-
-Every {{AI}} has an <dfn for="AI">summarizer factory</dfn>, an {{AISummarizerFactory}} object. Upon creation of the {{AI}} object, its [=AI/summarizer factory=] must be set to a [=new=] {{AISummarizerFactory}} object created in the {{AI}} object's [=relevant realm=].
-
-The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]'s [=AI/summarizer factory=].
 
 <h3 id="summarizer-creation">Creation</h3>
 
 <div algorithm>
-  The <dfn method for="AISummarizerFactory">create(|options|)</dfn> method steps are:
+  The static <dfn method for="Summarizer">create(|options|)</dfn> method steps are:
 
-  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
-
-  1. If |options|["{{AISummarizerCreateOptions/signal}}"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["{{AISummarizerCreateOptions/signal}}"]'s [=AbortSignal/abort reason=].
-
-  1. [=Validate and canonicalize summarizer options=] given |options|. If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
-
-     <p class="note">This can mutate |options|.
-
-  1. Return the result of [=creating an AI model object=] given [=this=]'s [=relevant realm=], |options|, [=computing summarizer options availability=], [=download the summarization model=], [=initialize the summarization model=], and [=create a summarizer object=].
+  1. Return the result of [=creating an AI model object=] given |options|, [=validate and canonicalize summarizer options=], [=computing summarizer options availability=], [=download the summarization model=], [=initialize the summarization model=], and [=create a summarizer object=].
 </div>
 
 <div algorithm>
-  To <dfn>validate and canonicalize summarizer options</dfn> given an {{AISummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+  To <dfn>validate and canonicalize summarizer options</dfn> given an {{SummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
 
-  1. [=Validate and canonicalize language tags=] given |options| and "{{AISummarizerCreateCoreOptions/expectedInputLanguages}}".
+  1. [=Validate and canonicalize language tags=] given |options| and "{{SummarizerCreateCoreOptions/expectedInputLanguages}}".
 
-  1. [=Validate and canonicalize language tags=] given |options| and "{{AISummarizerCreateCoreOptions/expectedContextLanguages}}".
+  1. [=Validate and canonicalize language tags=] given |options| and "{{SummarizerCreateCoreOptions/expectedContextLanguages}}".
 
-  1. [=Validate and canonicalize language tags=] given |options| and "{{AISummarizerCreateCoreOptions/outputLanguage}}".
+  1. [=Validate and canonicalize language tags=] given |options| and "{{SummarizerCreateCoreOptions/outputLanguage}}".
 </div>
 
 <div algorithm>
-  To <dfn>download the summarization model</dfn>, given an {{AISummarizerCreateCoreOptions}} |options|:
+  To <dfn>download the summarization model</dfn>, given an {{SummarizerCreateCoreOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
@@ -238,13 +210,13 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 </div>
 
 <div algorithm>
-  To <dfn>initialize the summarization model</dfn>, given an {{AISummarizerCreateOptions}} |options|:
+  To <dfn>initialize the summarization model</dfn>, given an {{SummarizerCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
   1. Perform any necessary initialization operations for the AI model backing the user agent's summarization capabilities.
 
-    This could include loading the model into memory, loading |options|["{{AISummarizerCreateOptions/sharedContext}}"] into the model's context window, or loading any fine-tunings necessary to support the other options expressed by |options|.
+    This could include loading the model into memory, loading |options|["{{SummarizerCreateOptions/sharedContext}}"] into the model's context window, or loading any fine-tunings necessary to support the other options expressed by |options|.
 
   1. If initialization failed because the process of loading |options| resulted in using up all of the model's input quota, then:
 
@@ -264,39 +236,39 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 </div>
 
 <div algorithm>
-  To <dfn>create a summarizer object</dfn>, given a [=ECMAScript/realm=] |realm| and an {{AISummarizerCreateOptions}} |options|:
+  To <dfn>create a summarizer object</dfn>, given a [=ECMAScript/realm=] |realm| and an {{SummarizerCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running on |realm|'s [=ECMAScript/surrounding agent=]'s [=agent/event loop=].
 
   1. Let |inputQuota| be the amount of input quota that is available to the user agent for future [=summarize|summarization=] operations. (This value is [=implementation-defined=], and may be +∞ if there are no specific limits beyond, e.g., the user's memory, or the limits of JavaScript strings.)
 
-    <p class="note">For implementations that do not have infinite quota, this will generally vary for each {{AISummarizer}} instance, depending on how much input quota was used by encoding |options|. See <a href="#note-options-input-usage-encoding">this note</a> on that encoding.
+    <p class="note">For implementations that do not have infinite quota, this will generally vary for each {{Summarizer}} instance, depending on how much input quota was used by encoding |options|. See <a href="#note-options-input-usage-encoding">this note</a> on that encoding.
 
-  1. Return a new {{AISummarizer}} object, created in |realm|, with
+  1. Return a new {{Summarizer}} object, created in |realm|, with
 
     <dl class="props">
-      : [=AISummarizer/shared context=]
-      :: |options|["{{AISummarizerCreateOptions/sharedContext}}"] if it [=map/exists=]; otherwise null
+      : [=Summarizer/shared context=]
+      :: |options|["{{SummarizerCreateOptions/sharedContext}}"] if it [=map/exists=]; otherwise null
 
-      : [=AISummarizer/summary type=]
-      :: |options|["{{AISummarizerCreateCoreOptions/type}}"]
+      : [=Summarizer/summary type=]
+      :: |options|["{{SummarizerCreateCoreOptions/type}}"]
 
-      : [=AISummarizer/summary format=]
-      :: |options|["{{AISummarizerCreateCoreOptions/format}}"]
+      : [=Summarizer/summary format=]
+      :: |options|["{{SummarizerCreateCoreOptions/format}}"]
 
-      : [=AISummarizer/summary length=]
-      :: |options|["{{AISummarizerCreateCoreOptions/length}}"]
+      : [=Summarizer/summary length=]
+      :: |options|["{{SummarizerCreateCoreOptions/length}}"]
 
-      : [=AISummarizer/expected input languages=]
-      :: the result of [=creating a frozen array=] given |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
+      : [=Summarizer/expected input languages=]
+      :: the result of [=creating a frozen array=] given |options|["{{SummarizerCreateCoreOptions/expectedInputLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
 
-      : [=AISummarizer/expected context languages=]
-      :: the result of [=creating a frozen array=] given |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
+      : [=Summarizer/expected context languages=]
+      :: the result of [=creating a frozen array=] given |options|["{{SummarizerCreateCoreOptions/expectedContextLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
 
-      : [=AISummarizer/output language=]
-      :: |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] if it [=map/exists=]; otherwise null
+      : [=Summarizer/output language=]
+      :: |options|["{{SummarizerCreateCoreOptions/outputLanguage}}"] if it [=map/exists=]; otherwise null
 
-      : [=AISummarizer/input quota=]
+      : [=Summarizer/input quota=]
       :: |inputQuota|
     </dl>
 </div>
@@ -304,57 +276,43 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 <h3 id="summarizer-availability">Availability</h3>
 
 <div algorithm>
-  The <dfn method for="AISummarizerFactory">availability(|options|)</dfn> method steps are:
+  The static <dfn method for="Summarizer">availability(|options|)</dfn> method steps are:
 
-  1. If [=this=]'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
-
-  1. [=Validate and canonicalize summarizer options=] given |options|.
-
-  1. Let |promise| be [=a new promise=] created in [=this=]'s [=relevant realm=].
-
-  1. [=In parallel=]:
-
-    1. Let |availability| be the result of [=computing summarizer options availability=] given |options|.
-
-    1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
-
-      1. If |availability| is null, then [=reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
-
-      1. Otherwise, [=resolve=] |promise| with |availability|.
+  1. Return the result of [=computing AI model availability=] given |options|, [=validate and canonicalize summarizer options=], and [=compute summarizer options availability=].
 </div>
 
 <div algorithm>
-  To <dfn>compute summarizer options availability</dfn> given an {{AISummarizerCreateCoreOptions}} |options|, perform the following steps. They return either an {{AIAvailability}} value or null, and they mutate |options| in place to update language tags to their best-fit matches.
+  To <dfn>compute summarizer options availability</dfn> given an {{SummarizerCreateCoreOptions}} |options|, perform the following steps. They return either an {{Availability}} value or null, and they mutate |options| in place to update language tags to their best-fit matches.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
-  1. Let |availability| be the [=summarizer non-language options availability=] given |options|["{{AISummarizerCreateCoreOptions/type}}"], |options|["{{AISummarizerCreateCoreOptions/format}}"], and |options|["{{AISummarizerCreateCoreOptions/length}}"].
+  1. Let |availability| be the [=summarizer non-language options availability=] given |options|["{{SummarizerCreateCoreOptions/type}}"], |options|["{{SummarizerCreateCoreOptions/format}}"], and |options|["{{SummarizerCreateCoreOptions/length}}"].
 
   1. Let |languageAvailabilities| be the [=summarizer language availabilities=].
 
   1. If |languageAvailabilities| is null, then return null.
 
-  1. Let |inputLanguageAvailability| be the result of [=computing summarizer language availability=] given |options|["{{AISummarizerCreateCoreOptions/expectedInputLanguages}}"] and |languageAvailabilities|'s [=language availabilities/input languages=].
+  1. Let |inputLanguageAvailability| be the result of [=computing summarizer language availability=] given |options|["{{SummarizerCreateCoreOptions/expectedInputLanguages}}"] and |languageAvailabilities|'s [=language availabilities/input languages=].
 
-  1. Let |contextLanguagesAvailability| be the result of [=computing summarizer language availability=] given |options|["{{AISummarizerCreateCoreOptions/expectedContextLanguages}}"] and |languageAvailabilities|'s [=language availabilities/context languages=].
+  1. Let |contextLanguagesAvailability| be the result of [=computing summarizer language availability=] given |options|["{{SummarizerCreateCoreOptions/expectedContextLanguages}}"] and |languageAvailabilities|'s [=language availabilities/context languages=].
 
-  1. Let |outputLanguagesList| be « |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] ».
+  1. Let |outputLanguagesList| be « |options|["{{SummarizerCreateCoreOptions/outputLanguage}}"] ».
 
   1. Let |outputLanguageAvailability| be the result of [=computing summarizer language availability=] given |outputLanguagesList| and |languageAvailabilities|'s [=language availabilities/output languages=].
 
-  1. Set |options|["{{AISummarizerCreateCoreOptions/outputLanguage}}"] to |outputLanguagesList|[0].
+  1. Set |options|["{{SummarizerCreateCoreOptions/outputLanguage}}"] to |outputLanguagesList|[0].
 
-  1. Return the [=AIAvailability/minimum availability=] given « |availability|, |inputLanguageAvailability|, |contextLanguagesAvailability|, |outputLanguageAvailability| ».
+  1. Return the [=Availability/minimum availability=] given « |availability|, |inputLanguageAvailability|, |contextLanguagesAvailability|, |outputLanguageAvailability| ».
 </div>
 
 <div algorithm>
-  To <dfn>compute summarizer language availability</dfn> given an [=ordered set=] of strings |requestedLanguages| and a [=map=] from {{AIAvailability}} values to [=sets=] of strings |availabilities|, perform the following steps. They return an {{AIAvailability}} value, and they mutate |requestedLanguages| in place to update language tags to their best-fit matches.
+  To <dfn>compute summarizer language availability</dfn> given an [=ordered set=] of strings |requestedLanguages| and a [=map=] from {{Availability}} values to [=sets=] of strings |availabilities|, perform the following steps. They return an {{Availability}} value, and they mutate |requestedLanguages| in place to update language tags to their best-fit matches.
 
-  1. Let |availability| be "{{AIAvailability/available}}".
+  1. Let |availability| be "{{Availability/available}}".
 
   1. [=set/For each=] |language| of |requestedLanguages|:
 
-    1. [=list/For each=] |availabilityToCheck| of « "{{AIAvailability/available}}", "{{AIAvailability/downloading}}", "{{AIAvailability/downloadable}}" »:
+    1. [=list/For each=] |availabilityToCheck| of « "{{Availability/available}}", "{{Availability/downloading}}", "{{Availability/downloadable}}" »:
 
       1. Let |languagesWithThisAvailability| be |availabilities|[|availabilityToCheck|].
 
@@ -364,29 +322,29 @@ The <dfn attribute for="AI">summarizer</dfn> getter steps are to return [=this=]
 
         1. [=list/Replace=] |language| with |bestMatch|.\[[locale]] in |requestedLanguages|.
 
-        1. Set |availability| to the [=AIAvailability/minimum availability=] given |availability| and |availabilityToCheck|.
+        1. Set |availability| to the [=Availability/minimum availability=] given |availability| and |availabilityToCheck|.
 
         1. [=iteration/Break=].
 
-    1. Return "{{AIAvailability/unavailable}}".
+    1. Return "{{Availability/unavailable}}".
 
   1. Return |availability|.
 </div>
 
 <div algorithm>
-  The <dfn>summarizer non-language options availability</dfn>, given a {{AISummarizerType}} |type|, {{AISummarizerFormat}} |format|, and an {{AISummarizerLength}} |length|, is given by the following steps. They return an {{AIAvailability}} value or null.
+  The <dfn>summarizer non-language options availability</dfn>, given a {{SummarizerType}} |type|, {{SummarizerFormat}} |format|, and an {{SummarizerLength}} |length|, is given by the following steps. They return an {{Availability}} value or null.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
   1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=summarizer non-language options availability=] could stop producing such an error), then return null.
 
-  1. If the user agent supports summarizing text into the type of summary described by |type|, in the format described by |format|, and with the length guidance given by |length| without performing any downloading operations, then return "{{AIAvailability/available}}".
+  1. If the user agent supports summarizing text into the type of summary described by |type|, in the format described by |format|, and with the length guidance given by |length| without performing any downloading operations, then return "{{Availability/available}}".
 
-  1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{AIAvailability/downloadable}}".
+  1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{Availability/downloadable}}".
 
-  1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after performing a download (e.g., of an AI model or fine-tuning), then return "{{AIAvailability/downloadable}}".
+  1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after performing a download (e.g., of an AI model or fine-tuning), then return "{{Availability/downloadable}}".
 
-  1. Otherwise, return "{{AIAvailability/unavailable}}".
+  1. Otherwise, return "{{Availability/unavailable}}".
 </div>
 
 A <dfn>language availabilities</dfn> is a [=struct=] with the following [=struct/items=]:
@@ -395,7 +353,7 @@ A <dfn>language availabilities</dfn> is a [=struct=] with the following [=struct
 * <dfn for="language availabilities">context languages</dfn>
 * <dfn for="language availabilities">output languages</dfn>
 
-All of these [=struct/items=] are [=maps=] from {{AIAvailability}} values to [=sets=] of strings representing [=Unicode canonicalized locale identifiers=]. Their [=map/keys=] will always be one of "{{AIAvailability/downloading}}", "{{AIAvailability/downloadable}}", or "{{AIAvailability/available}}" (i.e., they will never be "{{AIAvailability/unavailable}}"). [[!ECMA-402]]
+All of these [=struct/items=] are [=maps=] from {{Availability}} values to [=sets=] of strings representing [=Unicode canonicalized locale identifiers=]. Their [=map/keys=] will always be one of "{{Availability/downloading}}", "{{Availability/downloadable}}", or "{{Availability/available}}" (i.e., they will never be "{{Availability/unavailable}}"). [[!ECMA-402]]
 
 <div algorithm>
   The <dfn>summarizer language availabilities</dfn> are given by the following steps. They return a [=language availabilities=] or null.
@@ -421,9 +379,9 @@ All of these [=struct/items=] are [=maps=] from {{AIAvailability}} values to [=s
 <div class="example" id="example-subtags-chinese">
   A common setup seen in today's software is to support two types of written Chinese: "traditional Chinese" and "simplified Chinese". Let's suppose that the user agent supports summarizing text written in traditional Chinese with no downloads, and simplified Chinese after a download.
 
-  One way this could be implemented would be for [=summarizer language availabilities=] to return that "`zh-Hant`" is in the [=language availabilities/input languages=]["{{AIAvailability/available}}"] set, and "`zh`" and "`zh-Hans`" are in the [=language availabilities/input languages=]["{{AIAvailability/downloadable}}"] set. This return value conforms to the requirements of the [=language tag set completeness rules=], in ensuring that "`zh`" is present. Per <a class="allow-2119" href="#language-tag-completeness-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "`zh`" belongs in the set of downloadable input languages, with "`zh-Hans`", instead of in the set of available input languages, with "`zh-Hant`".
+  One way this could be implemented would be for [=summarizer language availabilities=] to return that "`zh-Hant`" is in the [=language availabilities/input languages=]["{{Availability/available}}"] set, and "`zh`" and "`zh-Hans`" are in the [=language availabilities/input languages=]["{{Availability/downloadable}}"] set. This return value conforms to the requirements of the [=language tag set completeness rules=], in ensuring that "`zh`" is present. Per <a class="allow-2119" href="#language-tag-completeness-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "`zh`" belongs in the set of downloadable input languages, with "`zh-Hans`", instead of in the set of available input languages, with "`zh-Hant`".
 
-  Combined with the use of [$LookupMatchingLocaleByBestFit$], this means {{AISummarizerFactory/availability()}} will give the following answers:
+  Combined with the use of [$LookupMatchingLocaleByBestFit$], this means {{Summarizer/availability()}} will give the following answers:
 
   <xmp class="language-js">
   function a(languageTag) {
@@ -445,70 +403,70 @@ All of these [=struct/items=] are [=maps=] from {{AIAvailability}} values to [=s
   </xmp>
 </div>
 
-<h3 id="the-aisummarizer-class">The {{AISummarizer}} class</h3>
+<h3 id="the-Summarizer-class">The {{Summarizer}} class</h3>
 
-Every {{AISummarizer}} has a <dfn for="AISummarizer">shared context</dfn>, a [=string=]-or-null, set during creation.
+Every {{Summarizer}} has a <dfn for="Summarizer">shared context</dfn>, a [=string=]-or-null, set during creation.
 
-Every {{AISummarizer}} has a <dfn for="AISummarizer">summary type</dfn>, an {{AISummarizerType}}, set during creation.
+Every {{Summarizer}} has a <dfn for="Summarizer">summary type</dfn>, an {{SummarizerType}}, set during creation.
 
-Every {{AISummarizer}} has a <dfn for="AISummarizer">summary format</dfn>, an {{AISummarizerFormat}}, set during creation.
+Every {{Summarizer}} has a <dfn for="Summarizer">summary format</dfn>, an {{SummarizerFormat}}, set during creation.
 
-Every {{AISummarizer}} has a <dfn for="AISummarizer">summary length</dfn>, an {{AISummarizerLength}}, set during creation.
+Every {{Summarizer}} has a <dfn for="Summarizer">summary length</dfn>, an {{SummarizerLength}}, set during creation.
 
-Every {{AISummarizer}} has an <dfn for="AISummarizer">expected input languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
+Every {{Summarizer}} has an <dfn for="Summarizer">expected input languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
 
-Every {{AISummarizer}} has an <dfn for="AISummarizer">expected context languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
+Every {{Summarizer}} has an <dfn for="Summarizer">expected context languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
 
-Every {{AISummarizer}} has an <dfn for="AISummarizer">output language</dfn>, a [=string=] or null, set during creation.
+Every {{Summarizer}} has an <dfn for="Summarizer">output language</dfn>, a [=string=] or null, set during creation.
 
-Every {{AISummarizer}} has a <dfn for="AISummarizer">input quota</dfn>, a number, set during creation.
+Every {{Summarizer}} has a <dfn for="Summarizer">input quota</dfn>, a number, set during creation.
 
 <hr>
 
-The <dfn attribute for="AISummarizer">sharedContext</dfn> getter steps are to return [=this=]'s [=AISummarizer/shared context=].
+The <dfn attribute for="Summarizer">sharedContext</dfn> getter steps are to return [=this=]'s [=Summarizer/shared context=].
 
-The <dfn attribute for="AISummarizer">type</dfn> getter steps are to return [=this=]'s [=AISummarizer/summary type=].
+The <dfn attribute for="Summarizer">type</dfn> getter steps are to return [=this=]'s [=Summarizer/summary type=].
 
-The <dfn attribute for="AISummarizer">format</dfn> getter steps are to return [=this=]'s [=AISummarizer/summary format=].
+The <dfn attribute for="Summarizer">format</dfn> getter steps are to return [=this=]'s [=Summarizer/summary format=].
 
-The <dfn attribute for="AISummarizer">length</dfn> getter steps are to return [=this=]'s [=AISummarizer/summary length=].
+The <dfn attribute for="Summarizer">length</dfn> getter steps are to return [=this=]'s [=Summarizer/summary length=].
 
-The <dfn attribute for="AISummarizer">expectedInputLanguages</dfn> getter steps are to return [=this=]'s [=AISummarizer/expected input languages=].
+The <dfn attribute for="Summarizer">expectedInputLanguages</dfn> getter steps are to return [=this=]'s [=Summarizer/expected input languages=].
 
-The <dfn attribute for="AISummarizer">expectedContextLanguages</dfn> getter steps are to return [=this=]'s [=AISummarizer/expected context languages=].
+The <dfn attribute for="Summarizer">expectedContextLanguages</dfn> getter steps are to return [=this=]'s [=Summarizer/expected context languages=].
 
-The <dfn attribute for="AISummarizer">outputLanguage</dfn> getter steps are to return [=this=]'s [=AISummarizer/output language=].
+The <dfn attribute for="Summarizer">outputLanguage</dfn> getter steps are to return [=this=]'s [=Summarizer/output language=].
 
-The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to return [=this=]'s [=AISummarizer/input quota=].
+The <dfn attribute for="Summarizer">inputQuota</dfn> getter steps are to return [=this=]'s [=Summarizer/input quota=].
 
 <hr>
 
 <div algorithm>
-  The <dfn method for="AISummarizer">summarize(|input|, |options|)</dfn> method steps are:
+  The <dfn method for="Summarizer">summarize(|input|, |options|)</dfn> method steps are:
 
-  1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
+  1. Let |context| be |options|["{{SummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
 
-  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], [=this=]'s [=AISummarizer/input quota=], |chunkProduced|, |done|, |error|, and |stopProducing|.
+  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=Summarizer/shared context=], |context|, [=this=]'s [=Summarizer/summary type=], [=this=]'s [=Summarizer/summary format=], [=this=]'s [=Summarizer/summary length=], [=this=]'s [=Summarizer/output language=], [=this=]'s [=Summarizer/input quota=], |chunkProduced|, |done|, |error|, and |stopProducing|.
 
   1. Return the result of [=getting an aggregated AI model result=] given [=this=], |options|, and |operation|.
 </div>
 
 <div algorithm>
-  The <dfn method for="AISummarizer">summarizeStreaming(|input|, |options|)</dfn> method steps are:
+  The <dfn method for="Summarizer">summarizeStreaming(|input|, |options|)</dfn> method steps are:
 
-  1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
+  1. Let |context| be |options|["{{SummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
 
-  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], [=this=]'s [=AISummarizer/input quota=], |chunkProduced|, |done|, |error|, and |stopProducing|.
+  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=summarizes=] |input| given [=this=]'s [=Summarizer/shared context=], |context|, [=this=]'s [=Summarizer/summary type=], [=this=]'s [=Summarizer/summary format=], [=this=]'s [=Summarizer/summary length=], [=this=]'s [=Summarizer/output language=], [=this=]'s [=Summarizer/input quota=], |chunkProduced|, |done|, |error|, and |stopProducing|.
 
   1. Return the result of [=getting a streaming AI model result=] given [=this=], |options|, and |operation|.
 </div>
 
 <div algorithm>
-  The <dfn method for="AISummarizer">measureInputUsage(|input|, |options|)</dfn> method steps are:
+  The <dfn method for="Summarizer">measureInputUsage(|input|, |options|)</dfn> method steps are:
 
-  1. Let |context| be |options|["{{AISummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
+  1. Let |context| be |options|["{{SummarizerSummarizeOptions/context}}"] if it [=map/exists=]; otherwise null.
 
-  1. Let |measureUsage| be an algorithm step which takes argument |stopMeasuring|, and returns the result of [=measuring summarizer input usage=] given |input|, [=this=]'s [=AISummarizer/shared context=], |context|, [=this=]'s [=AISummarizer/summary type=], [=this=]'s [=AISummarizer/summary format=], [=this=]'s [=AISummarizer/summary length=], [=this=]'s [=AISummarizer/output language=], and |stopMeasuring|.
+  1. Let |measureUsage| be an algorithm step which takes argument |stopMeasuring|, and returns the result of [=measuring summarizer input usage=] given |input|, [=this=]'s [=Summarizer/shared context=], |context|, [=this=]'s [=Summarizer/summary type=], [=this=]'s [=Summarizer/summary format=], [=this=]'s [=Summarizer/summary length=], [=this=]'s [=Summarizer/output language=], and |stopMeasuring|.
 
   1. Return the result of [=measuring AI model input usage=] given [=this=], |options|, and |measureUsage|.
 </div>
@@ -523,11 +481,11 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
   * a [=string=] |input|,
   * a [=string=]-or-null |sharedContext|,
   * a [=string=]-or-null |context|,
-  * an {{AISummarizerType}} |type|,
-  * an {{AISummarizerFormat}} |format|,
-  * an {{AISummarizerLength}} |length|,
+  * an {{SummarizerType}} |type|,
+  * an {{SummarizerFormat}} |format|,
+  * an {{SummarizerLength}} |length|,
   * a [=string=]-or-null |outputLanguage|,
-  * a [=number=] |inputQuota|,
+  * a number |inputQuota|,
   * an algorithm |chunkProduced| that takes a [=string=] and returns nothing,
   * an algorithm |done| that takes no arguments and returns nothing,
   * an algorithm |error| that takes [=error information=] and returns nothing, and
@@ -604,9 +562,9 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
   * a [=string=] |input|,
   * a [=string=]-or-null |sharedContext|,
   * a [=string=]-or-null |context|,
-  * an {{AISummarizerType}} |type|,
-  * an {{AISummarizerFormat}} |format|,
-  * an {{AISummarizerLength}} |length|,
+  * an {{SummarizerType}} |type|,
+  * an {{SummarizerFormat}} |format|,
+  * an {{SummarizerLength}} |length|,
   * a [=string=]-or-null |outputLanguage|, and
   * an algorithm |stopMeasuring| that takes no arguments and returns a boolean,
 
@@ -616,7 +574,7 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
   1. Let |inputToModel| be the [=implementation-defined=] string that would be sent to the underlying model in order to [=summarize=] given |input|, |sharedContext|, |context|, |type|, |format|, |length|, and |outputLanguage|.
 
-    <p class="note" id="note-input-to-model">This might be something similar to the concatenation of |input| and |context|, if all of the other options were loaded into the model during initialization, and so the input usage for those was already accounted for when computing the [=AISummarizer/input quota=]. Or it might consist of more, if the options are sent along with every summarization call, or if there is a per-summarization wrapper prompt of some sort.
+    <p class="note" id="note-input-to-model">This might be something similar to the concatenation of |input| and |context|, if all of the other options were loaded into the model during initialization, and so the input usage for those was already accounted for when computing the [=Summarizer/input quota=]. Or it might consist of more, if the options are sent along with every summarization call, or if there is a per-summarization wrapper prompt of some sort.
 
     If during this process |stopMeasuring| starts returning true, then return null.
 
@@ -624,7 +582,7 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
   1. Return the amount of input usage needed to represent |inputToModel| when given to the underlying model. The exact calculation procedure is [=implementation-defined=], subject to the following constraints.
 
-    The returned input usage must be nonnegative and finite. It must be 0, if there are no usage quotas for the summarization process (i.e., if the [=AISummarizer/input quota=] is +∞). Otherwise, it must be positive and should be roughly proportional to the [=string/length=] of |inputToModel|.
+    The returned input usage must be nonnegative and finite. It must be 0, if there are no usage quotas for the summarization process (i.e., if the [=Summarizer/input quota=] is +∞). Otherwise, it must be positive and should be roughly proportional to the [=string/length=] of |inputToModel|.
 
     <p class="note" id="note-summarizer-input-usage">This might be the number of tokens needed to represent |input| in a <a href="https://arxiv.org/abs/2404.08335">language model tokenization scheme</a>, or it might be |input|'s [=string/length=]. It could also be some variation of these which also counts the usage of any prefixes or suffixes necessary to give to the model.
 
@@ -635,82 +593,82 @@ The <dfn attribute for="AISummarizer">inputQuota</dfn> getter steps are to retur
 
 <h4 id="summarizer-options">Options</h4>
 
-The [=summarize=] algorithm's details are [=implementation-defined=], as they are expected to be powered by an AI model. However, it is intended to be controllable by the web developer through the {{AISummarizerType}}, {{AISummarizerFormat}}, and {{AISummarizerLength}} enumerations.
+The [=summarize=] algorithm's details are [=implementation-defined=], as they are expected to be powered by an AI model. However, it is intended to be controllable by the web developer through the {{SummarizerType}}, {{SummarizerFormat}}, and {{SummarizerLength}} enumerations.
 
 This section gives normative guidance on how the implementation of [=summarize=] should use each enumeration value to guide the summarization process.
 
 <table class="data enum-table">
-  <caption>{{AISummarizerType}} values</caption>
+  <caption>{{SummarizerType}} values</caption>
   <thead>
     <tr>
       <th>Value
       <th>Meaning
   <tbody>
     <tr>
-      <th>"<dfn enum-value for="AISummarizerType">tl;dr</dfn>"
+      <th>"<dfn enum-value for="SummarizerType">tl;dr</dfn>"
       <td>
         <p>The summary should be short and to the point, providing a quick overview of the input, suitable for a busy reader.
     <tr>
-      <th>"<dfn enum-value for="AISummarizerType">teaser</dfn>"
+      <th>"<dfn enum-value for="SummarizerType">teaser</dfn>"
       <td>
         <p>The summary should focus on the most interesting or intriguing parts of the input, designed to draw the reader in to read more.
     <tr>
-      <th>"<dfn enum-value for="AISummarizerType">key-points</dfn>"
+      <th>"<dfn enum-value for="SummarizerType">key-points</dfn>"
       <td>
         <p>The summary should extract the most important points from the input, presented as a bulleted list.
     <tr>
-      <th>"<dfn enum-value for="AISummarizerType">headline</dfn>"
+      <th>"<dfn enum-value for="SummarizerType">headline</dfn>"
       <td>
         <p>The summary should effectively contain the main point of the input in a single sentence, in the format of an article headline.
 </table>
 
 <table class="data enum-table">
-  <caption>{{AISummarizerLength}} values</caption>
+  <caption>{{SummarizerLength}} values</caption>
   <thead>
     <tr>
       <th>Value
       <th>Meaning
   <tbody>
     <tr>
-      <th>"<dfn enum-value for="AISummarizerLength">short</dfn>"
+      <th>"<dfn enum-value for="SummarizerLength">short</dfn>"
       <td>
-        <p>The guidance is dependent on the value of {{AISummarizerType}}:
+        <p>The guidance is dependent on the value of {{SummarizerType}}:
 
         <dl class="switch">
-          : "{{AISummarizerType/tl;dr}}"
-          : "{{AISummarizerType/teaser}}"
+          : "{{SummarizerType/tl;dr}}"
+          : "{{SummarizerType/teaser}}"
           :: The summary should fit within 1 sentence.
-          : "{{AISummarizerType/key-points}}"
+          : "{{SummarizerType/key-points}}"
           :: The summary should consist of no more than 3 bullet points.
-          : "{{AISummarizerType/headline}}"
+          : "{{SummarizerType/headline}}"
           :: The summary should use no more than 12 words.
         </dl>
     <tr>
-      <th>"<dfn enum-value for="AISummarizerLength">medium</dfn>"
+      <th>"<dfn enum-value for="SummarizerLength">medium</dfn>"
       <td>
-        <p>The guidance is dependent on the value of {{AISummarizerType}}:
+        <p>The guidance is dependent on the value of {{SummarizerType}}:
 
         <dl class="switch">
-          : "{{AISummarizerType/tl;dr}}"
-          : "{{AISummarizerType/teaser}}"
+          : "{{SummarizerType/tl;dr}}"
+          : "{{SummarizerType/teaser}}"
           :: The summary should fit within 1 short paragraph.
-          : "{{AISummarizerType/key-points}}"
+          : "{{SummarizerType/key-points}}"
           :: The summary should consist of no more than 5 bullet points.
-          : "{{AISummarizerType/headline}}"
+          : "{{SummarizerType/headline}}"
           :: The summary should use no more than 17 words.
         </dl>
     <tr>
-      <th>"<dfn enum-value for="AISummarizerLength">long</dfn>"
+      <th>"<dfn enum-value for="SummarizerLength">long</dfn>"
       <td>
-        <p>The guidance is dependent on the value of {{AISummarizerType}}:
+        <p>The guidance is dependent on the value of {{SummarizerType}}:
 
         <dl class="switch">
-          : "{{AISummarizerType/tl;dr}}"
-          : "{{AISummarizerType/teaser}}"
+          : "{{SummarizerType/tl;dr}}"
+          : "{{SummarizerType/teaser}}"
           :: The summary should fit within 1 paragraph.
-          : "{{AISummarizerType/key-points}}"
+          : "{{SummarizerType/key-points}}"
           :: The summary should consist of no more than 7 bullet points.
-          : "{{AISummarizerType/headline}}"
+          : "{{SummarizerType/headline}}"
           :: The summary should use no more than 22 words.
         </dl>
 </table>
@@ -718,18 +676,18 @@ This section gives normative guidance on how the implementation of [=summarize=]
 <p class="note">As with all "<span class="allow-2119">should</span>"-level guidance, user agents might not conform perfectly to these. Especially in the case of counting words, it's expected that language models might not conform perfectly.
 
 <table class="data enum-table">
-  <caption>{{AISummarizerFormat}} values</caption>
+  <caption>{{SummarizerFormat}} values</caption>
   <thead>
     <tr>
       <th>Value
       <th>Meaning
   <tbody>
     <tr>
-      <th>"<dfn enum-value for="AISummarizerFormat">plain-text</dfn>"
+      <th>"<dfn enum-value for="SummarizerFormat">plain-text</dfn>"
       <td>
         <p>The summary should not contain any formatting or markup language.
     <tr>
-      <th>"<dfn enum-value for="AISummarizerFormat">markdown</dfn>"
+      <th>"<dfn enum-value for="SummarizerFormat">markdown</dfn>"
       <td>
         <p>The summary should be formatted using the Markdown markup language, ideally as valid CommonMark. [[!COMMONMARK]]
 </table>
@@ -755,11 +713,11 @@ When summarization fails, the following possible reasons may be surfaced to the 
     <tr>
       <td>"{{NotSupportedError}}"
       <td>
-        <p>The input to be summarized, or the context to be provided, was in a language that the user agent does not support, or was not provided properly in the call to {{AISummarizerFactory/create()}}.
+        <p>The input to be summarized, or the context to be provided, was in a language that the user agent does not support, or was not provided properly in the call to {{Summarizer/create()}}.
 
-        <p>The summarization output ended up being in a language that the user agent does not support (e.g., because the user agent has not performed sufficient quality control tests on that output language), or was not provided properly in the call to {{AISummarizerFactory/create()}}.
+        <p>The summarization output ended up being in a language that the user agent does not support (e.g., because the user agent has not performed sufficient quality control tests on that output language), or was not provided properly in the call to {{Summarizer/create()}}.
 
-        <p>The {{AISummarizerCreateCoreOptions/outputLanguage}} option was not set, and the language of the input text could not be determined, so the user agent did not have a good output language default available.
+        <p>The {{SummarizerCreateCoreOptions/outputLanguage}} option was not set, and the language of the input text could not be determined, so the user agent did not have a good output language default available.
     <tr>
       <td>"{{UnknownError}}"
       <td>
@@ -774,20 +732,23 @@ Just IDL for now; full spec coming!
 
 <xmp class="idl">
 [Exposed=(Window,Worker), SecureContext]
-interface AIWriterFactory {
-  Promise<AIWriter> create(optional AIWriterCreateOptions options = {});
-  Promise<AIAvailability> availability(optional AIWriterCreateCoreOptions options = {});
-};
+interface Writer {
+  static Promise<Writer> create(optional WriterCreateOptions options = {});
+  static Promise<Availability> availability(optional WriterCreateCoreOptions options = {});
 
-[Exposed=(Window,Worker), SecureContext]
-interface AIWriter {
-  Promise<DOMString> write(DOMString writingTask, optional AIWriterWriteOptions options = {});
-  ReadableStream writeStreaming(DOMString writingTask, optional AIWriterWriteOptions options = {});
+  Promise<DOMString> write(
+    DOMString input,
+    optional WriterWriteOptions options = {}
+  );
+  ReadableStream writeStreaming(
+    DOMString input,
+    optional WriterWriteOptions options = {}
+  );
 
   readonly attribute DOMString sharedContext;
-  readonly attribute AIWriterTone tone;
-  readonly attribute AIWriterFormat format;
-  readonly attribute AIWriterLength length;
+  readonly attribute WriterTone tone;
+  readonly attribute WriterFormat format;
+  readonly attribute WriterLength length;
 
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
@@ -795,37 +756,37 @@ interface AIWriter {
 
   Promise<double> measureInputUsage(
     DOMString input,
-    optional AIWriterWriteOptions options = {}
+    optional WriterWriteOptions options = {}
   );
   readonly attribute unrestricted double inputQuota;
 };
-AIWriter includes AIDestroyable;
+Writer includes DestroyableModel;
 
-dictionary AIWriterCreateCoreOptions {
-  AIWriterTone tone = "neutral";
-  AIWriterFormat format = "markdown";
-  AIWriterLength length = "short";
+dictionary WriterCreateCoreOptions {
+  WriterTone tone = "neutral";
+  WriterFormat format = "markdown";
+  WriterLength length = "short";
 
   sequence<DOMString> expectedInputLanguages;
   sequence<DOMString> expectedContextLanguages;
   DOMString outputLanguage;
 };
 
-dictionary AIWriterCreateOptions : AIWriterCreateCoreOptions {
+dictionary WriterCreateOptions : WriterCreateCoreOptions {
   AbortSignal signal;
-  AICreateMonitorCallback monitor;
+  CreateMonitorCallback monitor;
 
   DOMString sharedContext;
 };
 
-dictionary AIWriterWriteOptions {
+dictionary WriterWriteOptions {
   DOMString context;
   AbortSignal signal;
 };
 
-enum AIWriterTone { "formal", "neutral", "casual" };
-enum AIWriterFormat { "plain-text", "markdown" };
-enum AIWriterLength { "short", "medium", "long" };
+enum WriterTone { "formal", "neutral", "casual" };
+enum WriterFormat { "plain-text", "markdown" };
+enum WriterLength { "short", "medium", "long" };
 </xmp>
 
 <h2 id="rewriter-api">The rewriter API</h2>
@@ -834,20 +795,23 @@ Just IDL for now; full spec coming!
 
 <xmp class="idl">
 [Exposed=(Window,Worker), SecureContext]
-interface AIRewriterFactory {
-  Promise<AIRewriter> create(optional AIRewriterCreateOptions options = {});
-  Promise<AIAvailability> availability(optional AIRewriterCreateCoreOptions options = {});
-};
+interface Rewriter {
+  static Promise<Rewriter> create(optional RewriterCreateOptions options = {});
+  static Promise<Availability> availability(optional RewriterCreateCoreOptions options = {});
 
-[Exposed=(Window,Worker), SecureContext]
-interface AIRewriter {
-  Promise<DOMString> rewrite(DOMString input, optional AIRewriterRewriteOptions options = {});
-  ReadableStream rewriteStreaming(DOMString input, optional AIRewriterRewriteOptions options = {});
+  Promise<DOMString> rewrite(
+    DOMString input,
+    optional RewriterRewriteOptions options = {}
+  );
+  ReadableStream rewriteStreaming(
+    DOMString input,
+    optional RewriterRewriteOptions options = {}
+  );
 
   readonly attribute DOMString sharedContext;
-  readonly attribute AIRewriterTone tone;
-  readonly attribute AIRewriterFormat format;
-  readonly attribute AIRewriterLength length;
+  readonly attribute RewriterTone tone;
+  readonly attribute RewriterFormat format;
+  readonly attribute RewriterLength length;
 
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
   readonly attribute FrozenArray<DOMString>? expectedContextLanguages;
@@ -855,37 +819,37 @@ interface AIRewriter {
 
   Promise<double> measureInputUsage(
     DOMString input,
-    optional AIRewriterRewriteOptions options = {}
+    optional RewriterRewriteOptions options = {}
   );
   readonly attribute unrestricted double inputQuota;
 };
-AIRewriter includes AIDestroyable;
+Rewriter includes DestroyableModel;
 
-dictionary AIRewriterCreateCoreOptions {
-  AIRewriterTone tone = "as-is";
-  AIRewriterFormat format = "as-is";
-  AIRewriterLength length = "as-is";
+dictionary RewriterCreateCoreOptions {
+  RewriterTone tone = "as-is";
+  RewriterFormat format = "as-is";
+  RewriterLength length = "as-is";
 
   sequence<DOMString> expectedInputLanguages;
   sequence<DOMString> expectedContextLanguages;
   DOMString outputLanguage;
 };
 
-dictionary AIRewriterCreateOptions : AIRewriterCreateCoreOptions {
+dictionary RewriterCreateOptions : RewriterCreateCoreOptions {
   AbortSignal signal;
-  AICreateMonitorCallback monitor;
+  CreateMonitorCallback monitor;
 
   DOMString sharedContext;
 };
 
-dictionary AIRewriterRewriteOptions {
+dictionary RewriterRewriteOptions {
   DOMString context;
   AbortSignal signal;
 };
 
-enum AIRewriterTone { "as-is", "more-formal", "more-casual" };
-enum AIRewriterFormat { "as-is", "plain-text", "markdown" };
-enum AIRewriterLength { "as-is", "shorter", "longer" };
+enum RewriterTone { "as-is", "more-formal", "more-casual" };
+enum RewriterFormat { "as-is", "plain-text", "markdown" };
+enum RewriterLength { "as-is", "shorter", "longer" };
 </xmp>
 
 <h2 id="supporting">Shared infrastructure</h2>
@@ -895,20 +859,30 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 <div algorithm>
   To <dfn export>create an AI model object</dfn> given:
 
-  * a [=ECMAScript/realm=] |realm|,
   * an [=ordered map=] |options|,
-  * an algorithm |getAvailability| taking an [=ordered map=] and returning an {{AIAvailability}} or null,
+  * an algorithm |validateAndCanonicalizeOptions| taking an [=ordered map=] and returning nothing,
+  * an algorithm |getAvailability| taking an [=ordered map=] and returning an {{Availability}} or null,
   * an algorithm |startDownload| taking an [=ordered map=] and returning a boolean,
   * an algorithm |initialize| taking an [=ordered map=] and returning an error information or null, and
   * an algorithm |create| taking a [=ECMAScript/realm=] and an [=ordered map=] and returning a Web IDL object representing the model,
 
   perform the following steps:
 
+  1. Let |realm| be the [=current realm=].
+
+  1. If |realm|'s [=realm/global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+
+  1. If |options|["`signal`"] [=map/exists=] and is [=AbortSignal/aborted=], then return [=a promise rejected with=] |options|["`signal`"]'s [=AbortSignal/abort reason=].
+
+  1. Perform |validateAndCanonicalizeOptions| given |options|. If this throws an exception |e|, catch it, and return [=a promise rejected with=] |e|.
+
+     <p class="note">This can mutate |options|.
+
   1. Let |fireProgressEvent| be an algorithm taking two arguments that does nothing.
 
   1. If |options|["`monitor`"] [=map/exists=], then:
 
-    1. Let |monitor| be a [=new=] {{AICreateMonitor}} created in |realm|.
+    1. Let |monitor| be a [=new=] {{CreateMonitor}} created in |realm|.
 
     1. [=Invoke=] |options|["`monitor`"] with « |monitor| » and "`rethrow`".
 
@@ -920,7 +894,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
       1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to perform the following steps:
 
-        1. [=Fire an event=] named {{AICreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to 1, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
+        1. [=Fire an event=] named {{CreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to 1, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
 
           <p class="advisement">This assumes <a href="https://github.com/whatwg/xhr/pull/394">whatwg/xhr#394</a> is merged so that passing non-integer values for {{ProgressEvent/loaded}} works as expected.</p>
 
@@ -949,20 +923,20 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
         1. Abort these steps.
 
-      : "{{AIAvailability/unavailable}}"
+      : "{{Availability/unavailable}}"
       ::
         1. [=Reject=] |promise| with a "{{NotSupportedError}}" {{DOMException}}.
 
         1. Abort these steps.
 
-      : "{{AIAvailability/available}}"
+      : "{{Availability/available}}"
       ::
         1. [=Initialize and return an AI model object=] given |promise|, |options|, |fireProgressEvent|, |initialize|, and |create|.
 
-      : "{{AIAvailability/downloading}}"
-      : "{{AIAvailability/downloadable}}"
+      : "{{Availability/downloading}}"
+      : "{{Availability/downloadable}}"
       ::
-        1. If |availability| is "{{AIAvailability/downloadable}}", then let |startDownloadResult| be the result of performing |startDownload| given |options|.
+        1. If |availability| is "{{Availability/downloadable}}", then let |startDownloadResult| be the result of performing |startDownload| given |options|.
 
         1. If |startDownloadResult| is false, then:
 
@@ -1099,7 +1073,7 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
               1. If |bytesSoFar| equals |totalBytes|, then [=iteration/break=].
 
-                <p class="note">Since this is the only non-failure exit condition for the loop, we will never miss firing a {{AICreateMonitor/downloadprogress}} event for the 100% mark.</p>
+                <p class="note">Since this is the only non-failure exit condition for the loop, we will never miss firing a {{CreateMonitor/downloadprogress}} event for the 100% mark.</p>
 
               1. Set |lastProgressFraction| to |progressFraction|.
 
@@ -1150,13 +1124,13 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 
     1. Let |model| be the result of performing |create| given |promise|'s [=relevant global object=] and |options|.
 
-    1. [=Assert=]: |model| [=implements=] an [=interface=] that [=interface/includes=] {{AIDestroyable}}.
+    1. [=Assert=]: |model| [=implements=] an [=interface=] that [=interface/includes=] {{DestroyableModel}}.
 
     1. [=Initialize as a destroyable=] |model|.
 
     1. If |options|["`signal`"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["`signal`"]:
 
-      1. [=AIDestroyable/Destroy=] |model| given |options|["`signal`"]'s [=AbortSignal/abort reason=].
+      1. [=DestroyableModel/Destroy=] |model| given |options|["`signal`"]'s [=AbortSignal/abort reason=].
 
     1. [=Resolve=] |promise| with |model|.
 </div>
@@ -1164,11 +1138,11 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 <h3 id="supporting-results">Obtaining results and usage</h3>
 
 <div algorithm>
-  To <dfn export>get an aggregated AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
+  To <dfn export>get an aggregated AI model result</dfn> given an {{DestroyableModel}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
 
   1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
-  1. Let |signals| be « |modelObject|'s [=AIDestroyable/destruction abort controller=]'s [=AbortController/signal=] ».
+  1. Let |signals| be « |modelObject|'s [=DestroyableModel/destruction abort controller=]'s [=AbortController/signal=] ».
 
   1. If |options|["`signal`"] [=map/exists=], then [=set/append=] it to |signals|.
 
@@ -1224,13 +1198,13 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 </div>
 
 <div algorithm>
-  To <dfn export>get a streaming AI model result</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
+  To <dfn export>get a streaming AI model result</dfn> given an {{DestroyableModel}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
 
   1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then throw an "{{InvalidStateError}}" {{DOMException}}.
 
-  1. Let |signals| be « |modelObject|'s [=AIDestroyable/destruction abort controller=]'s [=AbortController/signal=] ».
+  1. Let |signals| be « |modelObject|'s [=DestroyableModel/destruction abort controller=]'s [=AbortController/signal=] ».
 
-  1. If |options|["{{AISummarizerSummarizeOptions/signal}}"] [=map/exists=], then [=set/append=] it to |signals|.
+  1. If |options|["{{SummarizerSummarizeOptions/signal}}"] [=map/exists=], then [=set/append=] it to |signals|.
 
   1. Let |compositeSignal| be the result of [=creating a dependent abort signal=] given |signals| using {{AbortSignal}} and |modelObject|'s [=relevant realm=].
 
@@ -1292,11 +1266,11 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 </div>
 
 <div algorithm>
-  To <dfn export>measure AI model input usage</dfn> given an {{AIDestroyable}} |modelObject|, an [=ordered map=] |options|, and an algorithm |measure|:
+  To <dfn export>measure AI model input usage</dfn> given an {{DestroyableModel}} |modelObject|, an [=ordered map=] |options|, and an algorithm |measure|:
 
   1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
-  1. Let |signals| be « |modelObject|'s [=AIDestroyable/destruction abort controller=]'s [=AbortController/signal=] ».
+  1. Let |signals| be « |modelObject|'s [=DestroyableModel/destruction abort controller=]'s [=AbortController/signal=] ».
 
   1. If |options|["`signal`"] [=map/exists=], then [=set/append=] it to |signals|.
 
@@ -1372,23 +1346,23 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 <div algorithm>
   To <dfn export>get language availabilities</dfn> given a description |purpose| of the purpose for which we're checking language availability:
 
-  1. Let |availabilities| be «[ "{{AIAvailability/available}}" → an empty [=set=], "{{AIAvailability/downloading}}" → an empty [=set=], "{{AIAvailability/downloadable}}" → an empty [=set=] ]».
+  1. Let |availabilities| be «[ "{{Availability/available}}" → an empty [=set=], "{{Availability/downloading}}" → an empty [=set=], "{{Availability/downloadable}}" → an empty [=set=] ]».
 
   1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent supports |purpose|, without performing any downloading operations:
 
-    1. [=set/Append=] |languageTag| to |availabilities|["{{AIAvailability/available}}"].
+    1. [=set/Append=] |languageTag| to |availabilities|["{{Availability/available}}"].
 
   1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent is currently downloading material (e.g., an AI model or fine-tuning) to support |purpose|:
 
-    1. [=set/Append=] |languageTag| to |availabilities|["{{AIAvailability/downloading}}"].
+    1. [=set/Append=] |languageTag| to |availabilities|["{{Availability/downloading}}"].
 
   1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent believes it can support |purpose|, but only after performing a not-currently-ongoing download (e.g., of an AI model or fine-tuning):
 
-    1. [=set/Append=] |languageTag| to |availabilities|["{{AIAvailability/downloadable}}"].
+    1. [=set/Append=] |languageTag| to |availabilities|["{{Availability/downloadable}}"].
 
-  1. [=Assert=]: |availabilities|["{{AIAvailability/available}}"], |availabilities|["{{AIAvailability/downloading}}"], and |availabilities|["{{AIAvailability/downloadable}}"] are disjoint.
+  1. [=Assert=]: |availabilities|["{{Availability/available}}"], |availabilities|["{{Availability/downloading}}"], and |availabilities|["{{Availability/downloadable}}"] are disjoint.
 
-  1. If the [=set/union=] of |availabilities|["{{AIAvailability/available}}"], |availabilities|["{{AIAvailability/downloading}}"], and |availabilities|["{{AIAvailability/downloadable}}"] does not meet the [=language tag set completeness rules=], then:
+  1. If the [=set/union=] of |availabilities|["{{Availability/available}}"], |availabilities|["{{Availability/downloading}}"], and |availabilities|["{{Availability/downloadable}}"] does not meet the [=language tag set completeness rules=], then:
 
     1. Let |missingLanguageTags| be the [=set=] of missing language tags necessary to meet the [=language tag set completeness rules=].
 
@@ -1414,17 +1388,39 @@ enum AIRewriterLength { "as-is", "shorter", "longer" };
 <h3 id="supporting-availability">Availability</h3>
 
 <div algorithm>
-  The <dfn export for="AIAvailability">minimum availability</dfn> given a [=list=] of {{AIAvailability}}-or-null values |availabilities| is:
+  To <dfn export>compute AI model availability</dfn> given |options|, an algorithm |validate|, and an algorithm |compute|:
+
+  1. Let |global| be the [=current global object=].
+
+  1. If |global| is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+
+  1. Perform |validate| given |options|.
+
+  1. Let |promise| be [=a new promise=] created in the [=current realm=].
+
+  1. [=In parallel=]:
+
+    1. Let |availability| be the result of |compute| given |options|.
+
+    1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
+
+      1. If |availability| is null, then [=reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
+
+      1. Otherwise, [=resolve=] |promise| with |availability|.
+</div>
+
+<div algorithm>
+  The <dfn export for="Availability">minimum availability</dfn> given a [=list=] of {{Availability}}-or-null values |availabilities| is:
 
   1. If |availabilities| [=list/contains=] null, then return null.
 
-  1. If |availabilities| [=list/contains=] "{{AIAvailability/unavailable}}", then return "{{AIAvailability/unavailable}}".
+  1. If |availabilities| [=list/contains=] "{{Availability/unavailable}}", then return "{{Availability/unavailable}}".
 
-  1. If |availabilities| [=list/contains=] "{{AIAvailability/downloading}}", then return "{{AIAvailability/downloading}}".
+  1. If |availabilities| [=list/contains=] "{{Availability/downloading}}", then return "{{Availability/downloading}}".
 
-  1. If |availabilities| [=list/contains=] "{{AIAvailability/downloadable}}", then return "{{AIAvailability/downloadable}}".
+  1. If |availabilities| [=list/contains=] "{{Availability/downloadable}}", then return "{{Availability/downloadable}}".
 
-  1. Return "{{AIAvailability/available}}".
+  1. Return "{{Availability/available}}".
 </div>
 
 <h3 id="supporting-errors">Errors</h3>
@@ -1441,9 +1437,9 @@ A <dfn export>DOMException error information</dfn> is a [=struct=] with the foll
 A <dfn export>quota exceeded error information</dfn> is a [=struct=] with the following [=struct/items=]:
 
 : <dfn export for="quota exceeded error information">requested</dfn>
-:: a [=number=] that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/requested=].
+:: a number that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/requested=].
 : <dfn export for="quota exceeded error information">quota</dfn>
-:: a [=number=] that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/quota=].
+:: a number that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/quota=].
 
 <p class="advisement">The parts of this specification related to quota exceeded errors assume that <a href="https://github.com/whatwg/webidl/pull/1465">whatwg/webidl#1465</a> will be merged.
 
