@@ -81,7 +81,7 @@ Both of these potential goals could pose challenges to interoperability, so we w
 All three APIs share the same format: create a summarizer/writer/rewriter object customized as necessary, and call its appropriate method:
 
 ```js
-const summarizer = await ai.summarizer.create({
+const summarizer = await Summarizer.create({
   sharedContext: "An article from the Daily Economic News magazine",
   type: "headline",
   length: "short"
@@ -93,7 +93,7 @@ const summary = await summarizer.summarize(articleEl.textContent, {
 ```
 
 ```js
-const writer = await ai.writer.create({
+const writer = await Writer.create({
   tone: "formal"
 });
 
@@ -103,7 +103,7 @@ const result = await writer.write(
 ```
 
 ```js
-const rewriter = await ai.rewriter.create({
+const rewriter = await Rewriter.create({
   sharedContext: "A review for the Flux Capacitor 3000 from TimeMachines Inc."
 });
 
@@ -117,7 +117,7 @@ const result = await rewriter.rewrite(reviewEl.textContent, {
 All three of the APIs support streaming output, via counterpart methods `summarizeStreaming()` / `writeStreaming()` / `rewriteStreaming()` that return `ReadableStream`s of strings. A sample usage would be:
 
 ```js
-const writer = await ai.writer.create({ tone: "formal", length: "long" });
+const writer = await Writer.create({ tone: "formal", length: "long" });
 
 const stream = await writer.writeStreaming(
   "A draft for an inquiry to my bank about how to enable wire transfers on my account"
@@ -133,7 +133,7 @@ for (const chunk of stream) {
 A created summarizer/writer/rewriter object can be used multiple times. **The only shared state is the initial configuration options**; the inputs do not build on each other. (See more discussion [below](#one-shot-functions-instead-of-summarizer--writer--rewriter-objects).)
 
 ```js
-const summarizer = await ai.summarize.create({ type: "tl;dr" });
+const summarizer = await Summarizer.create({ type: "tl;dr" });
 
 const reviewSummaries = await Promise.all(
   Array.from(
@@ -150,7 +150,7 @@ The default behavior for the summarizer/writer/rewriter objects assumes that the
 It's better practice, if possible, to supply the `create()` method with information about the expected languages in use. This allows the implementation to download any necessary supporting material, such as fine-tunings or safety-checking models, and to immediately reject the promise returned by `create()` if the web developer needs to use languages that the browser is not capable of supporting:
 
 ```js
-const summarizer = await ai.summarize.create({
+const summarizer = await Summarizer.create({
   type: "key-points",
   expectedInputLanguages: ["ja", "ko"],
   expectedContextLanguages: ["en", "ja", "ko"],
@@ -189,7 +189,7 @@ Whenever any API call fails due to too-large input, it is rejected with a `Quota
 This allows detecting failures due to overlarge inputs and giving clear feedback to the user, with code such as the following:
 
 ```js
-const summarizer = await ai.summarizer.create();
+const summarizer = await Summarizer.create();
 
 try {
   console.log(await summarizer.summarize(potentiallyLargeInput));
@@ -205,16 +205,16 @@ try {
 
 Note that all of the following methods can reject (or error the relevant stream) with this type of exception:
 
-* `ai.summarizer.create()`, if `sharedContext` is too large;
+* `Summarizer.create()`, if `sharedContext` is too large;
 
-* `ai.summarizer.summarize()`/`summarizeStreaming()`, if the combination of the creation-time `sharedContext`, the current method call's `input` argument, and the current method call's `context` is too large;
+* `summarize()`/`summarizeStreaming()`, if the combination of the creation-time `sharedContext`, the current method call's `input` argument, and the current method call's `context` is too large;
 
 * Similarly for writer creation / writing, and rewriter creation / rewriting.
 
 In some cases, instead of providing errors after the fact, the developer needs to be able to communicate to the user how close they are to the limit. For this, they can use the `inputQuota` property and the `measureInputUsage()` method on the summarizer/writer/rewriter objects:
 
 ```js
-const rewriter = await ai.rewriter.create();
+const rewriter = await Rewriter.create();
 meterEl.max = rewriter.inputQuota;
 
 textbox.addEventListener("input", () => {
@@ -264,7 +264,7 @@ An example usage is the following:
 ```js
 const options = { type: "teaser", expectedInputLanguages: ["ja"] };
 
-const availability = await ai.summarizer.availability(options);
+const availability = await Summarizer.availability(options);
 
 if (availability !== "unavailable") {
   // We're good! Let's do the summarization using the built-in API.
@@ -272,7 +272,7 @@ if (availability !== "unavailable") {
     console.log("Sit tight, we need to do some downloading...");
   }
 
-  const summarizer = await ai.summarizer.create(options);
+  const summarizer = await Summarizer.create(options);
   console.log(await summarizer.summarize(articleEl.textContent));
 } else {
   // Either the API overall, or the combination of teaser + Japanese input, is not available.
@@ -286,7 +286,7 @@ if (availability !== "unavailable") {
 For cases where using the API is only possible after a download, you can monitor the download progress (e.g. in order to show your users a progress bar) using code such as the following:
 
 ```js
-const writer = await ai.writer.create({
+const writer = await Writer.create({
   ...otherOptions,
   monitor(m) {
     m.addEventListener("downloadprogress", e => {
@@ -322,7 +322,7 @@ Each API comes equipped with a couple of `signal` options that accept `AbortSign
 const controller = new AbortController();
 stopButton.onclick = () => controller.abort();
 
-const rewriter = await ai.rewriter.create({ signal: controller.signal });
+const rewriter = await Rewriter.create({ signal: controller.signal });
 await rewriter.rewrite(document.body.textContent, { signal: controller.signal });
 ```
 
@@ -392,12 +392,6 @@ The two-step approach has additional benefits for cases where a site is doing th
 Although the APIs contain support for streaming output, they don't support streaming input. One might imagine this to be useful for summarizing and rewriting, where the input could be large.
 
 However, we believe that streaming input would not be a good fit for these APIs. Attempting to summarize or rewrite input as more input streams in will likely result in multiple wasteful rounds of revision. The underlying language model technology does not support streaming input, so the implementation would be buffering the input stream anyway, then repeatedly feeding new versions of the buffered text to the language model. If a developer wants to achieve such results, they can do so themselves, at the cost of writing code which makes the wastefulness of the operation more obvious. Developers can also customize such code, e.g. by only asking for new summaries every 5 seconds (or whatever interval makes the most sense for their use case).
-
-### Alternative API spellings
-
-In [the TAG review of the translation and language detection APIs](https://github.com/w3ctag/design-reviews/issues/948), some TAG members suggested slightly different patterns than the `ai.something.create()` pattern, such as `AISomething.create()` or `Something.create()`.
-
-We are open to such surface-level tweaks to the API entry points, and intend to gather more data from web developers on what they find more understandable and clear.
 
 ### Directly exposing a "prompt API"
 
