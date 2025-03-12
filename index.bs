@@ -1151,7 +1151,11 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 <div algorithm>
   To <dfn export>get an aggregated AI model result</dfn> given an {{DestroyableModel}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
 
-  1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+  1. Let |global| be |modelObject|'s [=relevant global object=].
+
+  1. [=Assert=]: |global| is a {{Window}} object.
+
+  1. If |global|'s [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
   1. Let |signals| be « |modelObject|'s [=DestroyableModel/destruction abort controller=]'s [=AbortController/signal=] ».
 
@@ -1177,7 +1181,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
     1. Let |chunkProduced| be the following steps given a [=string=] |chunk|:
 
-      1. [=Queue a global task=] on the [=AI task source=] given |modelObject|'s [=relevant global object=] to perform the following steps:
+      1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
         1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
@@ -1185,7 +1189,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
     1. Let |done| be the following steps:
 
-      1. [=Queue a global task=] on the [=AI task source=] given |modelObject|'s [=relevant global object=] to perform the following steps:
+      1. [=Queue a global task=] on the [=AI task source=] given ||global| to perform the following steps:
 
         1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
@@ -1193,7 +1197,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
     1. Let |error| be the following steps given [=error information=] |errorInfo|:
 
-      1. [=Queue a global task=] on the [=AI task source=] given |modelObject|'s [=relevant global object=] to perform the following steps:
+      1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
         1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
@@ -1211,7 +1215,11 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 <div algorithm>
   To <dfn export>get a streaming AI model result</dfn> given an {{DestroyableModel}} |modelObject|, an [=ordered map=] |options|, and an algorithm |operation|:
 
-  1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then throw an "{{InvalidStateError}}" {{DOMException}}.
+  1. Let |global| be |modelObject|'s [=relevant global object=].
+
+  1. [=Assert=]: |global| is a {{Window}} object.
+
+  1. If |global|'s [=associated Document=] is not [=Document/fully active=], then throw an "{{InvalidStateError}}" {{DOMException}}.
 
   1. Let |signals| be « |modelObject|'s [=DestroyableModel/destruction abort controller=]'s [=AbortController/signal=] ».
 
@@ -1229,7 +1237,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
     1. Set |abortedDuringOperation| to true.
 
-  1. Let |stream| be a [=new=] {{ReadableStream}} created in [=this=]'s [=relevant realm=].
+  1. Let |stream| be a [=new=] {{ReadableStream}} created in |modelObject|'s [=relevant realm=].
 
   1. Let |canceledDuringOperation| be false.
 
@@ -1243,7 +1251,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
     1. Let |chunkProduced| be the following steps given a [=string=] |chunk|:
 
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
+      1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
         1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
@@ -1251,7 +1259,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
     1. Let |done| be the following steps:
 
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
+      1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
         1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
@@ -1259,7 +1267,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
     1. Let |error| be the following steps given [=error information=] |errorInfo|:
 
-      1. [=Queue a global task=] on the [=AI task source=] given [=this=]'s [=relevant global object=] to perform the following steps:
+      1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
         1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
