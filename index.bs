@@ -1812,6 +1812,22 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
       ::
         1. If |availability| is "{{Availability/downloadable}}", then:
 
+          1. If |realm|'s [=realm/global object=] does not have [=transient activation=], then:
+
+            1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
+
+            1. Abort these steps.
+
+          1. [=Consume user activation=] given |realm|'s [=realm/global object=].
+
+          1. The user agent may display a user interface to the user to confirm that they want to perform the download operation given by |startDownload|, or to show the progress of the download. Alternately, the user agent may decide to deny the ability to perform |startDownload| based on implicit signals of the user's intent. If the user explicitly or implicitly signals that they do not want to start the download, then:
+
+            1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
+
+            1. Abort these steps.
+
+            <p class="note">The case where the user cancels the download after it starts is handled later, as part of the download loop.
+
           1. Let |startDownloadResult| be the result of performing |startDownload| given |options|.
 
           1. If |startDownloadResult| is false, then:
@@ -1840,7 +1856,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
           1. While true:
 
-            1. If downloading has failed, then:
+            1. If downloading has failed, or the user has canceled the download, then:
 
               1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NetworkError}}" {{DOMException}}.
 
