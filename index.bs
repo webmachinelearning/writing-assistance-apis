@@ -1355,13 +1355,15 @@ enum RewriterLength { "as-is", "shorter", "longer" };
       : "{{Availability/downloading}}"
       : "{{Availability/downloadable}}"
       ::
-        1. If |availability| is "{{Availability/downloadable}}", then let |startDownloadResult| be the result of performing |startDownload| given |options|.
+        1. If |availability| is "{{Availability/downloadable}}", then:
 
-        1. If |startDownloadResult| is false, then:
+          1. Let |startDownloadResult| be the result of performing |startDownload| given |options|.
 
-          1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NetworkError}}" {{DOMException}}.
+          1. If |startDownloadResult| is false, then:
 
-          1. Abort these steps.
+            1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NetworkError}}" {{DOMException}}.
+
+            1. Abort these steps.
 
         1. Run the following steps, but [=abort when=] |abortedDuringDownload| becomes true:
 
