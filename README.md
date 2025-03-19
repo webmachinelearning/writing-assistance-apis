@@ -427,19 +427,9 @@ Finally, we intend to prohibit (in the specification) any use of user-specific i
 
 ### Detecting available options
 
-The [`availability()` API](#testing-available-options-before-creation) specified here provide some bits of fingerprinting information, since the availability status of each option and language can be one of four values, and those values are expected to be shared across a user's browser or browsing profile. In theory, this could be up to ~6.6 bits for the current set of summarizer options, plus an unknown number more based on the number of supported languages, and then this would be roughly tripled by including writer and rewriter. <!-- log_2(4 (availability) * 4 (type) * 3 (length) * 2 (format)) = ~6.6 -->
+The [`availability()` API](#testing-available-options-before-creation) specified here provide some bits of fingerprinting information, since the availability status of each option and language can be one of four values, and those values are expected to be shared across a user's browser or browsing profile.
 
-In practice, we expect the number of bits to be much smaller, as implementations will likely not have separate, independently-downloadable pieces of collateral for each option value. (For example, in Chrome's case, we anticipate having a single download for all three APIs.) But we need the API design to be robust to a variety of implementation choices, and have purposefully designed it to allow such independent-download architectures so as not to lock implementers into a single strategy.
-
-There are a variety of solutions here, with varying tradeoffs, such as:
-
-* Grouping downloads to reduce the number of bits, e.g. by ensuring that downloading the "formal" tone also downloads the "neutral" and "casual" tones. This costs the user slightly more bytes, but hopefully not many.
-* Partitioning downloads by top-level site, i.e. repeatedly downloading extra fine-tunings or similar and not sharing them across all sites. This could be feasible if the collateral necessary to support a given option is small; it would not generally make sense for the base language model.
-* Adding friction to the download with permission prompts or other user notifications, so that sites which are attempting to use these APIs for tracking end up looking suspicious to users.
-
-We'll continue to investigate the best solutions here. And the specification will at a minimum allow user agents to add prompts and UI, or reject downloads entirely, as they see fit to preserve privacy.
-
-It's also worth noting that a download cannot be evicted by web developers. Thus the availability states can only be toggled in one direction, from `"downloadable"` to `"downloading"` to `"available"`. And it doesn't provide an identifier that is very stable over time, as by browsing other sites, users will gradually toggle more and more of the availability states to `"availale"`.
+This privacy threat, and how the API mitigates it, is discussed in detail [in the specification](https://webmachinelearning.github.io/writing-assistance-apis/#privacy-availability).
 
 ## Stakeholder feedback
 
