@@ -1973,6 +1973,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
         1. [=If aborted=], then abort these steps.
 
+          <p class="advisement" id="warning-download-cancelation">The user agent should not actually cancel the underlying download, as explained in [[#privacy-availability-cancelation]]. It could fulfill this requirement by "pausing" the download, such that future calls to |getAvailability| given |options| return "{{Availability/downloading}}" instead of "{{Availability/downloadable}}", but this "pause" must persist even across user agent restarts.
+
         1. [=Initialize and return an AI model object=] given |promise|, |options|, a no-op algorithm, |initialize|, and |create|.
     </dl>
 
@@ -2262,6 +2264,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. Let |availability| be the result of |compute| given |options|.
 
+    1. <span id="download-masking-step"></span>If |availability| is "{{Availability/available}}" or "{{Availability/downloading}}", the user agent should set |availability| to "{{Availability/downloadable}}" if doing so would improve the user's privacy, per the discussions in [[#privacy-availability-masking]].
+
     1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
       1. If |availability| is null, then [=reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
@@ -2388,3 +2392,54 @@ A <dfn export>quota exceeded error information</dfn> is a [=struct=] with the fo
 <h3 id="supporting-task-source">Task source</h3>
 
 [=Tasks=] queued by this specification use the <dfn export>AI task source</dfn>.
+
+<h2 id="privacy">Privacy considerations</h2>
+
+<h3 id="privacy-availability">Model availability</h3>
+
+For any of the APIs that use the infrastructure described in [[#supporting]], the exact download status of the AI model or fine-tuning data can present a fingerprinting vector. How many bits this vector provides depends on the options provided to the API creation, and how they influence the download.
+
+For example, if the user agent uses a single model, with no separately-downloadable fine-tunings, to support the summarizer, writer, and rewriter APIs, then the download status provides two bits (corresponding to the four {{Availability}} values) across all three APIs. In contrast, if the user agent uses separate fine-tunings for each value of {{SummarizerType}}, {{SummarizerFormat}}, and {{SummarizerLength}} on top of a base model, then the download status for those summarizer fine-tunings alone provides ~6.6 bits of entropy.
+<!-- log_2(4 (availability) * 4 (type) * 3 (length) * 2 (format)) = ~6.6 -->
+
+<h4 id="privacy-availability-masking">Download masking</h4>
+
+One of the specification's mitigations is to suggest that the user agent mask the current download status, per <a href="#download-masking-step">this step</a> in the [=compute AI model availability=] algorithm which backs the `availability()` APIs.
+
+Because implementation strategies differ (e.g. in how many bits they expose), and other mitigations such as permission prompts are available, a specific masking scheme is not mandated. For APIs where the user agent believes such masking is necessary, a suggested heuristic is to mask by default, subject to a masking state that is established for each (API, options, [=storage key=]) tuple. This state can be set to "unmasked" once a web page in a given [=storage key=] calls the relevant `create()` method with a given set of options, and successfully starts a download or creates a model object. Since [=create an AI model object=] has stronger requirements (see [[#privacy-availability-creation]]), this ensures that web pages only get access to the true download status after taking a more costly and less-repeatable action.
+
+Implementations which use such a [=storage key=]-based masking scheme should ensure that the masking state is reset when other storage for that origin is reset.
+
+<h4 id="privacy-availability-creation">Creation-time friction</h4>
+
+The mitigation described in [[#privacy-availability-masking]] works against attempts to silently fingerprint using the `availability()` methods. The specification also contains requirements to prevent `create()` from being used for fingerprinting, by introducing enough friction into the process to make it impractical:
+
+* [=Create an AI model object=] both requires and consumes [=user activation=], when it would initiate a download.
+* [=Create an AI model object=] allows the user agent to prompt the user for permission, or to implicitly reject download attempts based on previous signals (such as an observed pattern of abuse).
+* [=Create an AI model object=] is gated on an per-API [=policy-controlled feature=], which means that only top-level origins and their delegates can use the API.
+
+Additionally, initiating the download process is more or less a one-time operation, so the availability status will only ever transition from "{{Availability/downloadable}}" to "{{Availability/downloading}}" to "{{Availability/available}}" via these guarded creation operations. That is, while `create()` can be used to read some of these fingerprinting bits, at the cost of the above friction, doing so will destroy the bits as well.
+
+<h4 id="privacy-availability-cancelation">Download cancelation</h4>
+
+An important part of making the download status into a less-useful fingerprinting vector is to ensure that the website cannot toggle the availability state back and forth by starting and canceling downloads. Doing so would allow sites much more fine-grained control over the possible fingerprinting bits, allowing them to read the bits via the `create()` methods without destroying them.
+
+The part of these APIs which, on the surface, gives developers control over the download process is the {{AbortSignal}} passed to the `create()` methods. This allows developers to signal that they are no longer interested in creating a model object, and immediately causes the promise returned by `create()` to become rejected. The specification has a "should"-level <a href="#warning-download-cancelation">requirement</a> that the user agent not actually cancel the underlying download when the {{AbortSignal}} is aborted. The web developer will still receive a rejected promise, but the download will continue in the background, and the availability status (as seen by future calls to the `availability()` method) will update accordingly.
+
+User agents might be inclined to cancel the download in other situations not covered in the specification, such as when the page is unloaded. This needs to be handled with caution, as if the page can initiate these operations using JavaScript (for example, by navigating away to another origin) that would re-open the privacy hole. So, user agents should not cancel the download in response to any page-controlled actions. Canceling in response to user-controlled actions, however, is fine.
+
+<h4 id="privacy-availability-eviction">Download eviction</h4>
+
+Another ingredient in ensuring that websites cannot toggle the availability state back and forth is to ensure that user agents don't use a fixed quota system for the downloaded material. For example, if a user agent implemented the translator API with one download per language arc, supported 100 language arcs, and evicted all but the 30 most-recently-used language arcs, then web pages could toggle the readable-via-`create()` availability state of language arcs from "{{Availability/available}}" back to "{{Availability/downloadable}}" by creating translators for 30 new language arcs.
+
+The simplest mitigation to this is to avoid any API-specific quota, and instead rely on a per-user disk space-based quota. This specification does not mandate that particular solution, but does require that user agent should not implement systems which allow web pages to control the eviction of downloaded material.
+
+<h4 id="privacy-availability-alternatives">Alternate options</h4>
+
+While some of the above requirements, such as those on user activation or permissions policy, are specified using "must" language to ensure interoperability, most are specified using "should". The reason for this is that it's possible for implementations to use completely different strategies to preserve user privacy, especially for APIs that use small models. (For example, the language detector API.)
+
+The simplest of these is to treat model downloads like most other stored resources, partitioning them by the downloading page's [=storage key=]. This lets the web origin model's existing privacy protections operate, obviating the need for anything more complicated. The downside is that this spends more of the user's time, bandwidth, and disk space redundantly downloading the same model across multiple sites.
+
+A slight variant of this is to re-download the model every time it is requested by a new [=storage key=], while re-using the on-disk storage. This still uses the uesr's time and bandwidth, but at least saves on disk space.
+
+Going further, a user agent could attempt to fake the download for new [=storage keys=] by just waiting for a similar amount of time as the real download originally took. This then only spends the user's time, sparing their bandwidth and disk space. However, this is less private than the above alternatives, due to the presence of network side channels. For example, a web page could attempt to detect the fake downloads by issuing network requests concurrent to the `create()` call, and noting that there is no change to network throughouput. The scheme of remembering the time the real download originally took can also be dangerous, as the first site to initiate the download could attempt to artificially inflate this time (using concurrent network requests) in order to communicate information to other sites that will initiate a fake download in the future, from which they can read the time taken. Nevertheless, something along these lines might be useful in some cases, implemented with caution and combined with other mitigations.
