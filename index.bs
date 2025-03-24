@@ -1854,6 +1854,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
               <p>This prevents the web developer-perceived progress from suddenly jumping from 0% to 90%, and then taking a long time to go from 90% to 100%. It also provides some protection against the (admittedly not very powerful) fingerprinting vector of measuring the current download progress across multiple sites.
              </div>
 
+             If the actual number of bytes necessary to download is 0, but the user agent is faking a download for the reasons described in [[#privacy]], then set this number to an [=implementation-defined=] value that helps with the download faking.
+
           1. Let |lastProgressFraction| be 0.
 
           1. Let |lastProgressTime| be the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
@@ -1868,7 +1870,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
               1. Abort these steps.
 
-            1. Let |bytesSoFar| be the number of bytes downloaded so far.
+            1. Let |bytesSoFar| be the number of bytes downloaded so far. (Or the number of bytes fake-downloaded so far, if the user agent is faking the download.)
 
             1. [=Assert=]: |bytesSoFar| is greater than or equal to 0, and less than or equal to |totalBytes|.
 
@@ -2451,6 +2453,14 @@ The simplest of these is to treat model downloads like most other stored resourc
 A slight variant of this is to re-download the model every time it is requested by a new [=storage key=], while re-using the on-disk storage. This still uses the uesr's time and bandwidth, but at least saves on disk space.
 
 Going further, a user agent could attempt to fake the download for new [=storage keys=] by just waiting for a similar amount of time as the real download originally took. This then only spends the user's time, sparing their bandwidth and disk space. However, this is less private than the above alternatives, due to the presence of network side channels. For example, a web page could attempt to detect the fake downloads by issuing network requests concurrent to the `create()` call, and noting that there is no change to network throughouput. The scheme of remembering the time the real download originally took can also be dangerous, as the first site to initiate the download could attempt to artificially inflate this time (using concurrent network requests) in order to communicate information to other sites that will initiate a fake download in the future, from which they can read the time taken. Nevertheless, something along these lines might be useful in some cases, implemented with caution and combined with other mitigations.
+
+<h3 id="privacy-language-availability">Sensitive language availability</h3>
+
+Even if the user agent mitigates most of the fingerprinting risks associated with the availability of AI models per [[#privacy-availability]], such that probing availability requires a destructive action per [[#privacy-availability-creation]], the information about download availabilities for different languages can still be a privacy risk beyond fingerprinting. This is most obvious in the case of the translator API, where, for example, knowing that the user has downloaded a translator from English to a minority language might be sensitive information. But it can apply just as well to other APIs, via options such as their expected input languages, which might be implemented using downloadable fine-tunings with variable availability.
+
+For this reason, on top of the creation-time mitigations discussed in [[#privacy-availability-creation]], <strong>user agents may artificially fake a download if they believe it would be helpful for privacy reasons</strong>, instead of instantly creating the model. This is *not* a fingerprinting mitigation, but instead provides some degree of plausible deniability for the user, such that web pages cannot be certain of the user's demographic information. If the web page sees model object creation taking 2–3 seconds and emitting {{CreateMonitor/downloadprogress}} events, then perhaps this is a fake download due to the user previously downloading a translator for that minority language, or perhaps it is a real download that completed quickly.
+
+As discussed in [[#privacy-availability-alternatives]], such fake downloads are not foolproof, and a determined web page could attempt to detect them. However, they do provide some privacy benefit, and can be combined with other mitigations (such as prompts) to provide a more robust defense, and to make such demographic probing impractically unreliable for attackers.
 
 <h3 id="privacy-model-version">Model version</h3>
 
