@@ -417,19 +417,7 @@ For the time being, the Chrome built-in AI team is moving forward more aggresive
 
 ## Privacy considerations
 
-### General concerns about language-model based APIs
-
-If cloud-based language models are exposed through this API, then there are potential privacy issues with exposing user or website data to the relevant cloud and model providers. This is not a concern specific to this API, as websites can already choose to expose user or website data to other origins using APIs such as `fetch()`. However, it's worth keeping in mind, and in particular as discussed in our [Goals](#shared-goals), perhaps we should make it easier for web developers to know whether a cloud-based model is in use, or which one.
-
-If on-device language models are updated separately from browser and operating system versions, this API could enhance the web's fingerprinting service by providing extra identifying bits. Mandating that older browser versions not receive updates or be able to download models from too far into the future might be a possible remediation for this.
-
-Finally, we intend to prohibit (in the specification) any use of user-specific information that is not directly supplied through the API. For example, it would not be permissible to fine-tune the language model based on information the user has entered into the browser in the past.
-
-### Detecting available options
-
-The [`availability()` API](#testing-available-options-before-creation) specified here provide some bits of fingerprinting information, since the availability status of each option and language can be one of four values, and those values are expected to be shared across a user's browser or browsing profile.
-
-This privacy threat, and how the API mitigates it, is discussed in detail [in the specification](https://webmachinelearning.github.io/writing-assistance-apis/#privacy-availability).
+Please see [the specification](https://webmachinelearning.github.io/writing-assistance-apis/#privacy).
 
 ## Stakeholder feedback
 
