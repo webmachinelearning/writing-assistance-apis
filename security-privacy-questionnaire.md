@@ -9,7 +9,7 @@ This feature exposes two large categories of information:
 
 - The availability information for various capabilities of the API, so that web developers know what capabilities are available in the current browser, and whether using them will require a download or the capability can be used readily.
 
-The privacy implications of both of these are discussed [in the explainer](./README.md#privacy-considerations).
+The privacy implications of both of these are discussed [in the specification](https://webmachinelearning.github.io/writing-assistance-apis/#privacy).
 
 > 02.  Do features in your specification expose the minimum amount of information
 >      necessary to implement the intended functionality?
@@ -83,7 +83,7 @@ Otherwise, we do not anticipate any differences.
 
 Not quite yet.
 
-We have [privacy considerations](./README.md#privacy-considerations) section in the explainer, and the start of a [privacy considerations section](https://webmachinelearning.github.io/writing-assistance-apis/#privacy) in the specification. For now it covers only the fingerprinting issue, but we anticipate moving over more content from the explainer over time.
+We have a [privacy considerations section](https://webmachinelearning.github.io/writing-assistance-apis/#privacy) in the specification.
 
 We do not anticipate significant security risks for these APIs at this time, although we will add a section discussing some basics like how to avoid allowing websites to use up all of the user's disk space.
 
