@@ -419,6 +419,10 @@ For the time being, the Chrome built-in AI team is moving forward more aggresive
 
 Please see [the specification](https://webmachinelearning.github.io/writing-assistance-apis/#privacy).
 
+## Security considerations
+
+Please see [the specification](https://webmachinelearning.github.io/writing-assistance-apis/#security).
+
 ## Stakeholder feedback
 
 * W3C TAG: [w3ctag/design-reviews#991](https://github.com/w3ctag/design-reviews/issues/991)

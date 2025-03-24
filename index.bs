@@ -425,7 +425,7 @@ The <dfn attribute for="Summarizer">inputQuota</dfn> getter steps are to return 
 
      The summarization should conform to the guidance given by |type|, |format|, and |length|, in the definitions of each of their enumeration values.
 
-     The summarization process must conform to the privacy guidance given in [[#privacy-user-input]].
+     The summarization process must conform to the guidance given in [[#privacy]] and [[#security]].
 
      If |outputLanguage| is non-null, the summarization should be in that language. Otherwise, it should be in the language of |input| (which might not match that of |context| or |sharedContext|). If |input| contains multiple languages, or the language of |input| cannot be detected, then either the output language is [=implementation-defined=], or the implementation may treat this as an error, per the guidance in [[#summarizer-errors]].
 
@@ -623,7 +623,7 @@ When summarization fails, the following possible reasons may be surfaced to the 
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the summarizer API. It only contains those which can come from certain [=implementation-defined=] steps.
@@ -974,6 +974,8 @@ The <dfn attribute for="Writer">inputQuota</dfn> getter steps are to return [=th
 
      The written output should conform to the guidance given by |tone|, |format|, and |length|, in the definitions of each of their enumeration values.
 
+     The writing process must conform to the guidance given in [[#privacy]] and [[#security]].
+
      If |outputLanguage| is non-null, the writing should be in that language. Otherwise, it should be in the language of |input| (which might not match that of |context| or |sharedContext|). If |input| contains multiple languages, or the language of |input| cannot be detected, then either the output language is [=implementation-defined=], or the implementation may treat this as an error, per the guidance in [[#writer-errors]].
 
   1. While true:
@@ -1132,7 +1134,7 @@ When writing fails, the following possible reasons may be surfaced to the web de
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the writer API. It only contains those which can come from certain [=implementation-defined=] steps.
@@ -1483,6 +1485,8 @@ The <dfn attribute for="Rewriter">inputQuota</dfn> getter steps are to return [=
 
      The rewritten output should conform to the guidance given by |tone|, |format|, and |length|, in the definitions of each of their enumeration values.
 
+     The rewriting process must conform to the guidance given in [[#privacy]] and [[#security]].
+
      If |outputLanguage| is non-null, the rewritten output text should be in that language. Otherwise, it should be in the language of |input| (which might not match that of |context| or |sharedContext|). If |input| contains multiple languages, or the language of |input| cannot be detected, then either the output language is [=implementation-defined=], or the implementation may treat this as an error, per the guidance in [[#rewriter-errors]].
 
   1. While true:
@@ -1645,7 +1649,7 @@ When rewriting fails, the following possible reasons may be surfaced to the web 
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the rewriter API. It only contains those which can come from certain [=implementation-defined=] steps.
@@ -1822,7 +1826,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
           1. [=Consume user activation=] given |realm|'s [=realm/global object=].
 
-          1. The user agent may display a user interface to the user to confirm that they want to perform the download operation given by |startDownload|, or to show the progress of the download. Alternately, the user agent may decide to deny the ability to perform |startDownload| based on implicit signals of the user's intent. If the user explicitly or implicitly signals that they do not want to start the download, then:
+          1. <span id="step-download-user-interface"></span>The user agent may display a user interface to the user to confirm that they want to perform the download operation given by |startDownload|, or to show the progress of the download. Alternately, the user agent may decide to deny the ability to perform |startDownload| based on implicit signals of the user's intent, including the considerations in [[#security-disk-space]]. If the user explicitly or implicitly signals that they do not want to start the download, then:
 
             1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
 
@@ -2469,3 +2473,27 @@ Using user input in such a way would provide a vector for exposing the user's in
 The implementation-defined parts of these APIs can be implemented by delegating to user-agent-provided cloud-based services. This is not, in itself, a significant privacy risk: web developers already have the ability to send arbitrary data (including user-provided data) to cloud services via APIs such as {{WindowOrWorkerGlobalScope/fetch()}}. Indeed, it's likely that web developers will fall back to such cloud services when these APIs are not present.
 
 However, this is something for web developers to be aware of when they use this API, in case their web page has requirements on not sending certain information to third parties. We're contemplating giving control over this possibility to web developers in <#38>.
+
+<h2 id="security">Security considerations</h2>
+
+<em>Unlike many "security considerations" sections, which only summarize and restate security considerations that are already normatively specified elsewhere in the document, this section contains some normative requirements that are not present elsewhere. The novel normative requirements are called out using <strong>strong emphasis</strong>.</em>
+
+<h3 id="security-disk-space">Disk space</h3>
+
+Downloading models for these APIs could use significant amounts of the user's disk space. Depending on the implementation strategy, web pages might be able to trigger more such usage, by repeatedly calling the `create()` methods with different options.
+
+<strong>In the event of storage pressure, user agents should balance the utility of these APIs with the disk space they take up</strong>, possibly failing a new download (as discussed in <a href="#step-download-user-interface">this step</a>) or evicting an old one. However, user agents need to be mindful of the privacy impacts discussed in [[#privacy-availability-eviction]] for any such eviction strategy. <strong>User agents may involve the user in these decisions</strong>, e.g., via download-time prompts or some sort of model management UI.
+
+<h3 id="security-runtime">Runtime shared resources</h3>
+
+Current implementation strategies for these APIs can involve significant usage of resources such as GPU memory and processing power. This leads to a common implementation strategy of loading the appropriate model once, and sharing its capabilities between multiple web pages that interface with it via these APIs.
+
+<strong>User agents should ensure that one web page's use of these APIs does not overly interfere with another web page's use of these APIs, or another web page's general operation</strong>. For example, it should not be possible for a background tab to prevent a foreground tab from using these APIs by calling them in a tight loop, or for one web page to lock up shared GPU resources indefinitely by repeatedly submitting large inputs.
+
+This specification does not mandate any particular mitigation strategy for these issues, but possible useful strategies include queuing, rate limiting, abuse detection, and treating differently web pages which the user is actively interacting with versus those in the background. If necessary, the user agent may fail these APIs with an "{{UnknownError}}" {{DOMException}} to prevent such problems.
+
+<h3 id="security-os">OS-provided models</h3>
+
+One implementation strategy for these APIs is to delegate to models provided by the operating system. This can provide a number of benefits, such as a more uniform experience for the user across multiple applications, or less disk space usage.
+
+However, doing so comes with the usual dangers of exposing operating system capabilities to the web platform. Notably, <strong>user agents must ensure that the various privacy and security requirements in this specification are still followed when using OS-provided models</strong>, even if the user agent has less control over the model's behavior. Particularly notable requirements to watch out for are those in [[#privacy-user-input]] and [[#security-runtime]].
