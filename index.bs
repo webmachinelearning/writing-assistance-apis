@@ -907,8 +907,6 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
         1. [=Fire an event=] named {{CreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to 1, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
 
-          <p class="advisement">This assumes <a href="https://github.com/whatwg/xhr/pull/394">whatwg/xhr#394</a> is merged so that passing non-integer values for {{ProgressEvent/loaded}} works as expected.</p>
-
   1. Let |abortedDuringDownload| be false.
 
     <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
