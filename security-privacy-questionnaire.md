@@ -81,11 +81,10 @@ Otherwise, we do not anticipate any differences.
 > 15.  Does this specification have both "Security Considerations" and "Privacy
 >      Considerations" sections?
 
-Not quite yet.
+Yes:
 
-We have a [privacy considerations section](https://webmachinelearning.github.io/writing-assistance-apis/#privacy) in the specification.
-
-We do not anticipate significant security risks for these APIs at this time, although we will add a section discussing some basics like how to avoid allowing websites to use up all of the user's disk space.
+* [Privacy considerations](https://webmachinelearning.github.io/writing-assistance-apis/#privacy)
+* [Security considerations](https://webmachinelearning.github.io/writing-assistance-apis/#security)
 
 > 16.  Do features in your specification enable origins to downgrade default
 >      security protections?
