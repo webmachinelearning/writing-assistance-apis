@@ -52,72 +52,6 @@ p + dl.props { margin-top: -0.5em; }
 
 For now, see the [explainer](https://github.com/webmachinelearning/writing-assistance-apis/blob/main/README.md).
 
-<h2 id="shared-apis">Shared APIs</h2>
-
-<xmp class="idl">
-[Exposed=Window, SecureContext]
-interface CreateMonitor : EventTarget {
-  attribute EventHandler ondownloadprogress;
-};
-
-callback CreateMonitorCallback = undefined (CreateMonitor monitor);
-
-enum Availability {
-  "unavailable",
-  "downloadable",
-  "downloading",
-  "available"
-};
-
-interface mixin DestroyableModel {
-  undefined destroy();
-};
-</xmp>
-
-<hr>
-
-The following are the [=event handlers=] (and their corresponding [=event handler event types=]) that must be supported, as [=event handler IDL attributes=], by all {{CreateMonitor}} objects:
-
-<table>
-  <thead>
-    <tr>
-      <th>[=Event handler=]
-      <th>[=Event handler event type=]
-  <tbody>
-    <tr>
-      <td><dfn attribute for="CreateMonitor">ondownloadprogress</dfn>
-      <td><dfn event for="CreateMonitor">downloadprogress</dfn>
-</table>
-
-<hr>
-
-Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface mixin has a <dfn export for="DestroyableModel">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
-
-<p class="note">The [=DestroyableModel/destruction abort controller=] is only used internally, as a way of tracking calls to {{DestroyableModel/destroy()}}. Since it is easy to combine multiple {{AbortSignal}}s using [=create a dependent abort signal=], this lets us centralize handling of any {{AbortSignal}} the web developer provides to specific method calls, with any calls to {{DestroyableModel/destroy()}}.
-
-<div algorithm>
-  To <dfn>initialize as a destroyable</dfn> an {{DestroyableModel}} object |destroyable|:
-
-  1. Let |controller| be a [=new=] {{AbortController}} created in |destroyable|'s [=relevant realm=].
-
-  1. Set |controller|'s [=AbortController/signal=] to a [=new=] {{AbortSignal}} created in |destroyable|'s [=relevant realm=].
-
-  1. Set |destroyable|'s [=DestroyableModel/destruction abort controller=] to |controller|.
-</div>
-
-<div algorithm>
-  <p>The <dfn method for="DestroyableModel">destroy()</dfn> method steps are to [=DestroyableModel/destroy=] [=this=] given a new "{{AbortError}}" {{DOMException}}.
-</div>
-
-<div algorithm>
-  To <dfn for="DestroyableModel">destroy</dfn> an {{DestroyableModel}} |destroyable|, given a JavaScript value |reason|:
-
-  1. [=AbortController/Signal abort=] given |destroyable|'s [=DestroyableModel/destruction abort controller=] and |reason|.
-
-  1. The user agent should release any resources associated with |destroyable|, such as AI models loaded to support its operation, as long as those resources are not needed for other ongoing operations.
-</div>
-
-
 <h2 id="summarizer-api">The summarizer API</h2>
 
 <xmp class="idl">
@@ -1719,6 +1653,71 @@ When rewriting fails, the following possible reasons may be surfaced to the web 
 Access to the rewriter API is gated behind the [=policy-controlled feature=] "<dfn permission>rewriter</dfn>", which has a [=policy-controlled feature/default allowlist=] of <code>[=default allowlist/'self'=]</code>.
 
 <h2 id="supporting">Shared infrastructure</h2>
+
+<h3 id="shared-apis">Common APIs</h3>
+
+<xmp class="idl">
+[Exposed=Window, SecureContext]
+interface CreateMonitor : EventTarget {
+  attribute EventHandler ondownloadprogress;
+};
+
+callback CreateMonitorCallback = undefined (CreateMonitor monitor);
+
+enum Availability {
+  "unavailable",
+  "downloadable",
+  "downloading",
+  "available"
+};
+
+interface mixin DestroyableModel {
+  undefined destroy();
+};
+</xmp>
+
+<hr>
+
+The following are the [=event handlers=] (and their corresponding [=event handler event types=]) that must be supported, as [=event handler IDL attributes=], by all {{CreateMonitor}} objects:
+
+<table>
+  <thead>
+    <tr>
+      <th>[=Event handler=]
+      <th>[=Event handler event type=]
+  <tbody>
+    <tr>
+      <td><dfn attribute for="CreateMonitor">ondownloadprogress</dfn>
+      <td><dfn event for="CreateMonitor">downloadprogress</dfn>
+</table>
+
+<hr>
+
+Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface mixin has a <dfn export for="DestroyableModel">destruction abort controller</dfn>, an {{AbortController}}, set by the [=initialize as a destroyable=] algorithm.
+
+<p class="note">The [=DestroyableModel/destruction abort controller=] is only used internally, as a way of tracking calls to {{DestroyableModel/destroy()}}. Since it is easy to combine multiple {{AbortSignal}}s using [=create a dependent abort signal=], this lets us centralize handling of any {{AbortSignal}} the web developer provides to specific method calls, with any calls to {{DestroyableModel/destroy()}}.
+
+<div algorithm>
+  To <dfn>initialize as a destroyable</dfn> an {{DestroyableModel}} object |destroyable|:
+
+  1. Let |controller| be a [=new=] {{AbortController}} created in |destroyable|'s [=relevant realm=].
+
+  1. Set |controller|'s [=AbortController/signal=] to a [=new=] {{AbortSignal}} created in |destroyable|'s [=relevant realm=].
+
+  1. Set |destroyable|'s [=DestroyableModel/destruction abort controller=] to |controller|.
+</div>
+
+<div algorithm>
+  <p>The <dfn method for="DestroyableModel">destroy()</dfn> method steps are to [=DestroyableModel/destroy=] [=this=] given a new "{{AbortError}}" {{DOMException}}.
+</div>
+
+<div algorithm>
+  To <dfn for="DestroyableModel">destroy</dfn> an {{DestroyableModel}} |destroyable|, given a JavaScript value |reason|:
+
+  1. [=AbortController/Signal abort=] given |destroyable|'s [=DestroyableModel/destruction abort controller=] and |reason|.
+
+  1. The user agent should release any resources associated with |destroyable|, such as AI models loaded to support its operation, as long as those resources are not needed for other ongoing operations.
+</div>
 
 <h3 id="supporting-creation">Creation</h3>
 
