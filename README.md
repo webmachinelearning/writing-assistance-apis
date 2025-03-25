@@ -348,9 +348,9 @@ Based on the [use cases](#use-cases), it seems many web developers are excited t
 
 We understand this to be an active research area (on both sides), and it will be hard to specify concrete for these APIs. Nevertheless, we want to highlight this possibility and will include "should"-level language and examples in the specification to encourage implementations to be robust to such adversarial inputs.
 
-### `"after-download"` availability
+### `"downloadable"` availability
 
-To ensure that the browser can give accurate answers about which options are available `"after-download"`, it must ship with some notion of what types/formats/input languages/etc. are available to download. In other words, the browser cannot download this information at the same time it downloads the language model. This could be done either by bundling that information with the browser binary, or via some out-of-band update mechanism that proactively stays up to date.
+To ensure that the browser can give accurate answers about which options are available with an availability of `"downloadable"`, it must ship with some notion of what types/formats/input languages/etc. are available to download. In other words, the browser cannot download this information at the same time it downloads the language model. This could be done either by bundling that information with the browser binary, or via some out-of-band update mechanism that proactively stays up to date.
 
 ### Permissions policy, iframes, and workers
 
