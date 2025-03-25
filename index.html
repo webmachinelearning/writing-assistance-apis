@@ -8,7 +8,7 @@
   <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="4fb3c511c3b235d4081cb944cd2b9e7234d254f5" name="revision">
+  <meta content="59d3459b5463b7e95bca263cfa8f157a095e879e" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -747,7 +747,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
   <div class="head">
    <p data-fill-with="logo"><a class="logo" href="https://webmachinelearning.github.io/"> <img alt="Logo" height="100" src="https://webmachinelearning.github.io/webmachinelearning-logo.png" width="100"> </a> </p>
    <h1 class="p-name no-ref" id="title">Writing Assistance APIs</h1>
-   <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>, <time class="dt-updated" datetime="2025-03-24">24 March 2025</time></p>
+   <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>, <time class="dt-updated" datetime="2025-03-25">25 March 2025</time></p>
    <details open>
     <summary>More details about this document</summary>
     <div data-fill-with="spec-metadata">
@@ -1163,7 +1163,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     <p>One way this could be implemented would be for <a data-link-type="dfn" href="#summarizer-language-availabilities" id="ref-for-summarizer-language-availabilities②">summarizer language availabilities</a> to return that "<code>zh-Hant</code>" is in the <a data-link-type="dfn" href="#language-availabilities-input-languages" id="ref-for-language-availabilities-input-languages②">input languages</a>["<code class="idl"><a data-link-type="idl" href="#dom-availability-available" id="ref-for-dom-availability-available④">available</a></code>"] set, and "<code>zh</code>" and "<code>zh-Hans</code>" are in the <a data-link-type="dfn" href="#language-availabilities-input-languages" id="ref-for-language-availabilities-input-languages③">input languages</a>["<code class="idl"><a data-link-type="idl" href="#dom-availability-downloadable" id="ref-for-dom-availability-downloadable④">downloadable</a></code>"] set. This return value conforms to the requirements of the <a data-link-type="dfn" href="#language-tag-set-completeness-rules" id="ref-for-language-tag-set-completeness-rules">language tag set completeness rules</a>, in ensuring that "<code>zh</code>" is present. Per <a class="allow-2119" href="#language-tag-completeness-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "<code>zh</code>" belongs in the set of downloadable input languages, with "<code>zh-Hans</code>", instead of in the set of available input languages, with "<code>zh-Hant</code>".</p>
     <p>Combined with the use of <a data-link-type="abstract-op" href="https://tc39.es/ecma402/#sec-lookupmatchinglocalebybestfit" id="ref-for-sec-lookupmatchinglocalebybestfit①">LookupMatchingLocaleByBestFit</a>, this means <code class="idl"><a data-link-type="idl" href="#dom-summarizer-availability" id="ref-for-dom-summarizer-availability①">availability()</a></code> will give the following answers:</p>
 <pre class="language-js highlight"><c- a>function</c-> a<c- p>(</c->languageTag<c- p>)</c-> <c- p>{</c->
-  <c- k>return</c-> ai<c- p>.</c->summarizer<c- p>.</c->availability<c- p>({</c->
+  <c- k>return</c-> Summarizer<c- p>.</c->availability<c- p>({</c->
     expectedInputLanguages<c- o>:</c-> <c- p>[</c->languageTag<c- p>]</c->
   <c- p>});</c->
 <c- p>}</c->
