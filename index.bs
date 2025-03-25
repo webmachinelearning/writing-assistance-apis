@@ -385,7 +385,7 @@ All of these [=struct/items=] are [=maps=] from {{Availability}} values to [=set
 
   <xmp class="language-js">
   function a(languageTag) {
-    return ai.summarizer.availability({
+    return Summarizer.availability({
       expectedInputLanguages: [languageTag]
     });
   }
