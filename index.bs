@@ -184,7 +184,7 @@ enum SummarizerLength { "short", "medium", "long" };
 <div algorithm>
   The static <dfn method for="Summarizer">create(|options|)</dfn> method steps are:
 
-  1. Return the result of [=creating an AI model object=] given |options|, "{{summarizer}}", [=validate and canonicalize summarizer options=], [=computing summarizer options availability=], [=download the summarization model=], [=initialize the summarization model=], and [=create a summarizer object=].
+  1. Return the result of [=creating an AI model object=] given |options|, "{{summarizer}}", [=validate and canonicalize summarizer options=], [=computing summarizer options availability=], [=download the summarizer model=], [=initialize the summarizer model=], and [=create a summarizer object=].
 </div>
 
 <div algorithm>
@@ -198,7 +198,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>download the summarization model</dfn>, given an {{SummarizerCreateCoreOptions}} |options|:
+  To <dfn>download the summarizer model</dfn>, given an {{SummarizerCreateCoreOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
@@ -210,7 +210,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>initialize the summarization model</dfn>, given an {{SummarizerCreateOptions}} |options|:
+  To <dfn>initialize the summarizer model</dfn>, given an {{SummarizerCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
@@ -288,17 +288,17 @@ enum SummarizerLength { "short", "medium", "long" };
 
   1. Let |availability| be the [=summarizer non-language options availability=] given |options|["{{SummarizerCreateCoreOptions/type}}"], |options|["{{SummarizerCreateCoreOptions/format}}"], and |options|["{{SummarizerCreateCoreOptions/length}}"].
 
-  1. Let |languageAvailabilities| be the [=summarizer language availabilities=].
+  1. Let |triple| be the [=summarizer language availabilities triple=].
 
-  1. If |languageAvailabilities| is null, then return null.
+  1. If |triple| is null, then return null.
 
-  1. Let |inputLanguageAvailability| be the result of [=computing summarizer language availability=] given |options|["{{SummarizerCreateCoreOptions/expectedInputLanguages}}"] and |languageAvailabilities|'s [=language availabilities/input languages=].
+  1. Let |inputLanguageAvailability| be the result of [=computing language availability=] given |options|["{{SummarizerCreateCoreOptions/expectedInputLanguages}}"] and |triple|'s [=language availabilities triple/input languages=].
 
-  1. Let |contextLanguagesAvailability| be the result of [=computing summarizer language availability=] given |options|["{{SummarizerCreateCoreOptions/expectedContextLanguages}}"] and |languageAvailabilities|'s [=language availabilities/context languages=].
+  1. Let |contextLanguagesAvailability| be the result of [=computing language availability=] given |options|["{{SummarizerCreateCoreOptions/expectedContextLanguages}}"] and |triple|'s [=language availabilities triple/context languages=].
 
   1. Let |outputLanguagesList| be « |options|["{{SummarizerCreateCoreOptions/outputLanguage}}"] ».
 
-  1. Let |outputLanguageAvailability| be the result of [=computing summarizer language availability=] given |outputLanguagesList| and |languageAvailabilities|'s [=language availabilities/output languages=].
+  1. Let |outputLanguageAvailability| be the result of [=computing language availability=] given |outputLanguagesList| and |triple|'s [=language availabilities triple/output languages=].
 
   1. Set |options|["{{SummarizerCreateCoreOptions/outputLanguage}}"] to |outputLanguagesList|[0].
 
@@ -306,37 +306,11 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>compute summarizer language availability</dfn> given an [=ordered set=] of strings |requestedLanguages| and a [=map=] from {{Availability}} values to [=sets=] of strings |availabilities|, perform the following steps. They return an {{Availability}} value, and they mutate |requestedLanguages| in place to update language tags to their best-fit matches.
-
-  1. Let |availability| be "{{Availability/available}}".
-
-  1. [=set/For each=] |language| of |requestedLanguages|:
-
-    1. [=list/For each=] |availabilityToCheck| of « "{{Availability/available}}", "{{Availability/downloading}}", "{{Availability/downloadable}}" »:
-
-      1. Let |languagesWithThisAvailability| be |availabilities|[|availabilityToCheck|].
-
-      1. Let |bestMatch| be [$LookupMatchingLocaleByBestFit$](|languagesWithThisAvailability|, « |language| »).
-
-      1. If |bestMatch| is not undefined, then:
-
-        1. [=list/Replace=] |language| with |bestMatch|.\[[locale]] in |requestedLanguages|.
-
-        1. Set |availability| to the [=Availability/minimum availability=] given |availability| and |availabilityToCheck|.
-
-        1. [=iteration/Break=].
-
-    1. Return "{{Availability/unavailable}}".
-
-  1. Return |availability|.
-</div>
-
-<div algorithm>
   The <dfn>summarizer non-language options availability</dfn>, given a {{SummarizerType}} |type|, {{SummarizerFormat}} |format|, and an {{SummarizerLength}} |length|, is given by the following steps. They return an {{Availability}} value or null.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
-  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=summarizer non-language options availability=] could stop producing such an error), then return null.
+  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying could stop producing such an error), then return null.
 
   1. If the user agent supports summarizing text into the type of summary described by |type|, in the format described by |format|, and with the length guidance given by |length| without performing any downloading operations, then return "{{Availability/available}}".
 
@@ -347,39 +321,31 @@ enum SummarizerLength { "short", "medium", "long" };
   1. Otherwise, return "{{Availability/unavailable}}".
 </div>
 
-A <dfn>language availabilities</dfn> is a [=struct=] with the following [=struct/items=]:
-
-* <dfn for="language availabilities">input languages</dfn>
-* <dfn for="language availabilities">context languages</dfn>
-* <dfn for="language availabilities">output languages</dfn>
-
-All of these [=struct/items=] are [=maps=] from {{Availability}} values to [=sets=] of strings representing [=Unicode canonicalized locale identifiers=]. Their [=map/keys=] will always be one of "{{Availability/downloading}}", "{{Availability/downloadable}}", or "{{Availability/available}}" (i.e., they will never be "{{Availability/unavailable}}"). [[!ECMA-402]]
-
 <div algorithm>
-  The <dfn>summarizer language availabilities</dfn> are given by the following steps. They return a [=language availabilities=] or null.
+  The <dfn>summarizer language availabilities triple</dfn> is given by the following steps. They return a [=language availabilities triple=] or null.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
-  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying the [=summarizer language availabilities=] could stop producing such an error), then return null.
+  1. If there is some error attempting to determine whether the user agent supports summarizing text, which the user agent believes to be transient (such that re-querying could stop producing such an error), then return null.
 
-  1. Return a [=language availabilities=] with:
+  1. Return a [=language availabilities triple=] with:
 
     <dl class="props">
-      : [=language availabilities/input languages=]
-      :: the result of [=getting language availabilities=] given the purpose of summarizing text written in that language
+      : [=language availabilities triple/input languages=]
+      :: the result of [=getting the language availabilities partition=] given the purpose of summarizing text written in that language
 
-      : [=language availabilities/context languages=]
-      :: the result of [=getting language availabilities=] given the purpose of summarizing text using web-developer provided context information written in that language
+      : [=language availabilities triple/context languages=]
+      :: the result of [=getting the language availabilities partition=] given the purpose of summarizing text using web-developer provided context information written in that language
 
-      : [=language availabilities/output languages=]
-      :: the result of [=getting language availabilities=] given the purpose of producing text summaries in that language
+      : [=language availabilities triple/output languages=]
+      :: the result of [=getting the language availabilities partition=] given the purpose of producing text summaries in that language
     </dl>
 </div>
 
 <div class="example" id="example-subtags-chinese">
   A common setup seen in today's software is to support two types of written Chinese: "traditional Chinese" and "simplified Chinese". Let's suppose that the user agent supports summarizing text written in traditional Chinese with no downloads, and simplified Chinese after a download.
 
-  One way this could be implemented would be for [=summarizer language availabilities=] to return that "`zh-Hant`" is in the [=language availabilities/input languages=]["{{Availability/available}}"] set, and "`zh`" and "`zh-Hans`" are in the [=language availabilities/input languages=]["{{Availability/downloadable}}"] set. This return value conforms to the requirements of the [=language tag set completeness rules=], in ensuring that "`zh`" is present. Per <a class="allow-2119" href="#language-tag-completeness-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "`zh`" belongs in the set of downloadable input languages, with "`zh-Hans`", instead of in the set of available input languages, with "`zh-Hant`".
+  One way this could be implemented would be for [=summarizer language availabilities triple=] to return that "`zh-Hant`" is in the [=language availabilities triple/input languages=]["{{Availability/available}}"] set, and "`zh`" and "`zh-Hans`" are in the [=language availabilities triple/input languages=]["{{Availability/downloadable}}"] set. This return value conforms to the requirements of the [=language tag set completeness rules=], in ensuring that "`zh`" is present. Per <a class="allow-2119" href="#language-tag-completeness-implementation-defined">the "should"-level guidance</a>, the implementation has determined that "`zh`" belongs in the set of downloadable input languages, with "`zh-Hans`", instead of in the set of available input languages, with "`zh-Hant`".
 
   Combined with the use of [$LookupMatchingLocaleByBestFit$], this means {{Summarizer/availability()}} will give the following answers:
 
@@ -403,7 +369,7 @@ All of these [=struct/items=] are [=maps=] from {{Availability}} values to [=set
   </xmp>
 </div>
 
-<h3 id="the-Summarizer-class">The {{Summarizer}} class</h3>
+<h3 id="the-summarizer-class">The {{Summarizer}} class</h3>
 
 Every {{Summarizer}} has a <dfn for="Summarizer">shared context</dfn>, a [=string=]-or-null, set during creation.
 
@@ -673,8 +639,6 @@ This section gives normative guidance on how the implementation of [=summarize=]
         </dl>
 </table>
 
-<p class="note">As with all "<span class="allow-2119">should</span>"-level guidance, user agents might not conform perfectly to these. Especially in the case of counting words, it's expected that language models might not conform perfectly.
-
 <table class="data enum-table">
   <caption>{{SummarizerFormat}} values</caption>
   <thead>
@@ -691,6 +655,8 @@ This section gives normative guidance on how the implementation of [=summarize=]
       <td>
         <p>The summary should be formatted using the Markdown markup language, ideally as valid CommonMark. [[!COMMONMARK]]
 </table>
+
+<p class="note">As with all "<span class="allow-2119">should</span>"-level guidance, user agents might not conform perfectly to these. Especially in the case of counting words, it's expected that language models might not conform perfectly.
 
 <h4 id="summarizer-errors">Errors</h4>
 
@@ -731,8 +697,6 @@ When summarization fails, the following possible reasons may be surfaced to the 
 Access to the summarizer API is gated behind the [=policy-controlled feature=] "<dfn permission>summarizer</dfn>", which has a [=policy-controlled feature/default allowlist=] of <code>[=default allowlist/'self'=]</code>.
 
 <h2 id="writer-api">The writer API</h2>
-
-Just IDL for now; full spec coming!
 
 <xmp class="idl">
 [Exposed=Window, SecureContext]
@@ -793,9 +757,455 @@ enum WriterFormat { "plain-text", "markdown" };
 enum WriterLength { "short", "medium", "long" };
 </xmp>
 
-<h2 id="rewriter-api">The rewriter API</h2>
+<h3 id="writer-creation">Creation</h3>
 
-Just IDL for now; full spec coming!
+<div algorithm>
+  The static <dfn method for="Writer">create(|options|)</dfn> method steps are:
+
+  1. Return the result of [=creating an AI model object=] given |options|, "{{writer}}", [=validate and canonicalize writer options=], [=computing writer options availability=], [=download the writer model=], [=initialize the writer model=], and [=create a writer object=].
+</div>
+
+<div algorithm>
+  To <dfn>validate and canonicalize writer options</dfn> given an {{WriterCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+
+  1. [=Validate and canonicalize language tags=] given |options| and "{{WriterCreateCoreOptions/expectedInputLanguages}}".
+
+  1. [=Validate and canonicalize language tags=] given |options| and "{{WriterCreateCoreOptions/expectedContextLanguages}}".
+
+  1. [=Validate and canonicalize language tags=] given |options| and "{{WriterCreateCoreOptions/outputLanguage}}".
+</div>
+
+<div algorithm>
+  To <dfn>download the writer model</dfn>, given an {{WriterCreateCoreOptions}} |options|:
+
+  1. [=Assert=]: these steps are running [=in parallel=].
+
+  1. Initiate the download process for everything the user agent needs to write text according to |options|. This could include a base AI model, fine-tunings for specific languages or option values, or other resources.
+
+  1. If the download process cannot be started for any reason, then return false.
+
+  1. Return true.
+</div>
+
+<div algorithm>
+  To <dfn>initialize the writer model</dfn>, given an {{WriterCreateOptions}} |options|:
+
+  1. [=Assert=]: these steps are running [=in parallel=].
+
+  1. Perform any necessary initialization operations for the AI model backing the user agent's writing capabilities.
+
+    This could include loading the model into memory, loading |options|["{{WriterCreateOptions/sharedContext}}"] into the model's context window, or loading any fine-tunings necessary to support the other options expressed by |options|.
+
+  1. If initialization failed because the process of loading |options| resulted in using up all of the model's input quota, then:
+
+    1. Let |requested| be the amount of input usage needed to encode |options|. The encoding of |options| as input is [=implementation-defined=].
+
+      <p class="note">This could be the amount of tokens needed to represent these options in a language model tokenization scheme, possibly with prompt engineering. Or it could be 0, if the implementation plans to send the options to the underlying model with every [=write=] operation.
+
+    1. Let |quota| be the maximum input quota that the user agent supports for encoding |options|.
+
+    1. [=Assert=]: |requested| is greater than |quota|. (That is how we reached this error branch.)
+
+    1. Return a [=quota exceeded error information=] whose [=QuotaExceededError/requested=] is |requested| and [=QuotaExceededError/quota=] is |quota|.
+
+  1. If initialization failed for any other reason, then return a [=DOMException error information=] whose [=DOMException error information/name=] is "{{OperationError}}" and whose [=DOMException error information/details=] contain appropriate detail.
+
+  1. Return null.
+</div>
+
+<div algorithm>
+  To <dfn>create a writer object</dfn>, given a [=ECMAScript/realm=] |realm| and an {{WriterCreateOptions}} |options|:
+
+  1. [=Assert=]: these steps are running on |realm|'s [=ECMAScript/surrounding agent=]'s [=agent/event loop=].
+
+  1. Let |inputQuota| be the amount of input quota that is available to the user agent for future [=write|writing=] operations. (This value is [=implementation-defined=], and may be +∞ if there are no specific limits beyond, e.g., the user's memory, or the limits of JavaScript strings.)
+
+  1. Return a new {{Writer}} object, created in |realm|, with
+
+    <dl class="props">
+      : [=Writer/shared context=]
+      :: |options|["{{WriterCreateOptions/sharedContext}}"] if it [=map/exists=]; otherwise null
+
+      : [=Writer/tone=]
+      :: |options|["{{WriterCreateCoreOptions/tone}}"]
+
+      : [=Writer/format=]
+      :: |options|["{{WriterCreateCoreOptions/format}}"]
+
+      : [=Writer/length=]
+      :: |options|["{{WriterCreateCoreOptions/length}}"]
+
+      : [=Writer/expected input languages=]
+      :: the result of [=creating a frozen array=] given |options|["{{WriterCreateCoreOptions/expectedInputLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
+
+      : [=Writer/expected context languages=]
+      :: the result of [=creating a frozen array=] given |options|["{{WriterCreateCoreOptions/expectedContextLanguages}}"] if it [=set/is empty|is not empty=]; otherwise null
+
+      : [=Writer/output language=]
+      :: |options|["{{WriterCreateCoreOptions/outputLanguage}}"] if it [=map/exists=]; otherwise null
+
+      : [=Writer/input quota=]
+      :: |inputQuota|
+    </dl>
+</div>
+
+<h3 id="writer-availability">Availability</h3>
+
+<div algorithm>
+  The static <dfn method for="Writer">availability(|options|)</dfn> method steps are:
+
+  1. Return the result of [=computing AI model availability=] given |options|, "{{writer}}", [=validate and canonicalize writer options=], and [=compute writer options availability=].
+</div>
+
+<div algorithm>
+  To <dfn>compute writer options availability</dfn> given an {{WriterCreateCoreOptions}} |options|, perform the following steps. They return either an {{Availability}} value or null, and they mutate |options| in place to update language tags to their best-fit matches.
+
+  1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. Let |availability| be the [=writer non-language options availability=] given |options|["{{WriterCreateCoreOptions/tone}}"], |options|["{{WriterCreateCoreOptions/format}}"], and |options|["{{WriterCreateCoreOptions/length}}"].
+
+  1. Let |triple| be the [=writer language availabilities triple=].
+
+  1. If |triple| is null, then return null.
+
+  1. Let |inputLanguageAvailability| be the result of [=computing language availability=] given |options|["{{WriterCreateCoreOptions/expectedInputLanguages}}"] and |triple|'s [=language availabilities triple/input languages=].
+
+  1. Let |contextLanguagesAvailability| be the result of [=computing language availability=] given |options|["{{WriterCreateCoreOptions/expectedContextLanguages}}"] and |triple|'s [=language availabilities triple/context languages=].
+
+  1. Let |outputLanguagesList| be « |options|["{{WriterCreateCoreOptions/outputLanguage}}"] ».
+
+  1. Let |outputLanguageAvailability| be the result of [=computing language availability=] given |outputLanguagesList| and |triple|'s [=language availabilities triple/output languages=].
+
+  1. Set |options|["{{WriterCreateCoreOptions/outputLanguage}}"] to |outputLanguagesList|[0].
+
+  1. Return the [=Availability/minimum availability=] given « |availability|, |inputLanguageAvailability|, |contextLanguagesAvailability|, |outputLanguageAvailability| ».
+</div>
+
+<div algorithm>
+  The <dfn>writer non-language options availability</dfn>, given a {{WriterTone}} |tone|, {{WriterFormat}} |format|, and an {{WriterLength}} |length|, is given by the following steps. They return an {{Availability}} value or null.
+
+  1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. If there is some error attempting to determine whether the user agent supports writing text, which the user agent believes to be transient (such that re-querying could stop producing such an error), then return null.
+
+  1. If the user agent supports writing text with the tone described by |tone|, in the format described by |format|, and with the length guidance given by |length| without performing any downloading operations, then return "{{Availability/available}}".
+
+  1. If the user agent believes it can write text according to |tone|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{Availability/downloadable}}".
+
+  1. If the user agent believes it can write text according to |tone|, |format|, and |length|, but only after performing a download (e.g., of an AI model or fine-tuning), then return "{{Availability/downloadable}}".
+
+  1. Otherwise, return "{{Availability/unavailable}}".
+</div>
+
+<div algorithm>
+  The <dfn>writer language availabilities triple</dfn> is given by the following steps. They return a [=language availabilities triple=] or null.
+
+  1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. If there is some error attempting to determine whether the user agent supports writing text, which the user agent believes to be transient (such that re-querying could stop producing such an error), then return null.
+
+  1. Return a [=language availabilities triple=] with:
+
+    <dl class="props">
+      : [=language availabilities triple/input languages=]
+      :: the result of [=getting the language availabilities partition=] given the purpose of writing text based on input in that language
+
+      : [=language availabilities triple/context languages=]
+      :: the result of [=getting the language availabilities partition=] given the purpose of writing text using web-developer provided context information written in that language
+
+      : [=language availabilities triple/output languages=]
+      :: the result of [=getting the language availabilities partition=] given the purpose of producing written text in that language
+    </dl>
+</div>
+
+<h3 id="the-writer-class">The {{Writer}} class</h3>
+
+Every {{Writer}} has a <dfn for="Writer">shared context</dfn>, a [=string=]-or-null, set during creation.
+
+Every {{Writer}} has a <dfn for="Writer">tone</dfn>, a {{WriterTone}}, set during creation.
+
+Every {{Writer}} has a <dfn for="Writer">format</dfn>, a {{WriterFormat}}, set during creation.
+
+Every {{Writer}} has a <dfn for="Writer">length</dfn>, a {{WriterLength}}, set during creation.
+
+Every {{Writer}} has an <dfn for="Writer">expected input languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
+
+Every {{Writer}} has an <dfn for="Writer">expected context languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
+
+Every {{Writer}} has an <dfn for="Writer">output language</dfn>, a [=string=] or null, set during creation.
+
+Every {{Writer}} has a <dfn for="Writer">input quota</dfn>, a number, set during creation.
+
+<hr>
+
+The <dfn attribute for="Writer">sharedContext</dfn> getter steps are to return [=this=]'s [=Writer/shared context=].
+
+The <dfn attribute for="Writer">tone</dfn> getter steps are to return [=this=]'s [=Writer/tone=].
+
+The <dfn attribute for="Writer">format</dfn> getter steps are to return [=this=]'s [=Writer/format=].
+
+The <dfn attribute for="Writer">length</dfn> getter steps are to return [=this=]'s [=Writer/length=].
+
+The <dfn attribute for="Writer">expectedInputLanguages</dfn> getter steps are to return [=this=]'s [=Writer/expected input languages=].
+
+The <dfn attribute for="Writer">expectedContextLanguages</dfn> getter steps are to return [=this=]'s [=Writer/expected context languages=].
+
+The <dfn attribute for="Writer">outputLanguage</dfn> getter steps are to return [=this=]'s [=Writer/output language=].
+
+The <dfn attribute for="Writer">inputQuota</dfn> getter steps are to return [=this=]'s [=Writer/input quota=].
+
+<hr>
+
+<div algorithm>
+  The <dfn method for="Writer">write(|input|, |options|)</dfn> method steps are:
+
+  1. Let |context| be |options|["{{WriterWriteOptions/context}}"] if it [=map/exists=]; otherwise null.
+
+  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=writes=] given |input|, [=this=]'s [=Writer/shared context=], |context|, [=this=]'s [=Writer/tone=], [=this=]'s [=Writer/format=], [=this=]'s [=Writer/length=], [=this=]'s [=Writer/output language=], [=this=]'s [=Writer/input quota=], |chunkProduced|, |done|, |error|, and |stopProducing|.
+
+  1. Return the result of [=getting an aggregated AI model result=] given [=this=], |options|, and |operation|.
+</div>
+
+<div algorithm>
+  The <dfn method for="Writer">writeStreaming(|input|, |options|)</dfn> method steps are:
+
+  1. Let |context| be |options|["{{WriterWriteOptions/context}}"] if it [=map/exists=]; otherwise null.
+
+  1. Let |operation| be an algorithm step which takes arguments |chunkProduced|, |done|, |error|, and |stopProducing|, and [=writes=] given |input|, [=this=]'s [=Writer/shared context=], |context|, [=this=]'s [=Writer/tone=], [=this=]'s [=Writer/format=], [=this=]'s [=Writer/length=], [=this=]'s [=Writer/output language=], [=this=]'s [=Writer/input quota=], |chunkProduced|, |done|, |error|, and |stopProducing|.
+
+  1. Return the result of [=getting a streaming AI model result=] given [=this=], |options|, and |operation|.
+</div>
+
+<div algorithm>
+  The <dfn method for="Writer">measureInputUsage(|input|, |options|)</dfn> method steps are:
+
+  1. Let |context| be |options|["{{WriterWriteOptions/context}}"] if it [=map/exists=]; otherwise null.
+
+  1. Let |measureUsage| be an algorithm step which takes argument |stopMeasuring|, and returns the result of [=measuring writer input usage=] given |input|, [=this=]'s [=Writer/shared context=], |context|, [=this=]'s [=Writer/tone=], [=this=]'s [=Writer/format=], [=this=]'s [=Writer/length=], [=this=]'s [=Writer/output language=], and |stopMeasuring|.
+
+  1. Return the result of [=measuring AI model input usage=] given [=this=], |options|, and |measureUsage|.
+</div>
+
+<h3 id="writer-writing">Writing</h3>
+
+<h4 id="writer-algorithm">The algorithm</h4>
+
+<div algorithm>
+  To <dfn>write</dfn> given:
+
+  * a [=string=] |input|,
+  * a [=string=]-or-null |sharedContext|,
+  * a [=string=]-or-null |context|,
+  * a {{WriterTone}} |tone|,
+  * a {{WriterFormat}} |format|,
+  * a {{WriterLength}} |length|,
+  * a [=string=]-or-null |outputLanguage|,
+  * a number |inputQuota|,
+  * an algorithm |chunkProduced| that takes a [=string=] and returns nothing,
+  * an algorithm |done| that takes no arguments and returns nothing,
+  * an algorithm |error| that takes [=error information=] and returns nothing, and
+  * an algorithm |stopProducing| that takes no arguments and returns a boolean,
+
+  perform the following steps:
+
+  1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. Let |requested| be the result of [=measuring writer input usage=] given |input|, |sharedContext|, |context|, |tone|, |format|, |length|, |outputLanguage|, and |stopProducing|.
+
+  1. If |requested| is null, then return.
+
+  1. If |requested| is an [=error information=], then:
+
+    1. Perform |error| given |requested|.
+
+    1. Return.
+
+  1. [=Assert=]: |requested| is a number.
+
+  1. If |requested| is greater than |inputQuota|, then:
+
+    1. Let |errorInfo| be a [=quota exceeded error information=] with a [=quota exceeded error information/requested=] of |requested| and a [=quota exceeded error information/quota=] of |inputQuota|.
+
+    1. Perform |error| given |errorInfo|.
+
+    1. Return.
+
+  1. In an [=implementation-defined=] manner, subject to the following guidelines, begin the processs of writing to a string, based on the writing task specified in |input|.
+
+     If they are non-null, |sharedContext| and |context| should be used to aid in the writing by providing context on how the web developer wishes the writing task to be performed.
+
+     If |input| is the empty string, then the resulting text should be the empty string.
+
+     The written output should conform to the guidance given by |tone|, |format|, and |length|, in the definitions of each of their enumeration values.
+
+     If |outputLanguage| is non-null, the writing should be in that language. Otherwise, it should be in the language of |input| (which might not match that of |context| or |sharedContext|). If |input| contains multiple languages, or the language of |input| cannot be detected, then either the output language is [=implementation-defined=], or the implementation may treat this as an error, per the guidance in [[#writer-errors]].
+
+  1. While true:
+
+    1. Wait for the next chunk of written text to be produced, for the writing process to finish, or for the result of calling |stopProducing| to become true.
+
+    1. If such a chunk is successfully produced:
+
+      1. Let it be represented as a [=string=] |chunk|.
+
+      1. Perform |chunkProduced| given |chunk|.
+
+    1. Otherwise, if the writing process has finished:
+
+      1. Perform |done|.
+
+      1. [=iteration/Break=].
+
+    1. Otherwise, if |stopProducing| returns true, then [=iteration/break=].
+
+    1. Otherwise, if an error occurred during writing:
+
+      1. Let the error be represented as [=error information=] |errorInfo| according to the guidance in [[#writer-errors]].
+
+      1. Perform |error| given |errorInfo|.
+
+      1. [=iteration/Break=].
+</div>
+
+<h4 id="writer-usage">Usage</h4>
+
+<div algorithm>
+  To <dfn>measure writer input usage</dfn>, given:
+
+  * a [=string=] |input|,
+  * a [=string=]-or-null |sharedContext|,
+  * a [=string=]-or-null |context|,
+  * a {{WriterTone}} |tone|,
+  * a {{WriterFormat}} |format|,
+  * a {{WriterLength}} |length|,
+  * a [=string=]-or-null |outputLanguage|, and
+  * an algorithm |stopMeasuring| that takes no arguments and returns a boolean,
+
+  perform the following steps:
+
+  1. [=Assert=]: this algorithm is running [=in parallel=].
+
+  1. Let |inputToModel| be the [=implementation-defined=] string that would be sent to the underlying model in order to [=write=] given |input|, |sharedContext|, |context|, |tone|, |format|, |length|, and |outputLanguage|.
+
+    If during this process |stopMeasuring| starts returning true, then return null.
+
+    If an error occurs during this process, then return an appropriate [=DOMException error information=] according to the guidance in [[#writer-errors]].
+
+  1. Return the amount of input usage needed to represent |inputToModel| when given to the underlying model. The exact calculation procedure is [=implementation-defined=], subject to the following constraints.
+
+    The returned input usage must be nonnegative and finite. It must be 0, if there are no usage quotas for the writing process (i.e., if the [=Writer/input quota=] is +∞). Otherwise, it must be positive and should be roughly proportional to the [=string/length=] of |inputToModel|.
+
+    If during this process |stopMeasuring| starts returning true, then instead return null.
+
+    If an error occurs during this process, then instead return an appropriate [=DOMException error information=] according to the guidance in [[#writer-errors]].
+</div>
+
+<h4 id="writer-options">Options</h4>
+
+The [=write=] algorithm's details are [=implementation-defined=], as they are expected to be powered by an AI model. However, it is intended to be controllable by the web developer through the {{WriterTone}}, {{WriterFormat}}, and {{WriterLength}} enumerations.
+
+This section gives normative guidance on how the implementation of [=write=] should use each enumeration value to guide the writing process.
+
+<table class="data enum-table">
+  <caption>{{WriterTone}} values</caption>
+  <thead>
+    <tr>
+      <th>Value
+      <th>Meaning
+  <tbody>
+    <tr>
+      <th>"<dfn enum-value for="WriterTone">formal</dfn>"
+      <td>
+        <p>The writing should use formal language, employing precise terminology, avoiding contractions and slang, and maintaining a professional tone suitable for academic, business, or official contexts.
+    <tr>
+      <th>"<dfn enum-value for="WriterTone">neutral</dfn>"
+      <td>
+        <p>The writing should use a balanced, moderate tone that is neither overly formal nor casual, suitable for general audiences and informational contexts.
+    <tr>
+      <th>"<dfn enum-value for="WriterTone">casual</dfn>"
+      <td>
+        <p>The writing should use conversational language, potentially including contractions, colloquialisms, and a more relaxed, friendly tone suitable for informal communication.
+</table>
+
+<table class="data enum-table">
+  <caption>{{WriterLength}} values</caption>
+  <thead>
+    <tr>
+      <th>Value
+      <th>Meaning
+  <tbody>
+    <tr>
+      <th>"<dfn enum-value for="WriterLength">short</dfn>"
+      <td>
+        <p>The writing should be concise and to the point, using no more than 100 words.
+    <tr>
+      <th>"<dfn enum-value for="WriterLength">medium</dfn>"
+      <td>
+        <p>The writing should be moderately detailed, using no more than 300 words.
+    <tr>
+      <th>"<dfn enum-value for="WriterLength">long</dfn>"
+      <td>
+        <p>The writing should be in-depth and thorough, using no more than 500 words.
+</table>
+
+<table class="data enum-table">
+  <caption>{{WriterFormat}} values</caption>
+  <thead>
+    <tr>
+      <th>Value
+      <th>Meaning
+  <tbody>
+    <tr>
+      <th>"<dfn enum-value for="WriterFormat">plain-text</dfn>"
+      <td>
+        <p>The writing should not contain any formatting or markup language.
+    <tr>
+      <th>"<dfn enum-value for="WriterFormat">markdown</dfn>"
+      <td>
+        <p>The writing should be formatted using the Markdown markup language, ideally as valid CommonMark. [[!COMMONMARK]]
+</table>
+
+<p class="note">As with all "<span class="allow-2119">should</span>"-level guidance, user agents might not conform perfectly to these. Especially in the case of counting words, it's expected that language models might not conform perfectly.
+
+<h4 id="writer-errors">Errors</h4>
+
+When writing fails, the following possible reasons may be surfaced to the web developer. This table lists the possible {{DOMException}} [=DOMException/names=] and the cases in which an implementation should use them:
+
+<table class="data">
+  <thead>
+    <tr>
+      <th>{{DOMException}} [=DOMException/name=]
+      <th>Scenarios
+  <tbody>
+    <tr>
+      <td>"{{NotAllowedError}}"
+      <td>
+        <p>Writing is disabled by user choice or user agent policy.
+    <tr>
+      <td>"{{NotReadableError}}"
+      <td>
+        <p>The writing output was filtered by the user agent, e.g., because it was detected to be harmful, offensive, or nonsensical.
+    <tr>
+      <td>"{{NotSupportedError}}"
+      <td>
+        <p>The input provided for writing, or the context to be provided, was in a language that the user agent does not support, or was not provided properly in the call to {{Writer/create()}}.
+
+        <p>The writing output ended up being in a language that the user agent does not support (e.g., because the user agent has not performed sufficient quality control tests on that output language), or was not provided properly in the call to {{Writer/create()}}.
+
+        <p>The {{WriterCreateCoreOptions/outputLanguage}} option was not set, and the language of the input text could not be determined, so the user agent did not have a good output language default available.
+    <tr>
+      <td>"{{UnknownError}}"
+      <td>
+        <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
+</table>
+
+<p class="note">This table does not give the complete list of exceptions that can be surfaced by the writer API. It only contains those which can come from certain [=implementation-defined=] steps.
+
+<h3 id="writer-permissions-policy">Permissions policy integration</h3>
+
+Access to the writer API is gated behind the [=policy-controlled feature=] "<dfn permission>writer</dfn>", which has a [=policy-controlled feature/default allowlist=] of <code>[=default allowlist/'self'=]</code>.
+
+<h2 id="rewriter-api">The rewriter API</h2>
 
 <xmp class="idl">
 [Exposed=Window, SecureContext]
@@ -1361,37 +1771,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 </div>
 
 <div algorithm>
-  To <dfn export>get language availabilities</dfn> given a description |purpose| of the purpose for which we're checking language availability:
-
-  1. Let |availabilities| be «[ "{{Availability/available}}" → an empty [=set=], "{{Availability/downloading}}" → an empty [=set=], "{{Availability/downloadable}}" → an empty [=set=] ]».
-
-  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent supports |purpose|, without performing any downloading operations:
-
-    1. [=set/Append=] |languageTag| to |availabilities|["{{Availability/available}}"].
-
-  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent is currently downloading material (e.g., an AI model or fine-tuning) to support |purpose|:
-
-    1. [=set/Append=] |languageTag| to |availabilities|["{{Availability/downloading}}"].
-
-  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent believes it can support |purpose|, but only after performing a not-currently-ongoing download (e.g., of an AI model or fine-tuning):
-
-    1. [=set/Append=] |languageTag| to |availabilities|["{{Availability/downloadable}}"].
-
-  1. [=Assert=]: |availabilities|["{{Availability/available}}"], |availabilities|["{{Availability/downloading}}"], and |availabilities|["{{Availability/downloadable}}"] are disjoint.
-
-  1. If the [=set/union=] of |availabilities|["{{Availability/available}}"], |availabilities|["{{Availability/downloading}}"], and |availabilities|["{{Availability/downloadable}}"] does not meet the [=language tag set completeness rules=], then:
-
-    1. Let |missingLanguageTags| be the [=set=] of missing language tags necessary to meet the [=language tag set completeness rules=].
-
-    1. [=set/For each=] |languageTag| of |missingLanguageTags|:
-
-      1. <span id="language-tag-completeness-implementation-defined"></span> [=set/Append=] |languageTag| to one of the three sets. Which of the sets to append to is [=implementation-defined=], and should be guided by considerations similar to that of [$LookupMatchingLocaleByBestFit$] in terms of keeping "best fallback languages" together.
-
-    1. Return |availabilities|.
-</div>
-
-<div algorithm>
-  The <dfn>language tag set completeness rules</dfn> state that for every [=set/item=] |languageTag|, if |languageTag| has more than one subtag, then the set must also contain a less narrow language tag with the same language subtag and a strict subset of the same following subtags (i.e., omitting one or more).
+  A [=set=] of [=Unicode canonicalized locale identifiers=] |languageTags| meets the <dfn>language tag set completeness rules</dfn> if for every [=set/item=] |languageTag| of |languageTags|, if |languageTag| has more than one subtag, then |languageTags| must also contain a less narrow language tag with the same language subtag and a strict subset of the same following subtags (i.e., omitting one or more).
 
   <p class="note">This definition is intended to align with that of [=[[AvailableLocales]]=] in <cite>ECMAScript Internationalization API Specification</cite>. [[ECMA-402]]
 
@@ -1444,6 +1824,72 @@ enum RewriterLength { "as-is", "shorter", "longer" };
   1. If |availabilities| [=list/contains=] "{{Availability/downloadable}}", then return "{{Availability/downloadable}}".
 
   1. Return "{{Availability/available}}".
+</div>
+
+<h3 id="supporting-language-availability">Language availability</h3>
+
+A <dfn>language availabilities partition</dfn> is a [=map=] whose [=map/keys=] are "{{Availability/downloading}}", "{{Availability/downloadable}}", or "{{Availability/available}}", and whose [=map/values=] are [=sets=] of strings representing [=Unicode canonicalized locale identifiers=]. [[!ECMA-402]]
+
+A <dfn>language availabilities triple</dfn> is a [=struct=] with the following [=struct/items=]:
+
+* <dfn for="language availabilities triple">input languages</dfn>, a [=language availabilities partition=]
+* <dfn for="language availabilities triple">context languages</dfn>, a [=language availabilities partition=]
+* <dfn for="language availabilities triple">output languages</dfn>, a [=language availabilities partition=]
+
+<div algorithm>
+  To <dfn export>get the language availabilities partition</dfn> given a description |purpose| of the purpose for which we're checking language availability:
+
+  1. Let |partition| be «[ "{{Availability/available}}" → an empty [=set=], "{{Availability/downloading}}" → an empty [=set=], "{{Availability/downloadable}}" → an empty [=set=] ]».
+
+  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent supports |purpose|, without performing any downloading operations:
+
+    1. [=set/Append=] |languageTag| to |partition|["{{Availability/available}}"].
+
+  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent is currently downloading material (e.g., an AI model or fine-tuning) to support |purpose|:
+
+    1. [=set/Append=] |languageTag| to |partition|["{{Availability/downloading}}"].
+
+  1. [=list/For each=] human language |languageTag|, represented as a [=Unicode canonicalized locale identifier=], for which the user agent believes it can support |purpose|, but only after performing a not-currently-ongoing download (e.g., of an AI model or fine-tuning):
+
+    1. [=set/Append=] |languageTag| to |partition|["{{Availability/downloadable}}"].
+
+  1. [=Assert=]: |partition|["{{Availability/available}}"], |partition|["{{Availability/downloading}}"], and |partition|["{{Availability/downloadable}}"] are disjoint.
+
+  1. If the [=set/union=] of |partition|["{{Availability/available}}"], |partition|["{{Availability/downloading}}"], and |partition|["{{Availability/downloadable}}"] does not meet the [=language tag set completeness rules=], then:
+
+    1. Let |missingLanguageTags| be the [=set=] of missing language tags necessary for that union to meet the [=language tag set completeness rules=].
+
+    1. [=set/For each=] |languageTag| of |missingLanguageTags|:
+
+      1. <span id="language-tag-completeness-implementation-defined"></span> [=set/Append=] |languageTag| to one of the three sets. Which of the sets to append to is [=implementation-defined=], and should be guided by considerations similar to that of [$LookupMatchingLocaleByBestFit$] in terms of keeping "best fallback languages" together.
+
+    1. Return |partition|.
+</div>
+
+<div algorithm>
+  To <dfn export>compute language availability</dfn> given an [=ordered set=] of strings |requestedLanguages| and a  [=language availabilities partition=] |partition|, perform the following steps. They return an {{Availability}} value, and they mutate |requestedLanguages| in place to update language tags to their best-fit matches.
+
+  1. Let |availability| be "{{Availability/available}}".
+
+  1. [=set/For each=] |language| of |requestedLanguages|:
+
+    1. [=list/For each=] |availabilityToCheck| of « "{{Availability/available}}", "{{Availability/downloading}}", "{{Availability/downloadable}}" »:
+
+      1. Let |languagesWithThisAvailability| be |partition|[|availabilityToCheck|].
+
+      1. Let |bestMatch| be [$LookupMatchingLocaleByBestFit$](|languagesWithThisAvailability|, « |language| »).
+
+      1. If |bestMatch| is not undefined, then:
+
+        1. [=list/Replace=] |language| with |bestMatch|.\[[locale]] in |requestedLanguages|.
+
+        1. Set |availability| to the [=Availability/minimum availability=] given |availability| and |availabilityToCheck|.
+
+        1. [=iteration/Break=].
+
+    1. Return "{{Availability/unavailable}}".
+
+  1. Return |availability|.
 </div>
 
 <h3 id="supporting-errors">Errors</h3>
