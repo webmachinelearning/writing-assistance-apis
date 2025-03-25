@@ -8,7 +8,7 @@
   <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="ff2b85d23be955c366e9222a6c4725dd5e28bc5e" name="revision">
+  <meta content="3ea121d9023fc386e1c2b86ba87d60ccf20c5eee" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -971,7 +971,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="validate and canonicalize summarizer options">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="validate-and-canonicalize-summarizer-options">validate and canonicalize summarizer options</dfn> given an <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreatecoreoptions" id="ref-for-dictdef-summarizercreatecoreoptions②">SummarizerCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They mutate <var>options</var> in place to canonicalize and deduplicate language tags, and throw a <code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#exceptiondef-typeerror" id="ref-for-exceptiondef-typeerror">TypeError</a></code> if any are invalid. 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="validate-and-canonicalize-summarizer-options">validate and canonicalize summarizer options</dfn> given a <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreatecoreoptions" id="ref-for-dictdef-summarizercreatecoreoptions②">SummarizerCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They mutate <var>options</var> in place to canonicalize and deduplicate language tags, and throw a <code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#exceptiondef-typeerror" id="ref-for-exceptiondef-typeerror">TypeError</a></code> if any are invalid. 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="#validate-and-canonicalize-language-tags" id="ref-for-validate-and-canonicalize-language-tags">Validate and canonicalize language tags</a> given <var>options</var> and "<code class="idl"><a data-link-type="idl" href="#dom-summarizercreatecoreoptions-expectedinputlanguages" id="ref-for-dom-summarizercreatecoreoptions-expectedinputlanguages">expectedInputLanguages</a></code>".</p>
@@ -982,7 +982,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="download the summarizer model">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="download-the-summarizer-model">download the summarizer model</dfn>, given an <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreatecoreoptions" id="ref-for-dictdef-summarizercreatecoreoptions③">SummarizerCreateCoreOptions</a></code> <var>options</var>: 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="download-the-summarizer-model">download the summarizer model</dfn>, given a <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreatecoreoptions" id="ref-for-dictdef-summarizercreatecoreoptions③">SummarizerCreateCoreOptions</a></code> <var>options</var>: 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert">Assert</a>: these steps are running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel">in parallel</a>.</p>
@@ -995,7 +995,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="initialize the summarizer model">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="initialize-the-summarizer-model">initialize the summarizer model</dfn>, given an <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreateoptions" id="ref-for-dictdef-summarizercreateoptions①">SummarizerCreateOptions</a></code> <var>options</var>: 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="initialize-the-summarizer-model">initialize the summarizer model</dfn>, given a <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreateoptions" id="ref-for-dictdef-summarizercreateoptions①">SummarizerCreateOptions</a></code> <var>options</var>: 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①">Assert</a>: these steps are running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel①">in parallel</a>.</p>
@@ -1022,7 +1022,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="create a summarizer object">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="create-a-summarizer-object">create a summarizer object</dfn>, given a <a data-link-type="dfn" href="https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm" id="ref-for-realm">realm</a> <var>realm</var> and an <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreateoptions" id="ref-for-dictdef-summarizercreateoptions②">SummarizerCreateOptions</a></code> <var>options</var>: 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="create-a-summarizer-object">create a summarizer object</dfn>, given a <a data-link-type="dfn" href="https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm" id="ref-for-realm">realm</a> <var>realm</var> and a <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreateoptions" id="ref-for-dictdef-summarizercreateoptions②">SummarizerCreateOptions</a></code> <var>options</var>: 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert③">Assert</a>: these steps are running on <var>realm</var>’s <a data-link-type="dfn" href="https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#surrounding-agent" id="ref-for-surrounding-agent">surrounding agent</a>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-agent-event-loop" id="ref-for-concept-agent-event-loop">event loop</a>.</p>
@@ -1068,7 +1068,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="compute summarizer options availability">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="compute-summarizer-options-availability">compute summarizer options availability</dfn> given an <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreatecoreoptions" id="ref-for-dictdef-summarizercreatecoreoptions④">SummarizerCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They return either an <code class="idl"><a data-link-type="idl" href="#enumdef-availability" id="ref-for-enumdef-availability①">Availability</a></code> value or null, and they mutate <var>options</var> in place to update language tags to their best-fit matches. 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="compute-summarizer-options-availability">compute summarizer options availability</dfn> given a <code class="idl"><a data-link-type="idl" href="#dictdef-summarizercreatecoreoptions" id="ref-for-dictdef-summarizercreatecoreoptions④">SummarizerCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They return either an <code class="idl"><a data-link-type="idl" href="#enumdef-availability" id="ref-for-enumdef-availability①">Availability</a></code> value or null, and they mutate <var>options</var> in place to update language tags to their best-fit matches. 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert④">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel②">in parallel</a>.</p>
@@ -1093,7 +1093,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="summarizer non-language options availability">
-     The <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="summarizer-non-language-options-availability">summarizer non-language options availability</dfn>, given a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype②">SummarizerType</a></code> <var>type</var>, <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat②">SummarizerFormat</a></code> <var>format</var>, and an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength②">SummarizerLength</a></code> <var>length</var>, is given by the following steps. They return an <code class="idl"><a data-link-type="idl" href="#enumdef-availability" id="ref-for-enumdef-availability②">Availability</a></code> value or null. 
+     The <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="summarizer-non-language-options-availability">summarizer non-language options availability</dfn>, given a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype②">SummarizerType</a></code> <var>type</var>, <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat②">SummarizerFormat</a></code> <var>format</var>, and a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength②">SummarizerLength</a></code> <var>length</var>, is given by the following steps. They return an <code class="idl"><a data-link-type="idl" href="#enumdef-availability" id="ref-for-enumdef-availability②">Availability</a></code> value or null. 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert⑤">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel③">in parallel</a>.</p>
@@ -1155,9 +1155,9 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
    </div>
    <h3 class="heading settled" data-level="3.3" id="the-summarizer-class"><span class="secno">3.3. </span><span class="content">The <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer④">Summarizer</a></code> class</span><a class="self-link" href="#the-summarizer-class"></a></h3>
    <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer⑤">Summarizer</a></code> has a <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-shared-context">shared context</dfn>, a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#string" id="ref-for-string">string</a>-or-null, set during creation.</p>
-   <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer⑥">Summarizer</a></code> has a <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-summary-type">summary type</dfn>, an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype③">SummarizerType</a></code>, set during creation.</p>
-   <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer⑦">Summarizer</a></code> has a <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-summary-format">summary format</dfn>, an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat③">SummarizerFormat</a></code>, set during creation.</p>
-   <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer⑧">Summarizer</a></code> has a <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-summary-length">summary length</dfn>, an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength③">SummarizerLength</a></code>, set during creation.</p>
+   <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer⑥">Summarizer</a></code> has a <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-summary-type">summary type</dfn>, a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype③">SummarizerType</a></code>, set during creation.</p>
+   <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer⑦">Summarizer</a></code> has a <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-summary-format">summary format</dfn>, a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat③">SummarizerFormat</a></code>, set during creation.</p>
+   <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer⑧">Summarizer</a></code> has a <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-summary-length">summary length</dfn>, a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength③">SummarizerLength</a></code>, set during creation.</p>
    <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer⑨">Summarizer</a></code> has an <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-expected-input-languages">expected input languages</dfn>, a <code><code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#idl-frozen-array" id="ref-for-idl-frozen-array②">FrozenArray</a></code>&lt;<code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#idl-DOMString" id="ref-for-idl-DOMString①③">DOMString</a></code>></code> or null, set during creation.</p>
    <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer①⓪">Summarizer</a></code> has an <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-expected-context-languages">expected context languages</dfn>, a <code><code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#idl-frozen-array" id="ref-for-idl-frozen-array③">FrozenArray</a></code>&lt;<code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#idl-DOMString" id="ref-for-idl-DOMString①④">DOMString</a></code>></code> or null, set during creation.</p>
    <p>Every <code class="idl"><a data-link-type="idl" href="#summarizer" id="ref-for-summarizer①①">Summarizer</a></code> has an <dfn class="dfn-paneled" data-dfn-for="Summarizer" data-dfn-type="dfn" data-noexport id="summarizer-output-language">output language</dfn>, a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#string" id="ref-for-string①">string</a> or null, set during creation.</p>
@@ -1217,11 +1217,11 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      <li data-md>
       <p>a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#string" id="ref-for-string④">string</a>-or-null <var>context</var>,</p>
      <li data-md>
-      <p>an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype④">SummarizerType</a></code> <var>type</var>,</p>
+      <p>a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype④">SummarizerType</a></code> <var>type</var>,</p>
      <li data-md>
-      <p>an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat④">SummarizerFormat</a></code> <var>format</var>,</p>
+      <p>a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat④">SummarizerFormat</a></code> <var>format</var>,</p>
      <li data-md>
-      <p>an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength④">SummarizerLength</a></code> <var>length</var>,</p>
+      <p>a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength④">SummarizerLength</a></code> <var>length</var>,</p>
      <li data-md>
       <p>a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#string" id="ref-for-string⑤">string</a>-or-null <var>outputLanguage</var>,</p>
      <li data-md>
@@ -1317,11 +1317,11 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      <li data-md>
       <p>a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#string" id="ref-for-string①⓪">string</a>-or-null <var>context</var>,</p>
      <li data-md>
-      <p>an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype⑤">SummarizerType</a></code> <var>type</var>,</p>
+      <p>a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype⑤">SummarizerType</a></code> <var>type</var>,</p>
      <li data-md>
-      <p>an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat⑤">SummarizerFormat</a></code> <var>format</var>,</p>
+      <p>a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat⑤">SummarizerFormat</a></code> <var>format</var>,</p>
      <li data-md>
-      <p>an <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength⑤">SummarizerLength</a></code> <var>length</var>,</p>
+      <p>a <code class="idl"><a data-link-type="idl" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength⑤">SummarizerLength</a></code> <var>length</var>,</p>
      <li data-md>
       <p>a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#string" id="ref-for-string①①">string</a>-or-null <var>outputLanguage</var>, and</p>
      <li data-md>
@@ -1541,7 +1541,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="validate and canonicalize writer options">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="validate-and-canonicalize-writer-options">validate and canonicalize writer options</dfn> given an <code class="idl"><a data-link-type="idl" href="#dictdef-writercreatecoreoptions" id="ref-for-dictdef-writercreatecoreoptions②">WriterCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They mutate <var>options</var> in place to canonicalize and deduplicate language tags, and throw a <code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#exceptiondef-typeerror" id="ref-for-exceptiondef-typeerror①">TypeError</a></code> if any are invalid. 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="validate-and-canonicalize-writer-options">validate and canonicalize writer options</dfn> given a <code class="idl"><a data-link-type="idl" href="#dictdef-writercreatecoreoptions" id="ref-for-dictdef-writercreatecoreoptions②">WriterCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They mutate <var>options</var> in place to canonicalize and deduplicate language tags, and throw a <code class="idl"><a data-link-type="idl" href="https://webidl.spec.whatwg.org/#exceptiondef-typeerror" id="ref-for-exceptiondef-typeerror①">TypeError</a></code> if any are invalid. 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="#validate-and-canonicalize-language-tags" id="ref-for-validate-and-canonicalize-language-tags③">Validate and canonicalize language tags</a> given <var>options</var> and "<code class="idl"><a data-link-type="idl" href="#dom-writercreatecoreoptions-expectedinputlanguages" id="ref-for-dom-writercreatecoreoptions-expectedinputlanguages">expectedInputLanguages</a></code>".</p>
@@ -1552,7 +1552,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="download the writer model">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="download-the-writer-model">download the writer model</dfn>, given an <code class="idl"><a data-link-type="idl" href="#dictdef-writercreatecoreoptions" id="ref-for-dictdef-writercreatecoreoptions③">WriterCreateCoreOptions</a></code> <var>options</var>: 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="download-the-writer-model">download the writer model</dfn>, given a <code class="idl"><a data-link-type="idl" href="#dictdef-writercreatecoreoptions" id="ref-for-dictdef-writercreatecoreoptions③">WriterCreateCoreOptions</a></code> <var>options</var>: 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①⓪">Assert</a>: these steps are running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑦">in parallel</a>.</p>
@@ -1565,7 +1565,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="initialize the writer model">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="initialize-the-writer-model">initialize the writer model</dfn>, given an <code class="idl"><a data-link-type="idl" href="#dictdef-writercreateoptions" id="ref-for-dictdef-writercreateoptions①">WriterCreateOptions</a></code> <var>options</var>: 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="initialize-the-writer-model">initialize the writer model</dfn>, given a <code class="idl"><a data-link-type="idl" href="#dictdef-writercreateoptions" id="ref-for-dictdef-writercreateoptions①">WriterCreateOptions</a></code> <var>options</var>: 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①①">Assert</a>: these steps are running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑧">in parallel</a>.</p>
@@ -1592,7 +1592,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="create a writer object">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="create-a-writer-object">create a writer object</dfn>, given a <a data-link-type="dfn" href="https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm" id="ref-for-realm①">realm</a> <var>realm</var> and an <code class="idl"><a data-link-type="idl" href="#dictdef-writercreateoptions" id="ref-for-dictdef-writercreateoptions②">WriterCreateOptions</a></code> <var>options</var>: 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="create-a-writer-object">create a writer object</dfn>, given a <a data-link-type="dfn" href="https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm" id="ref-for-realm①">realm</a> <var>realm</var> and a <code class="idl"><a data-link-type="idl" href="#dictdef-writercreateoptions" id="ref-for-dictdef-writercreateoptions②">WriterCreateOptions</a></code> <var>options</var>: 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①③">Assert</a>: these steps are running on <var>realm</var>’s <a data-link-type="dfn" href="https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#surrounding-agent" id="ref-for-surrounding-agent①">surrounding agent</a>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-agent-event-loop" id="ref-for-concept-agent-event-loop①">event loop</a>.</p>
@@ -1637,7 +1637,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="compute writer options availability">
-     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="compute-writer-options-availability">compute writer options availability</dfn> given an <code class="idl"><a data-link-type="idl" href="#dictdef-writercreatecoreoptions" id="ref-for-dictdef-writercreatecoreoptions④">WriterCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They return either an <code class="idl"><a data-link-type="idl" href="#enumdef-availability" id="ref-for-enumdef-availability④">Availability</a></code> value or null, and they mutate <var>options</var> in place to update language tags to their best-fit matches. 
+     To <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="compute-writer-options-availability">compute writer options availability</dfn> given a <code class="idl"><a data-link-type="idl" href="#dictdef-writercreatecoreoptions" id="ref-for-dictdef-writercreatecoreoptions④">WriterCreateCoreOptions</a></code> <var>options</var>, perform the following steps. They return either an <code class="idl"><a data-link-type="idl" href="#enumdef-availability" id="ref-for-enumdef-availability④">Availability</a></code> value or null, and they mutate <var>options</var> in place to update language tags to their best-fit matches. 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①④">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel⑨">in parallel</a>.</p>
@@ -1662,7 +1662,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
     </ol>
    </div>
    <div class="algorithm" data-algorithm="writer non-language options availability">
-     The <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="writer-non-language-options-availability">writer non-language options availability</dfn>, given a <code class="idl"><a data-link-type="idl" href="#enumdef-writertone" id="ref-for-enumdef-writertone②">WriterTone</a></code> <var>tone</var>, <code class="idl"><a data-link-type="idl" href="#enumdef-writerformat" id="ref-for-enumdef-writerformat②">WriterFormat</a></code> <var>format</var>, and an <code class="idl"><a data-link-type="idl" href="#enumdef-writerlength" id="ref-for-enumdef-writerlength②">WriterLength</a></code> <var>length</var>, is given by the following steps. They return an <code class="idl"><a data-link-type="idl" href="#enumdef-availability" id="ref-for-enumdef-availability⑤">Availability</a></code> value or null. 
+     The <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="writer-non-language-options-availability">writer non-language options availability</dfn>, given a <code class="idl"><a data-link-type="idl" href="#enumdef-writertone" id="ref-for-enumdef-writertone②">WriterTone</a></code> <var>tone</var>, <code class="idl"><a data-link-type="idl" href="#enumdef-writerformat" id="ref-for-enumdef-writerformat②">WriterFormat</a></code> <var>format</var>, and a <code class="idl"><a data-link-type="idl" href="#enumdef-writerlength" id="ref-for-enumdef-writerlength②">WriterLength</a></code> <var>length</var>, is given by the following steps. They return an <code class="idl"><a data-link-type="idl" href="#enumdef-availability" id="ref-for-enumdef-availability⑤">Availability</a></code> value or null. 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert①⑤">Assert</a>: this algorithm is running <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel①⓪">in parallel</a>.</p>
