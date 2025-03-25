@@ -188,7 +188,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>validate and canonicalize summarizer options</dfn> given an {{SummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+  To <dfn>validate and canonicalize summarizer options</dfn> given a {{SummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
 
   1. [=Validate and canonicalize language tags=] given |options| and "{{SummarizerCreateCoreOptions/expectedInputLanguages}}".
 
@@ -198,7 +198,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>download the summarizer model</dfn>, given an {{SummarizerCreateCoreOptions}} |options|:
+  To <dfn>download the summarizer model</dfn>, given a {{SummarizerCreateCoreOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
@@ -210,7 +210,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>initialize the summarizer model</dfn>, given an {{SummarizerCreateOptions}} |options|:
+  To <dfn>initialize the summarizer model</dfn>, given a {{SummarizerCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
@@ -236,7 +236,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>create a summarizer object</dfn>, given a [=ECMAScript/realm=] |realm| and an {{SummarizerCreateOptions}} |options|:
+  To <dfn>create a summarizer object</dfn>, given a [=ECMAScript/realm=] |realm| and a {{SummarizerCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running on |realm|'s [=ECMAScript/surrounding agent=]'s [=agent/event loop=].
 
@@ -282,7 +282,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>compute summarizer options availability</dfn> given an {{SummarizerCreateCoreOptions}} |options|, perform the following steps. They return either an {{Availability}} value or null, and they mutate |options| in place to update language tags to their best-fit matches.
+  To <dfn>compute summarizer options availability</dfn> given a {{SummarizerCreateCoreOptions}} |options|, perform the following steps. They return either an {{Availability}} value or null, and they mutate |options| in place to update language tags to their best-fit matches.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
@@ -306,7 +306,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  The <dfn>summarizer non-language options availability</dfn>, given a {{SummarizerType}} |type|, {{SummarizerFormat}} |format|, and an {{SummarizerLength}} |length|, is given by the following steps. They return an {{Availability}} value or null.
+  The <dfn>summarizer non-language options availability</dfn>, given a {{SummarizerType}} |type|, {{SummarizerFormat}} |format|, and a {{SummarizerLength}} |length|, is given by the following steps. They return an {{Availability}} value or null.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
@@ -373,11 +373,11 @@ enum SummarizerLength { "short", "medium", "long" };
 
 Every {{Summarizer}} has a <dfn for="Summarizer">shared context</dfn>, a [=string=]-or-null, set during creation.
 
-Every {{Summarizer}} has a <dfn for="Summarizer">summary type</dfn>, an {{SummarizerType}}, set during creation.
+Every {{Summarizer}} has a <dfn for="Summarizer">summary type</dfn>, a {{SummarizerType}}, set during creation.
 
-Every {{Summarizer}} has a <dfn for="Summarizer">summary format</dfn>, an {{SummarizerFormat}}, set during creation.
+Every {{Summarizer}} has a <dfn for="Summarizer">summary format</dfn>, a {{SummarizerFormat}}, set during creation.
 
-Every {{Summarizer}} has a <dfn for="Summarizer">summary length</dfn>, an {{SummarizerLength}}, set during creation.
+Every {{Summarizer}} has a <dfn for="Summarizer">summary length</dfn>, a {{SummarizerLength}}, set during creation.
 
 Every {{Summarizer}} has an <dfn for="Summarizer">expected input languages</dfn>, a <code>{{FrozenArray}}&lt;{{DOMString}}></code> or null, set during creation.
 
@@ -447,9 +447,9 @@ The <dfn attribute for="Summarizer">inputQuota</dfn> getter steps are to return 
   * a [=string=] |input|,
   * a [=string=]-or-null |sharedContext|,
   * a [=string=]-or-null |context|,
-  * an {{SummarizerType}} |type|,
-  * an {{SummarizerFormat}} |format|,
-  * an {{SummarizerLength}} |length|,
+  * a {{SummarizerType}} |type|,
+  * a {{SummarizerFormat}} |format|,
+  * a {{SummarizerLength}} |length|,
   * a [=string=]-or-null |outputLanguage|,
   * a number |inputQuota|,
   * an algorithm |chunkProduced| that takes a [=string=] and returns nothing,
@@ -528,9 +528,9 @@ The <dfn attribute for="Summarizer">inputQuota</dfn> getter steps are to return 
   * a [=string=] |input|,
   * a [=string=]-or-null |sharedContext|,
   * a [=string=]-or-null |context|,
-  * an {{SummarizerType}} |type|,
-  * an {{SummarizerFormat}} |format|,
-  * an {{SummarizerLength}} |length|,
+  * a {{SummarizerType}} |type|,
+  * a {{SummarizerFormat}} |format|,
+  * a {{SummarizerLength}} |length|,
   * a [=string=]-or-null |outputLanguage|, and
   * an algorithm |stopMeasuring| that takes no arguments and returns a boolean,
 
@@ -766,7 +766,7 @@ enum WriterLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>validate and canonicalize writer options</dfn> given an {{WriterCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+  To <dfn>validate and canonicalize writer options</dfn> given a {{WriterCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
 
   1. [=Validate and canonicalize language tags=] given |options| and "{{WriterCreateCoreOptions/expectedInputLanguages}}".
 
@@ -776,7 +776,7 @@ enum WriterLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>download the writer model</dfn>, given an {{WriterCreateCoreOptions}} |options|:
+  To <dfn>download the writer model</dfn>, given a {{WriterCreateCoreOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
@@ -788,7 +788,7 @@ enum WriterLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>initialize the writer model</dfn>, given an {{WriterCreateOptions}} |options|:
+  To <dfn>initialize the writer model</dfn>, given a {{WriterCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running [=in parallel=].
 
@@ -814,7 +814,7 @@ enum WriterLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>create a writer object</dfn>, given a [=ECMAScript/realm=] |realm| and an {{WriterCreateOptions}} |options|:
+  To <dfn>create a writer object</dfn>, given a [=ECMAScript/realm=] |realm| and a {{WriterCreateOptions}} |options|:
 
   1. [=Assert=]: these steps are running on |realm|'s [=ECMAScript/surrounding agent=]'s [=agent/event loop=].
 
@@ -858,7 +858,7 @@ enum WriterLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>compute writer options availability</dfn> given an {{WriterCreateCoreOptions}} |options|, perform the following steps. They return either an {{Availability}} value or null, and they mutate |options| in place to update language tags to their best-fit matches.
+  To <dfn>compute writer options availability</dfn> given a {{WriterCreateCoreOptions}} |options|, perform the following steps. They return either an {{Availability}} value or null, and they mutate |options| in place to update language tags to their best-fit matches.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
@@ -882,7 +882,7 @@ enum WriterLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  The <dfn>writer non-language options availability</dfn>, given a {{WriterTone}} |tone|, {{WriterFormat}} |format|, and an {{WriterLength}} |length|, is given by the following steps. They return an {{Availability}} value or null.
+  The <dfn>writer non-language options availability</dfn>, given a {{WriterTone}} |tone|, {{WriterFormat}} |format|, and a {{WriterLength}} |length|, is given by the following steps. They return an {{Availability}} value or null.
 
   1. [=Assert=]: this algorithm is running [=in parallel=].
 
