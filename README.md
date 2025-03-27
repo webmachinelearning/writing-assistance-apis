@@ -417,29 +417,11 @@ For the time being, the Chrome built-in AI team is moving forward more aggresive
 
 ## Privacy considerations
 
-### General concerns about language-model based APIs
+Please see [the specification](https://webmachinelearning.github.io/writing-assistance-apis/#privacy).
 
-If cloud-based language models are exposed through this API, then there are potential privacy issues with exposing user or website data to the relevant cloud and model providers. This is not a concern specific to this API, as websites can already choose to expose user or website data to other origins using APIs such as `fetch()`. However, it's worth keeping in mind, and in particular as discussed in our [Goals](#shared-goals), perhaps we should make it easier for web developers to know whether a cloud-based model is in use, or which one.
+## Security considerations
 
-If on-device language models are updated separately from browser and operating system versions, this API could enhance the web's fingerprinting service by providing extra identifying bits. Mandating that older browser versions not receive updates or be able to download models from too far into the future might be a possible remediation for this.
-
-Finally, we intend to prohibit (in the specification) any use of user-specific information that is not directly supplied through the API. For example, it would not be permissible to fine-tune the language model based on information the user has entered into the browser in the past.
-
-### Detecting available options
-
-The [`availability()` API](#testing-available-options-before-creation) specified here provide some bits of fingerprinting information, since the availability status of each option and language can be one of four values, and those values are expected to be shared across a user's browser or browsing profile. In theory, this could be up to ~6.6 bits for the current set of summarizer options, plus an unknown number more based on the number of supported languages, and then this would be roughly tripled by including writer and rewriter. <!-- log_2(4 (availability) * 4 (type) * 3 (length) * 2 (format)) = ~6.6 -->
-
-In practice, we expect the number of bits to be much smaller, as implementations will likely not have separate, independently-downloadable pieces of collateral for each option value. (For example, in Chrome's case, we anticipate having a single download for all three APIs.) But we need the API design to be robust to a variety of implementation choices, and have purposefully designed it to allow such independent-download architectures so as not to lock implementers into a single strategy.
-
-There are a variety of solutions here, with varying tradeoffs, such as:
-
-* Grouping downloads to reduce the number of bits, e.g. by ensuring that downloading the "formal" tone also downloads the "neutral" and "casual" tones. This costs the user slightly more bytes, but hopefully not many.
-* Partitioning downloads by top-level site, i.e. repeatedly downloading extra fine-tunings or similar and not sharing them across all sites. This could be feasible if the collateral necessary to support a given option is small; it would not generally make sense for the base language model.
-* Adding friction to the download with permission prompts or other user notifications, so that sites which are attempting to use these APIs for tracking end up looking suspicious to users.
-
-We'll continue to investigate the best solutions here. And the specification will at a minimum allow user agents to add prompts and UI, or reject downloads entirely, as they see fit to preserve privacy.
-
-It's also worth noting that a download cannot be evicted by web developers. Thus the availability states can only be toggled in one direction, from `"downloadable"` to `"downloading"` to `"available"`. And it doesn't provide an identifier that is very stable over time, as by browsing other sites, users will gradually toggle more and more of the availability states to `"availale"`.
+Please see [the specification](https://webmachinelearning.github.io/writing-assistance-apis/#security).
 
 ## Stakeholder feedback
 
