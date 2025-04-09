@@ -425,6 +425,8 @@ The <dfn attribute for="Summarizer">inputQuota</dfn> getter steps are to return 
 
      The summarization should conform to the guidance given by |type|, |format|, and |length|, in the definitions of each of their enumeration values.
 
+     The summarization process must conform to the guidance given in [[#privacy]] and [[#security]].
+
      If |outputLanguage| is non-null, the summarization should be in that language. Otherwise, it should be in the language of |input| (which might not match that of |context| or |sharedContext|). If |input| contains multiple languages, or the language of |input| cannot be detected, then either the output language is [=implementation-defined=], or the implementation may treat this as an error, per the guidance in [[#summarizer-errors]].
 
   1. While true:
@@ -621,7 +623,7 @@ When summarization fails, the following possible reasons may be surfaced to the 
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the summarizer API. It only contains those which can come from certain [=implementation-defined=] steps.
@@ -972,6 +974,8 @@ The <dfn attribute for="Writer">inputQuota</dfn> getter steps are to return [=th
 
      The written output should conform to the guidance given by |tone|, |format|, and |length|, in the definitions of each of their enumeration values.
 
+     The writing process must conform to the guidance given in [[#privacy]] and [[#security]].
+
      If |outputLanguage| is non-null, the writing should be in that language. Otherwise, it should be in the language of |input| (which might not match that of |context| or |sharedContext|). If |input| contains multiple languages, or the language of |input| cannot be detected, then either the output language is [=implementation-defined=], or the implementation may treat this as an error, per the guidance in [[#writer-errors]].
 
   1. While true:
@@ -1130,7 +1134,7 @@ When writing fails, the following possible reasons may be surfaced to the web de
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the writer API. It only contains those which can come from certain [=implementation-defined=] steps.
@@ -1481,6 +1485,8 @@ The <dfn attribute for="Rewriter">inputQuota</dfn> getter steps are to return [=
 
      The rewritten output should conform to the guidance given by |tone|, |format|, and |length|, in the definitions of each of their enumeration values.
 
+     The rewriting process must conform to the guidance given in [[#privacy]] and [[#security]].
+
      If |outputLanguage| is non-null, the rewritten output text should be in that language. Otherwise, it should be in the language of |input| (which might not match that of |context| or |sharedContext|). If |input| contains multiple languages, or the language of |input| cannot be detected, then either the output language is [=implementation-defined=], or the implementation may treat this as an error, per the guidance in [[#rewriter-errors]].
 
   1. While true:
@@ -1643,7 +1649,7 @@ When rewriting fails, the following possible reasons may be surfaced to the web 
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, or if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the rewriter API. It only contains those which can come from certain [=implementation-defined=] steps.
@@ -1808,6 +1814,22 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
       ::
         1. If |availability| is "{{Availability/downloadable}}", then:
 
+          1. If |realm|'s [=realm/global object=] does not have [=transient activation=], then:
+
+            1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
+
+            1. Abort these steps.
+
+          1. [=Consume user activation=] given |realm|'s [=realm/global object=].
+
+          1. <span id="step-download-user-interface"></span>The user agent may display a user interface to the user to confirm that they want to perform the download operation given by |startDownload|, or to show the progress of the download. Alternately, the user agent may decide to deny the ability to perform |startDownload| based on implicit signals of the user's intent, including the considerations in [[#security-disk-space]]. If the user explicitly or implicitly signals that they do not want to start the download, then:
+
+            1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
+
+            1. Abort these steps.
+
+            <p class="note">The case where the user cancels the download after it starts is handled later, as part of the download loop.
+
           1. Let |startDownloadResult| be the result of performing |startDownload| given |options|.
 
           1. If |startDownloadResult| is false, then:
@@ -1828,6 +1850,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
               <p>This prevents the web developer-perceived progress from suddenly jumping from 0% to 90%, and then taking a long time to go from 90% to 100%. It also provides some protection against the (admittedly not very powerful) fingerprinting vector of measuring the current download progress across multiple sites.
              </div>
 
+             If the actual number of bytes necessary to download is 0, but the user agent is faking a download for the reasons described in [[#privacy]], then set this number to an [=implementation-defined=] value that helps with the download faking.
+
           1. Let |lastProgressFraction| be 0.
 
           1. Let |lastProgressTime| be the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
@@ -1836,13 +1860,13 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
           1. While true:
 
-            1. If downloading has failed, then:
+            1. If downloading has failed, or the user has canceled the download, then:
 
               1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NetworkError}}" {{DOMException}}.
 
               1. Abort these steps.
 
-            1. Let |bytesSoFar| be the number of bytes downloaded so far.
+            1. Let |bytesSoFar| be the number of bytes downloaded so far. (Or the number of bytes fake-downloaded so far, if the user agent is faking the download.)
 
             1. [=Assert=]: |bytesSoFar| is greater than or equal to 0, and less than or equal to |totalBytes|.
 
@@ -1852,7 +1876,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
               1. Let |progressFraction| be [$floor$](|rawProgressFraction| &times; 65,536) &divide; 65,536.
 
-                  <div class="note">
+                <div class="note" id="note-download-progress-fraction">
                   <p>We use a fraction, instead of firing a progress event with the number of bytes downloaded, to avoid giving precise information about the size of the model or other material being downloaded.</p>
 
                   <p>|progressFraction| is calculated from |rawProgressFraction| to give a precision of one part in 2<sup>16</sup>. This ensures that over most internet speeds and with most model sizes, the {{ProgressEvent/loaded}} value will be different from the previous one that was fired ~50 milliseconds ago.</p>
@@ -1960,6 +1984,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
             1. [=Reject=] |promise| with |options|["`signal`"]'s [=AbortSignal/abort reason=].
 
           1. Abort these steps.
+
+          <p class="advisement" id="warning-download-cancelation">The user agent should not actually cancel the underlying download, as explained in [[#privacy-availability-cancelation]]. It could fulfill this requirement by "pausing" the download, such that future calls to |getAvailability| given |options| return "{{Availability/downloading}}" instead of "{{Availability/downloadable}}", but this "pause" must persist even across user agent restarts.
 
         1. [=Initialize and return an AI model object=] given |promise|, |options|, a no-op algorithm, |initialize|, and |create|.
     </dl>
@@ -2208,9 +2234,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. If |options|[|key|] [=map/exists=], then [=list/for each=] |languageTag| of |options|[|key|]:
 
-      1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
-
-      1. [=set/Append=] the result of [=validating and canonicalizing a single language tag=] to |languageTags|.
+      1. [=set/Append=] the result of [=validating and canonicalizing a single language tag=] given |languageTag| to |languageTags|.
 
     1. Set |options|[|key|] to |languageTags|.
 </div>
@@ -2257,6 +2281,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
   1. [=In parallel=]:
 
     1. Let |availability| be the result of |compute| given |options|.
+
+    1. <span id="download-masking-step"></span>If |availability| is "{{Availability/available}}" or "{{Availability/downloading}}", the user agent should set |availability| to "{{Availability/downloadable}}" if doing so would improve the user's privacy, per the discussions in [[#privacy-availability-masking]].
 
     1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
@@ -2380,3 +2406,110 @@ A <dfn export>quota exceeded error information</dfn> is a [=struct=] with the fo
 <h3 id="supporting-task-source">Task source</h3>
 
 [=Tasks=] queued by this specification use the <dfn export>AI task source</dfn>.
+
+<h2 id="privacy">Privacy considerations</h2>
+
+<em>Unlike many "privacy considerations" sections, which only summarize and restate privacy considerations that are already normatively specified elsewhere in the document, this section contains some normative requirements that are not present elsewhere, and adds more detail to the normative requirements present elsewhere. The novel normative requirements are called out using <strong>strong emphasis</strong>.</em>
+
+<h3 id="privacy-availability">Model availability</h3>
+
+For any of the APIs that use the infrastructure described in [[#supporting]], the exact download status of the AI model or fine-tuning data can present a fingerprinting vector. How many bits this vector provides depends on the options provided to the API creation, and how they influence the download.
+
+For example, if the user agent uses a single model, with no separately-downloadable fine-tunings, to support the summarizer, writer, and rewriter APIs, then the download status provides two bits (corresponding to the four {{Availability}} values) across all three APIs. In contrast, if the user agent uses separate fine-tunings for each value of {{SummarizerType}}, {{SummarizerFormat}}, and {{SummarizerLength}} on top of a base model, then the download status for those summarizer fine-tunings alone provides ~6.6 bits of entropy.
+<!-- log_2(4 (availability) * 4 (type) * 3 (length) * 2 (format)) = ~6.6 -->
+
+<h4 id="privacy-availability-masking">Download masking</h4>
+
+One of the specification's mitigations is to suggest that the user agent mask the current download status, per <a href="#download-masking-step">this step</a> in the [=compute AI model availability=] algorithm which backs the `availability()` APIs.
+
+Because implementation strategies differ (e.g. in how many bits they expose), and other mitigations such as permission prompts are available, a specific masking scheme is not mandated. For APIs where the user agent believes such masking is necessary, a suggested heuristic is to mask by default, subject to a masking state that is established for each (API, options, [=storage key=]) tuple. This state can be set to "unmasked" once a web page in a given [=storage key=] calls the relevant `create()` method with a given set of options, and successfully starts a download or creates a model object. Since [=create an AI model object=] has stronger requirements (see [[#privacy-availability-creation]]), this ensures that web pages only get access to the true download status after taking a more costly and less-repeatable action.
+
+<strong>Implementations which use such a [=storage key=]-based masking scheme should ensure that the masking state is reset when other storage for that origin is reset.</strong>
+
+<h4 id="privacy-availability-creation">Creation-time friction</h4>
+
+The mitigation described in [[#privacy-availability-masking]] works against attempts to silently fingerprint using the `availability()` methods. The specification also contains requirements to prevent `create()` from being used for fingerprinting, by introducing enough friction into the process to make it impractical:
+
+* [=Create an AI model object=] both requires and consumes [=user activation=], when it would initiate a download.
+* [=Create an AI model object=] allows the user agent to prompt the user for permission, or to implicitly reject download attempts based on previous signals (such as an observed pattern of abuse).
+* [=Create an AI model object=] is gated on an per-API [=policy-controlled feature=], which means that only top-level origins and their delegates can use the API.
+
+Additionally, initiating the download process is more or less a one-time operation, so the availability status will only ever transition from "{{Availability/downloadable}}" to "{{Availability/downloading}}" to "{{Availability/available}}" via these guarded creation operations. That is, while `create()` can be used to read some of these fingerprinting bits, at the cost of the above friction, doing so will destroy the bits as well.
+
+<h4 id="privacy-availability-cancelation">Download cancelation</h4>
+
+An important part of making the download status into a less-useful fingerprinting vector is to ensure that the website cannot toggle the availability state back and forth by starting and canceling downloads. Doing so would allow sites much more fine-grained control over the possible fingerprinting bits, allowing them to read the bits via the `create()` methods without destroying them.
+
+The part of these APIs which, on the surface, gives developers control over the download process is the {{AbortSignal}} passed to the `create()` methods. This allows developers to signal that they are no longer interested in creating a model object, and immediately causes the promise returned by `create()` to become rejected. The specification has a "should"-level <a href="#warning-download-cancelation">requirement</a> that the user agent not actually cancel the underlying download when the {{AbortSignal}} is aborted. The web developer will still receive a rejected promise, but the download will continue in the background, and the availability status (as seen by future calls to the `availability()` method) will update accordingly.
+
+User agents might be inclined to cancel the download in other situations not covered in the specification, such as when the page is unloaded. This needs to be handled with caution, as if the page can initiate these operations using JavaScript (for example, by navigating away to another origin) that would re-open the privacy hole. So, <strong>user agents should not cancel the download in response to any page-controlled actions</strong>. Canceling in response to user-controlled actions, however, is fine.
+
+<h4 id="privacy-availability-eviction">Download eviction</h4>
+
+Another ingredient in ensuring that websites cannot toggle the availability state back and forth is to ensure that user agents don't use a fixed quota system for the downloaded material. For example, if a user agent implemented the translator API with one download per language arc, supported 100 language arcs, and evicted all but the 30 most-recently-used language arcs, then web pages could toggle the readable-via-`create()` availability state of language arcs from "{{Availability/available}}" back to "{{Availability/downloadable}}" by creating translators for 30 new language arcs.
+
+The simplest mitigation to this is to avoid any API-specific quota, and instead rely on a per-user disk space-based quota. This specification does not mandate that particular solution, but does require that <strong>user agents should not implement systems which allow web pages to control the eviction of downloaded material</strong>.
+
+<h4 id="privacy-availability-alternatives">Alternate options</h4>
+
+While some of the above requirements, such as those on user activation or permissions policy, are specified using "must" language to ensure interoperability, most are specified using "should". The reason for this is that it's possible for implementations to use completely different strategies to preserve user privacy, especially for APIs that use small models. (For example, the language detector API.)
+
+The simplest of these is to treat model downloads like most other stored resources, partitioning them by the downloading page's [=storage key=]. This lets the web origin model's existing privacy protections operate, obviating the need for anything more complicated. The downside is that this spends more of the user's time, bandwidth, and disk space redundantly downloading the same model across multiple sites.
+
+A slight variant of this is to re-download the model every time it is requested by a new [=storage key=], while re-using the on-disk storage. This still uses the uesr's time and bandwidth, but at least saves on disk space.
+
+Going further, a user agent could attempt to fake the download for new [=storage keys=] by just waiting for a similar amount of time as the real download originally took. This then only spends the user's time, sparing their bandwidth and disk space. However, this is less private than the above alternatives, due to the presence of network side channels. For example, a web page could attempt to detect the fake downloads by issuing network requests concurrent to the `create()` call, and noting that there is no change to network throughouput. The scheme of remembering the time the real download originally took can also be dangerous, as the first site to initiate the download could attempt to artificially inflate this time (using concurrent network requests) in order to communicate information to other sites that will initiate a fake download in the future, from which they can read the time taken. Nevertheless, something along these lines might be useful in some cases, implemented with caution and combined with other mitigations.
+
+<h3 id="privacy-language-availability">Sensitive language availability</h3>
+
+Even if the user agent mitigates most of the fingerprinting risks associated with the availability of AI models per [[#privacy-availability]], such that probing availability requires a destructive action per [[#privacy-availability-creation]], the information about download availabilities for different languages can still be a privacy risk beyond fingerprinting. This is most obvious in the case of the translator API, where, for example, knowing that the user has downloaded a translator from English to a minority language might be sensitive information. But it can apply just as well to other APIs, via options such as their expected input languages, which might be implemented using downloadable fine-tunings with variable availability.
+
+For this reason, on top of the creation-time mitigations discussed in [[#privacy-availability-creation]], <strong>user agents may artificially fake a download if they believe it would be helpful for privacy reasons</strong>, instead of instantly creating the model. This is *not* a fingerprinting mitigation, but instead provides some degree of plausible deniability for the user, such that web pages cannot be certain of the user's demographic information. If the web page sees model object creation taking 2–3 seconds and emitting {{CreateMonitor/downloadprogress}} events, then perhaps this is a fake download due to the user previously downloading a translator for that minority language, or perhaps it is a real download that completed quickly.
+
+As discussed in [[#privacy-availability-alternatives]], such fake downloads are not foolproof, and a determined web page could attempt to detect them. However, they do provide some privacy benefit, and can be combined with other mitigations (such as prompts) to provide a more robust defense, and to make such demographic probing impractically unreliable for attackers.
+
+<h3 id="privacy-model-version">Model version</h3>
+
+Separate from the availability of a model, the specific version or behavior of a model can also be a fingerprinting vector.
+
+For this reason, these APIs do not expose model versions directly. And they take some efforts to avoid exposing the model version indirectly, for example by <a href="#note-download-progress-fraction">censoring the download size</a> in the [=create an AI model object=] algorithm, so that {{CreateMonitor/downloadprogress}} events do not directly expose the size of the model. This also encourages interoperability, by making it harder for web pages to safelist specific models, and instead encouraging them to program against the general API surface.
+
+However, such mitigations are not foolproof. They only protect against simple attempts to passively discover the model version; behavioral probing can still reveal it. (For example, by sending a number of inputs, and checking the output against known patterns for different versions.)
+
+The best way to prevent the model version from becoming a fingerprinting vector is to tie it to the user agent's version, such that the model's version (and thus behavior) only updates in lockstep with already-exposed information such as {{NavigatorID/userAgent|navigator.userAgent}}. <strong>User agents should limit the number of possible model versions that a single user agent version can be paired with</strong>, for example by not providing model updates to older user agent versions. (However, this may not always be possible, for example because the user agent might be obtaining results by using a model bundled with the operating system, whose updates are not under the user agent's control.)
+
+<h3 id="privacy-user-input">User input</h3>
+
+<strong>Implementations must not train or fine-tune models on user input, or otherwise store user input in a way that models can consult in the future.</strong> (For example, using retrieval-augmented generation technology.) <strong>Instead, implementations should expose roughly "the same" capabilities to all sites.</strong>
+
+Using user input in such a way would provide a vector for exposing the user's information to web pages, or for exposing information derived from the user's interactions with one site to another site, both of which are unacceptable privacy leaks.
+
+<h3 id="privacy-cloud-implementations">Cloud-based implementations</h3>
+
+The implementation-defined parts of these APIs can be implemented by delegating to user-agent-provided cloud-based services. This is not, in itself, a significant privacy risk: web developers already have the ability to send arbitrary data (including user-provided data) to cloud services via APIs such as {{WindowOrWorkerGlobalScope/fetch()}}. Indeed, it's likely that web developers will fall back to such cloud services when these APIs are not present.
+
+However, this is something for web developers to be aware of when they use this API, in case their web page has requirements on not sending certain information to third parties. We're contemplating giving control over this possibility to web developers in <#38>.
+
+<h2 id="security">Security considerations</h2>
+
+<em>Unlike many "security considerations" sections, which only summarize and restate security considerations that are already normatively specified elsewhere in the document, this section contains some normative requirements that are not present elsewhere. The novel normative requirements are called out using <strong>strong emphasis</strong>.</em>
+
+<h3 id="security-disk-space">Disk space</h3>
+
+Downloading models for these APIs could use significant amounts of the user's disk space. Depending on the implementation strategy, web pages might be able to trigger more such usage, by repeatedly calling the `create()` methods with different options.
+
+<strong>In the event of storage pressure, user agents should balance the utility of these APIs with the disk space they take up</strong>, possibly failing a new download (as discussed in <a href="#step-download-user-interface">this step</a>) or evicting an old one. However, user agents need to be mindful of the privacy impacts discussed in [[#privacy-availability-eviction]] for any such eviction strategy. <strong>User agents may involve the user in these decisions</strong>, e.g., via download-time prompts or some sort of model management UI.
+
+<h3 id="security-runtime">Runtime shared resources</h3>
+
+Current implementation strategies for these APIs can involve significant usage of resources such as GPU memory and processing power. This leads to a common implementation strategy of loading the appropriate model once, and sharing its capabilities between multiple web pages that interface with it via these APIs.
+
+<strong>User agents should ensure that one web page's use of these APIs does not overly interfere with another web page's use of these APIs, or another web page's general operation</strong>. For example, it should not be possible for a background tab to prevent a foreground tab from using these APIs by calling them in a tight loop, or for one web page to lock up shared GPU resources indefinitely by repeatedly submitting large inputs.
+
+This specification does not mandate any particular mitigation strategy for these issues, but possible useful strategies include queuing, rate limiting, abuse detection, and treating differently web pages which the user is actively interacting with versus those in the background. If necessary, the user agent may fail these APIs with an "{{UnknownError}}" {{DOMException}} to prevent such problems.
+
+<h3 id="security-os">OS-provided models</h3>
+
+One implementation strategy for these APIs is to delegate to models provided by the operating system. This can provide a number of benefits, such as a more uniform experience for the user across multiple applications, or less disk space usage.
+
+However, doing so comes with the usual dangers of exposing operating system capabilities to the web platform. Notably, <strong>user agents must ensure that the various privacy and security requirements in this specification are still followed when using OS-provided models</strong>, even if the user agent has less control over the model's behavior. Particularly notable requirements to watch out for are those in [[#privacy-user-input]] and [[#security-runtime]].
