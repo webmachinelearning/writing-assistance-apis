@@ -1756,6 +1756,14 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
   1. If |document| is not [=allowed to use=] |permissionsPolicyFeature|, then return [=a promise rejected with=] a "{{NotAllowedError}}" {{DOMException}}.
 
+  1. Let |abortedDuringDownload| be false.
+
+    <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
+
+  1. If |options|["`signal`"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["`signal`"]:
+
+    1. Set |abortedDuringDownload| to true.
+
   1. Let |fireProgressEvent| be an algorithm taking one argument that does nothing.
 
   1. If |options|["`monitor`"] [=map/exists=], then:
@@ -1772,15 +1780,9 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
       1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to perform the following steps:
 
+        1. If |abortedDuringDownload| is true, then abort these steps.
+
         1. [=Fire an event=] named {{CreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to 1, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
-
-  1. Let |abortedDuringDownload| be false.
-
-    <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
-
-  1. If |options|["`signal`"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["`signal`"]:
-
-    1. Set |abortedDuringDownload| to true.
 
   1. Let |promise| be [=a new promise=] created in |realm|.
 
