@@ -1756,7 +1756,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
   1. If |document| is not [=allowed to use=] |permissionsPolicyFeature|, then return [=a promise rejected with=] a "{{NotAllowedError}}" {{DOMException}}.
 
-  1. Let |fireProgressEvent| be an algorithm taking two arguments that does nothing.
+  1. Let |fireProgressEvent| be an algorithm taking one argument that does nothing.
 
   1. If |options|["`monitor`"] [=map/exists=], then:
 
