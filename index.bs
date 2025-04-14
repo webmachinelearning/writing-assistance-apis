@@ -1795,13 +1795,13 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
     <dl class="switch">
       : null
       ::
-        1. [=Reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
+        1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with an "{{UnknownError}}" {{DOMException}}.
 
         1. Abort these steps.
 
       : "{{Availability/unavailable}}"
       ::
-        1. [=Reject=] |promise| with a "{{NotSupportedError}}" {{DOMException}}.
+        1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotSupportedError}}" {{DOMException}}.
 
         1. Abort these steps.
 
