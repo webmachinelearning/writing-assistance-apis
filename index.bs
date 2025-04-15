@@ -2176,7 +2176,11 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 <div algorithm>
   To <dfn export>measure AI model input usage</dfn> given an {{DestroyableModel}} |modelObject|, an [=ordered map=] |options|, and an algorithm |measure|:
 
-  1. If |modelObject|'s [=relevant global object=] is a {{Window}} whose [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
+  1. Let |global| be |modelObject|'s [=relevant global object=].
+
+  1. [=Assert=]: |global| is a {{Window}} object.
+
+  1. If |global|'s [=associated Document=] is not [=Document/fully active=], then return [=a promise rejected with=] an "{{InvalidStateError}}" {{DOMException}}.
 
   1. Let |signals| be « |modelObject|'s [=DestroyableModel/destruction abort controller=]'s [=AbortController/signal=] ».
 
@@ -2204,7 +2208,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. Let |result| be the result of performing |measure| given |stopMeasuring|.
 
-    1. [=Queue a global task=] on the [=AI task source=] given |modelObject|'s [=relevant global object=] to perform the following steps:
+    1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
       1. If |abortedDuringMeasurement| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
