@@ -623,7 +623,7 @@ When summarization fails, the following possible reasons may be surfaced to the 
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it cannot summarize and also meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the summarizer API. It only contains those which can come from certain [=implementation-defined=] steps.
@@ -2284,7 +2284,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. Let |availability| be the result of |compute| given |options|.
 
-    1. <span id="download-masking-step"></span>If |availability| is "{{Availability/available}}" or "{{Availability/downloading}}", the user agent should set |availability| to "{{Availability/downloadable}}" if doing so would improve the user's privacy, per the discussions in [[#privacy-availability-masking]].
+    1. <span id="download-masking-step"></span>If |availability| is "{{Availability/available}}" or "{{Availability/downloading}}", and if [[#privacy-availability-masking|download masking]] is needed to protect the user's privacy, the user agent should set |availability| to "{{Availability/downloadable}}".
 
     1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
@@ -2417,7 +2417,7 @@ A <dfn export>quota exceeded error information</dfn> is a [=struct=] with the fo
 
 For any of the APIs that use the infrastructure described in [[#supporting]], the exact download status of the AI model or fine-tuning data can present a fingerprinting vector. How many bits this vector provides depends on the options provided to the API creation, and how they influence the download.
 
-For example, if the user agent uses a single model, with no separately-downloadable fine-tunings, to support the summarizer, writer, and rewriter APIs, then the download status provides two bits (corresponding to the four {{Availability}} values) across all three APIs. In contrast, if the user agent uses separate fine-tunings for each value of {{SummarizerType}}, {{SummarizerFormat}}, and {{SummarizerLength}} on top of a base model, then the download status for those summarizer fine-tunings alone provides ~6.6 bits of entropy.
+For example, if the user agent uses a single model, with no separately-downloadable fine-tunings, to support the summarizer, writer, and rewriter APIs, then the download status provides two bits (corresponding to the four {{Availability}} values) across all three APIs. In contrast, if the user agent downloads separate fine-tunings for each value of {{SummarizerType}}, {{SummarizerFormat}}, and {{SummarizerLength}} on top of a base model, then the download status for those summarizer fine-tunings alone provides ~6.6 bits of entropy.
 <!-- log_2(4 (availability) * 4 (type) * 3 (length) * 2 (format)) = ~6.6 -->
 
 <h4 id="privacy-availability-masking">Download masking</h4>
