@@ -2284,7 +2284,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. Let |availability| be the result of |compute| given |options|.
 
-    1. <span id="download-masking-step"></span>If |availability| is "{{Availability/available}}" or "{{Availability/downloading}}", and if [[#privacy-availability-masking|download masking]] is needed to protect the user's privacy, the user agent should set |availability| to "{{Availability/downloadable}}".
+    1. <span id="step-download-masking"></span>If |availability| is "{{Availability/available}}" or "{{Availability/downloading}}", and if [[#privacy-availability-masking|download masking]] is needed to protect the user's privacy, the user agent should set |availability| to "{{Availability/downloadable}}".
 
     1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
@@ -2422,7 +2422,7 @@ For example, if the user agent uses a single model, with no separately-downloada
 
 <h4 id="privacy-availability-masking">Download masking</h4>
 
-One of the specification's mitigations is to suggest that the user agent mask the current download status by returning "{{Availability/downloadable}}" even if the actual download status is "{{Availability/available}}" or "{{Availability/downloading}}". This is done as part of <a href="#download-masking-step">this step</a> in the [=compute AI model availability=] algorithm which backs the `availability()` APIs.
+One of the specification's mitigations is to suggest that the user agent mask the current download status by returning "{{Availability/downloadable}}" even if the actual download status is "{{Availability/available}}" or "{{Availability/downloading}}". This is done as part of <a href="#step-download-masking">this step</a> in the [=compute AI model availability=] algorithm which backs the `availability()` APIs.
 
 Because implementation strategies differ (e.g. in how many bits they expose), and other mitigations such as permission prompts are available, a specific masking scheme is not mandated. For APIs where the user agent believes such masking is necessary, a suggested heuristic is to mask by default, subject to a masking state that is established for each (API, options, [=storage key=]) tuple. This state can be set to "unmasked" once a web page in a given [=storage key=] calls the relevant `create()` method with a given set of options, and successfully starts a download or creates a model object. Since [=create an AI model object=] has stronger requirements (see [[#privacy-availability-creation]]), this ensures that web pages only get access to the true download status after taking a more costly and less-repeatable action.
 
