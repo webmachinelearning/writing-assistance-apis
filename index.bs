@@ -1134,7 +1134,7 @@ When writing fails, the following possible reasons may be surfaced to the web de
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it cannot write and also meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the writer API. It only contains those which can come from certain [=implementation-defined=] steps.
@@ -1649,7 +1649,7 @@ When rewriting fails, the following possible reasons may be surfaced to the web 
     <tr>
       <td>"{{UnknownError}}"
       <td>
-        <p>All other scenarios, including if the user agent believes it is necessary to fail to meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
+        <p>All other scenarios, including if the user agent believes it cannot rewrite and also meet the requirements given in [[#privacy]] or [[#security]]. Or, if the user agent would prefer not to disclose the failure reason.
 </table>
 
 <p class="note">This table does not give the complete list of exceptions that can be surfaced by the rewriter API. It only contains those which can come from certain [=implementation-defined=] steps.
