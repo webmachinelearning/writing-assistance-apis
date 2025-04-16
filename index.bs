@@ -2422,11 +2422,11 @@ For example, if the user agent uses a single model, with no separately-downloada
 
 <h4 id="privacy-availability-masking">Download masking</h4>
 
-One of the specification's mitigations is to suggest that the user agent mask the current download status, per <a href="#download-masking-step">this step</a> in the [=compute AI model availability=] algorithm which backs the `availability()` APIs.
+One of the specification's mitigations is to suggest that the user agent mask the current download status by returning "{{Availability/downloadable}}" even if the actual download status is "{{Availability/available}}" or "{{Availability/downloading}}". This is done as part of <a href="#download-masking-step">this step</a> in the [=compute AI model availability=] algorithm which backs the `availability()` APIs.
 
 Because implementation strategies differ (e.g. in how many bits they expose), and other mitigations such as permission prompts are available, a specific masking scheme is not mandated. For APIs where the user agent believes such masking is necessary, a suggested heuristic is to mask by default, subject to a masking state that is established for each (API, options, [=storage key=]) tuple. This state can be set to "unmasked" once a web page in a given [=storage key=] calls the relevant `create()` method with a given set of options, and successfully starts a download or creates a model object. Since [=create an AI model object=] has stronger requirements (see [[#privacy-availability-creation]]), this ensures that web pages only get access to the true download status after taking a more costly and less-repeatable action.
 
-<strong>Implementations which use such a [=storage key=]-based masking scheme should ensure that the masking state is reset when other storage for that origin is reset.</strong>
+<strong>Implementations which use such a [=storage key=]-based masking scheme must ensure that the masking state is reset when other storage for that origin is reset.</strong>
 
 <h4 id="privacy-availability-creation">Creation-time friction</h4>
 
@@ -2442,7 +2442,7 @@ Additionally, initiating the download process is more or less a one-time operati
 
 An important part of making the download status into a less-useful fingerprinting vector is to ensure that the website cannot toggle the availability state back and forth by starting and canceling downloads. Doing so would allow sites much more fine-grained control over the possible fingerprinting bits, allowing them to read the bits via the `create()` methods without destroying them.
 
-The part of these APIs which, on the surface, gives developers control over the download process is the {{AbortSignal}} passed to the `create()` methods. This allows developers to signal that they are no longer interested in creating a model object, and immediately causes the promise returned by `create()` to become rejected. The specification has a "should"-level <a href="#warning-download-cancelation">requirement</a> that the user agent not actually cancel the underlying download when the {{AbortSignal}} is aborted. The web developer will still receive a rejected promise, but the download will continue in the background, and the availability status (as seen by future calls to the `availability()` method) will update accordingly.
+The part of these APIs which, on the surface, gives developers control over the download process is the {{AbortSignal}} passed to the `create()` methods. This allows developers to signal that they are no longer interested in creating a model object, and immediately causes the promise returned by `create()` to become rejected. The specification has a "should"-level <a href="#warning-download-cancelation">requirement</a> that the user agent not actually cancel the underlying download when the {{AbortSignal}} is aborted. The web developer will still receive a rejected promise, but the download progress so far will be preserved, and the availability status (as seen by future calls to the `availability()` method) will update accordingly.
 
 User agents might be inclined to cancel the download in other situations not covered in the specification, such as when the page is unloaded. This needs to be handled with caution, as if the page can initiate these operations using JavaScript (for example, by navigating away to another origin) that would re-open the privacy hole. So, <strong>user agents should not cancel the download in response to any page-controlled actions</strong>. Canceling in response to user-controlled actions, however, is fine.
 
@@ -2488,7 +2488,7 @@ Using user input in such a way would provide a vector for exposing the user's in
 
 <h3 id="privacy-cloud-implementations">Cloud-based implementations</h3>
 
-The implementation-defined parts of these APIs can be implemented by delegating to user-agent-provided cloud-based services. This is not, in itself, a significant privacy risk: web developers already have the ability to send arbitrary data (including user-provided data) to cloud services via APIs such as {{WindowOrWorkerGlobalScope/fetch()}}. Indeed, it's likely that web developers will fall back to such cloud services when these APIs are not present.
+The implementation-defined parts of these APIs can be implemented by delegating to user-agent-provided cloud-based services. This is not, in itself, a significant privacy risk: web developers already have the ability to send arbitrary data (including user-provided data) to cloud services via APIs such as {{WindowOrWorkerGlobalScope/fetch()}}. Indeed, it's likely that web developers will fall back to such cloud services when these APIs are not present. Additionally, in some cases entire user agents are already implemented as cloud services, with their user interfaces streamed to the user's device.
 
 However, this is something for web developers to be aware of when they use this API, in case their web page has requirements on not sending certain information to third parties. We're contemplating giving control over this possibility to web developers in <#38>.
 
@@ -2500,7 +2500,7 @@ However, this is something for web developers to be aware of when they use this 
 
 Downloading models for these APIs could use significant amounts of the user's disk space. Depending on the implementation strategy, web pages might be able to trigger more such usage, by repeatedly calling the `create()` methods with different options.
 
-<strong>In the event of storage pressure, user agents should balance the utility of these APIs with the disk space they take up</strong>, possibly failing a new download (as discussed in <a href="#step-download-user-interface">this step</a>) or evicting an old one. However, user agents need to be mindful of the privacy impacts discussed in [[#privacy-availability-eviction]] for any such eviction strategy. <strong>User agents may involve the user in these decisions</strong>, e.g., via download-time prompts or some sort of model management UI.
+<strong>In the event of storage pressure, user agents should balance the utility of these APIs with the disk space they take up</strong>, possibly failing a new download (as discussed in <a href="#step-download-user-interface">this step</a>) or evicting an old one. However, user agents need to be mindful of the privacy impacts discussed in [[#privacy-availability-eviction]] for any such eviction strategy. <strong>User agents may involve the user in these decisions</strong>, e.g., via download-time prompts (mentioned <a href="#step-download-user-interface">in the downloading algorithm</a>) or some sort of model management UI.
 
 <h3 id="security-runtime">Runtime shared resources</h3>
 
