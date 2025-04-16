@@ -1975,6 +1975,10 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
               1. Set |lastProgressTime| to the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
 
+            <p class="advisement" id="warning-download-cancelation-fully-active">If |document| stops being [=Document/fully active=], this loop does <em>not</em> terminate, and the user agent should not cancel the download, for the reasons explained in [[#privacy-availability-cancelation]]. It could pause the download, effectively meaning that the loop will never again have observable effects such as firing {{CreateMonitor/downloadprogress}} events. But even in such a case, future calls to |getAvailability| given |options| need to return "{{Availability/downloading}}" instead of "{{Availability/downloadable}}", and the material downloaded so far needs to persist even across user agent restarts.
+
+            <p class="note" id="note-downloading-while-in-bfcache">If the user agent does continue downloading while |document| is not [=Document/fully active=], then the loop will periodically queue tasks to fire {{CreateMonitor/downloadprogress}} events anyway. If the document becomes [=Document/fully active=] again, by coming out of the back/forward cache, these tasks will be run at that time, and the download progress will be reported to the web developer.
+
         1. [=If aborted=], then:
 
           1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to perform the following steps:
@@ -1985,7 +1989,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
           1. Abort these steps.
 
-          <p class="advisement" id="warning-download-cancelation">The user agent should not actually cancel the underlying download, as explained in [[#privacy-availability-cancelation]]. It could fulfill this requirement by "pausing" the download, such that future calls to |getAvailability| given |options| return "{{Availability/downloading}}" instead of "{{Availability/downloadable}}", but this "pause" must persist even across user agent restarts.
+          <p class="advisement" id="warning-download-cancelation-abort-signal">The user agent should not actually cancel the underlying download, as explained in [[#privacy-availability-cancelation]]. As <a href="#warning-download-cancelation-fully-active">above</a>, it could fulfill this requirement by pausing the download, but it cannot cancel discard the progress made so far.
 
         1. [=Initialize and return an AI model object=] given |promise|, |options|, a no-op algorithm, |initialize|, and |create|.
     </dl>
@@ -2444,9 +2448,11 @@ Additionally, initiating the download process is more or less a one-time operati
 
 An important part of making the download status into a less-useful fingerprinting vector is to ensure that the website cannot toggle the availability state back and forth by starting and canceling downloads. Doing so would allow sites much more fine-grained control over the possible fingerprinting bits, allowing them to read the bits via the `create()` methods without destroying them.
 
-The part of these APIs which, on the surface, gives developers control over the download process is the {{AbortSignal}} passed to the `create()` methods. This allows developers to signal that they are no longer interested in creating a model object, and immediately causes the promise returned by `create()` to become rejected. The specification has a "should"-level <a href="#warning-download-cancelation">requirement</a> that the user agent not actually cancel the underlying download when the {{AbortSignal}} is aborted. The web developer will still receive a rejected promise, but the download progress so far will be preserved, and the availability status (as seen by future calls to the `availability()` method) will update accordingly.
+The part of these APIs which, on the surface, gives developers control over the download process is the {{AbortSignal}} passed to the `create()` methods. This allows developers to signal that they are no longer interested in creating a model object, and immediately causes the promise returned by `create()` to become rejected. The specification has a "should"-level <a href="#warning-download-cancelation-abort-signal">requirement</a> that the user agent not actually cancel the underlying download when the {{AbortSignal}} is aborted. The web developer will still receive a rejected promise, but the download progress so far will be preserved, and the availability status (as seen by future calls to the `availability()` method) will update accordingly.
 
-User agents might be inclined to cancel the download in other situations not covered in the specification, such as when the page is unloaded. This needs to be handled with caution, as if the page can initiate these operations using JavaScript (for example, by navigating away to another origin) that would re-open the privacy hole. So, <strong>user agents should not cancel the download in response to any page-controlled actions</strong>. Canceling in response to user-controlled actions, however, is fine.
+User agents might be inclined to cancel the download in other situations not covered in the specification, such as when the page is unloaded. This needs to be handled with caution, as if the page can initiate these operations using JavaScript (for example, by navigating away to another origin) that would re-open the privacy hole. So, <strong>user agents should not cancel the download in response to any page-controlled actions</strong>. The specific case of navigation is covered by another "should"-level <a href="#warning-download-cancelation-fully-active">requirement</a>.
+
+Note that canceling downloads in response to user-controlled actions is not problematic.
 
 <h4 id="privacy-availability-eviction">Download eviction</h4>
 
