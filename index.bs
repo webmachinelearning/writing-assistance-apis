@@ -2330,6 +2330,8 @@ A <dfn>language availabilities triple</dfn> is a [=struct=] with the following [
 
   1. [=set/For each=] |language| of |requestedLanguages|:
 
+    1. Let |unavailable| be true.
+
     1. [=list/For each=] |availabilityToCheck| of « "{{Availability/available}}", "{{Availability/downloading}}", "{{Availability/downloadable}}" »:
 
       1. Let |languagesWithThisAvailability| be |partition|[|availabilityToCheck|].
@@ -2342,9 +2344,11 @@ A <dfn>language availabilities triple</dfn> is a [=struct=] with the following [
 
         1. Set |availability| to the [=Availability/minimum availability=] given |availability| and |availabilityToCheck|.
 
+        1. Set |unavailable| to false.
+
         1. [=iteration/Break=].
 
-    1. Return "{{Availability/unavailable}}".
+    1. If |unavailable| is true, then return "{{Availability/unavailable}}".
 
   1. Return |availability|.
 </div>
