@@ -123,7 +123,7 @@ const stream = await writer.writeStreaming(
   "A draft for an inquiry to my bank about how to enable wire transfers on my account"
 );
 
-for (const chunk of stream) {
+for await (const chunk of stream) {
   composeTextbox.append(chunk);
 }
 ```
