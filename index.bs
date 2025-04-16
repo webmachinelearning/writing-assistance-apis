@@ -2214,9 +2214,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. If |options|[|key|] [=map/exists=], then [=list/for each=] |languageTag| of |options|[|key|]:
 
-      1. If [$IsStructurallyValidLanguageTag$](|languageTag|) is false, then throw a {{TypeError}}.
-
-      1. [=set/Append=] the result of [=validating and canonicalizing a single language tag=] to |languageTags|.
+      1. [=set/Append=] the result of [=validating and canonicalizing a single language tag=] given |languageTag| to |languageTags|.
 
     1. Set |options|[|key|] to |languageTags|.
 </div>
