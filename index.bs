@@ -248,7 +248,7 @@ enum SummarizerLength { "short", "medium", "long" };
 
   1. If the user agent supports summarizing text into the type of summary described by |type|, in the format described by |format|, and with the length guidance given by |length| without performing any downloading operations, then return "{{Availability/available}}".
 
-  1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{Availability/downloadable}}".
+  1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{Availability/downloading}}".
 
   1. If the user agent believes it can summarize text according to |type|, |format|, and |length|, but only after performing a download (e.g., of an AI model or fine-tuning), then return "{{Availability/downloadable}}".
 
@@ -826,7 +826,7 @@ enum WriterLength { "short", "medium", "long" };
 
   1. If the user agent supports writing text with the tone described by |tone|, in the format described by |format|, and with the length guidance given by |length| without performing any downloading operations, then return "{{Availability/available}}".
 
-  1. If the user agent believes it can write text according to |tone|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{Availability/downloadable}}".
+  1. If the user agent believes it can write text according to |tone|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{Availability/downloading}}".
 
   1. If the user agent believes it can write text according to |tone|, |format|, and |length|, but only after performing a download (e.g., of an AI model or fine-tuning), then return "{{Availability/downloadable}}".
 
@@ -1337,7 +1337,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 
   1. If the user agent supports rewriting text with the tone modification described by |tone|, in the format described by |format|, and with the length modification given by |length| without performing any downloading operations, then return "{{Availability/available}}".
 
-  1. If the user agent believes it can rewrite text according to |tone|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{Availability/downloadable}}".
+  1. If the user agent believes it can rewrite text according to |tone|, |format|, and |length|, but only after finishing a download (e.g., of an AI model or fine-tuning) that is already ongoing, then return "{{Availability/downloading}}".
 
   1. If the user agent believes it can rewrite text according to |tone|, |format|, and |length|, but only after performing a download (e.g., of an AI model or fine-tuning), then return "{{Availability/downloadable}}".
 
