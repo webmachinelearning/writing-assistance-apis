@@ -9,12 +9,12 @@ This feature exposes two large categories of information:
 
 - The availability information for various capabilities of the API, so that web developers know what capabilities are available in the current browser, and whether using them will require a download or the capability can be used readily.
 
-The privacy implications of both of these are discussed [in the explainer](./README.md#privacy-considerations).
+The privacy implications of both of these are discussed [in the specification](https://webmachinelearning.github.io/writing-assistance-apis/#privacy).
 
 > 02.  Do features in your specification expose the minimum amount of information
 >      necessary to implement the intended functionality?
 
-We believe so. It's possible that we could remove the exposure of the after-download vs. readily information. However, it would almost certainly be inferrable via timing side-channels. (I.e., if downloading a language model or fine-tuning is required, then the web developer can observe the creation of the summarizer/writer/rewriter object taking longer.)
+We believe so. It's possible that we could remove the exposure of the download status information. However, it would almost certainly be inferrable via timing side-channels. (I.e., if downloading a language model or fine-tuning is required, then the web developer can observe the creation of the summarizer/writer/rewriter object taking longer.)
 
 > 03.  Do the features in your specification expose personal information,
 >      personally-identifiable information (PII), or information derived from
@@ -69,7 +69,7 @@ None.
 
 We use permissions policy to disallow the usage of these features by default in third-party (cross-origin) contexts. However, the top-level site can delegate to cross-origin iframes.
 
-Otherwise, it's possible that some of the [anti-fingerprinting mitigations](./README.md#privacy-considerations) might involve partitioning download status, which is kind of like distinguishing between first- and third-party contexts.
+Otherwise, some of the possible [anti-fingerprinting mitigations](https://webmachinelearning.github.io/writing-assistance-apis/#privacy-availability) involve partitioning information across sites, which is kind of like distinguishing between first- and third-party contexts.
 
 > 14.  How do the features in this specification work in the context of a browser’s
 >      Private Browsing or Incognito mode?
@@ -81,9 +81,10 @@ Otherwise, we do not anticipate any differences.
 > 15.  Does this specification have both "Security Considerations" and "Privacy
 >      Considerations" sections?
 
-There is no specification yet, but there is a [privacy considerations](./README.md#privacy-considerations) section in the explainer.
+Yes:
 
-We do not anticipate significant security risks for these APIs at this time.
+* [Privacy considerations](https://webmachinelearning.github.io/writing-assistance-apis/#privacy)
+* [Security considerations](https://webmachinelearning.github.io/writing-assistance-apis/#security)
 
 > 16.  Do features in your specification enable origins to downgrade default
 >      security protections?
