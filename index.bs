@@ -2540,5 +2540,4 @@ This specification does not mandate any particular mitigation strategy for these
 
 One implementation strategy for these APIs is to delegate to models provided by the operating system. This can provide a number of benefits, such as a more uniform experience for the user across multiple applications, or less disk space usage.
 
-<!-- Main text reference: none, but probably not needed as it's kind of a meta-point -->
-However, doing so comes with the usual dangers of exposing operating system capabilities to the web platform. Notably, <strong>user agents must ensure that the various privacy and security requirements in this specification are still followed when using OS-provided models</strong>, even if the user agent has less control over the model's behavior. Particularly notable requirements to watch out for are those in [[#privacy-user-input]] and [[#security-runtime]].
+However, doing so comes with the usual dangers of exposing operating system capabilities to the web platform. User agents still need to ensure that the various privacy and security requirements in this specification are followed when using OS-provided models, even if the user agent has less control over the model's behavior. Particularly notable requirements to watch out for are those in [[#privacy-user-input]] and [[#security-runtime]].
