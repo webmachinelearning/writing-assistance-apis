@@ -2504,7 +2504,7 @@ The best way to prevent the model version from becoming a fingerprinting vector 
 <h3 id="privacy-user-input">User input</h3>
 
 <!-- Main text reference: each "the algorithm" section -->
-<strong>Implementations must not train or fine-tune models on user input, or otherwise store user input in a way that models can consult in the future.</strong> (For example, using retrieval-augmented generation technology.) <strong>Instead, implementations should expose roughly "the same" capabilities to all sites.</strong>
+<strong>Implementations must not train or fine-tune models on user input, or otherwise store user input in a way that models can consult in the future.</strong> (For example, using retrieval-augmented generation technology.)
 
 Using user input in such a way would provide a vector for exposing the user's information to web pages, or for exposing information derived from the user's interactions with one site to another site, both of which are unacceptable privacy leaks.
 
