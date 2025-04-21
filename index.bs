@@ -122,7 +122,7 @@ enum SummarizerLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>validate and canonicalize summarizer options</dfn> given a {{SummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+  To <dfn>validate and canonicalize summarizer options</dfn> given a {{SummarizerCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw an exception if any are invalid.
 
   1. [=Validate and canonicalize language tags=] given |options| and "{{SummarizerCreateCoreOptions/expectedInputLanguages}}".
 
@@ -700,7 +700,7 @@ enum WriterLength { "short", "medium", "long" };
 </div>
 
 <div algorithm>
-  To <dfn>validate and canonicalize writer options</dfn> given a {{WriterCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+  To <dfn>validate and canonicalize writer options</dfn> given a {{WriterCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw an exception if any are invalid.
 
   1. [=Validate and canonicalize language tags=] given |options| and "{{WriterCreateCoreOptions/expectedInputLanguages}}".
 
@@ -1209,7 +1209,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 </div>
 
 <div algorithm>
-  To <dfn>validate and canonicalize rewriter options</dfn> given a {{RewriterCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw a {{TypeError}} if any are invalid.
+  To <dfn>validate and canonicalize rewriter options</dfn> given a {{RewriterCreateCoreOptions}} |options|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags, and throw an exception if any are invalid.
 
   1. [=Validate and canonicalize language tags=] given |options| and "{{RewriterCreateCoreOptions/expectedInputLanguages}}".
 
@@ -2200,7 +2200,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 <h3 id="supporting-language-tags">Language tags</h3>
 
 <div algorithm>
-  To <dfn export>validate and canonicalize language tags</dfn> given a [=ordered map=] |options| and a [=string=] |key|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags found in |options|[|key|], and throw a {{TypeError}} if any are invalid.
+  To <dfn export>validate and canonicalize language tags</dfn> given a [=ordered map=] |options| and a [=string=] |key|, perform the following steps. They mutate |options| in place to canonicalize and deduplicate language tags found in |options|[|key|], and throw an exception if any are invalid.
 
   1. [=Assert=]: |options|[|key|] [=map/exists=].
 
@@ -2222,7 +2222,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 <div algorithm>
   To <dfn lt="validate and canonicalize a single language tag|validating and canonicalizing a single language tag">validate and canonicalize a single language tag</dfn> given a [=string=] |potentialLanguageTag|:
 
-  1. If [$IsStructurallyValidLanguageTag$](|potentialLanguageTag|) is false, then throw a {{TypeError}}.
+  1. If [$IsStructurallyValidLanguageTag$](|potentialLanguageTag|) is false, then throw a {{RangeError}}.
 
   1. Return [$CanonicalizeUnicodeLocaleId$](|potentialLanguageTag|).
 </div>
