@@ -1750,6 +1750,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
   1. If |document| is not [=allowed to use=] |permissionsPolicyFeature|, then return [=a promise rejected with=] a "{{NotAllowedError}}" {{DOMException}}.
 
+  1. Let |promise| be [=a new promise=] created in |realm|.
+
   1. Let |abortedDuringDownload| be false.
 
     <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
@@ -1757,6 +1759,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
   1. If |options|["`signal`"] [=map/exists=], then [=AbortSignal/add|add the following abort steps=] to |options|["`signal`"]:
 
     1. Set |abortedDuringDownload| to true.
+
+    1. [=Reject=] |promise| with |options|["`signal`"]'s [=AbortSignal/abort reason=].
 
   1. Let |fireProgressEvent| be an algorithm taking one argument that does nothing.
 
@@ -1777,8 +1781,6 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
         1. If |abortedDuringDownload| is true, then abort these steps.
 
         1. [=Fire an event=] named {{CreateMonitor/downloadprogress}} at |monitor|, using {{ProgressEvent}}, with the {{ProgressEvent/loaded}} attribute initialized to |loaded|, the {{ProgressEvent/total}} attribute initialized to 1, and the {{ProgressEvent/lengthComputable}} attribute initialized to true.
-
-  1. Let |promise| be [=a new promise=] created in |realm|.
 
   1. [=In parallel=]:
 
@@ -1953,15 +1955,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
               1. Set |lastProgressTime| to the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
 
-        1. [=If aborted=], then:
-
-          1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to perform the following steps:
-
-            1. [=Assert=]: |options|["`signal`"] is [=AbortSignal/aborted=].
-
-            1. [=Reject=] |promise| with |options|["`signal`"]'s [=AbortSignal/abort reason=].
-
-          1. Abort these steps.
+        1. [=If aborted=], then abort these [=in parallel=] steps.
 
         1. [=Initialize and return an AI model object=] given |promise|, |options|, a no-op algorithm, |initialize|, and |create|.
     </dl>
@@ -1982,11 +1976,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
   1. [=Queue a global task=] on the [=AI task source=] given |promise|'s [=relevant global object=] to perform the following steps:
 
-    1. If |options|["`signal`"] [=map/exists=] and is [=AbortSignal/aborted=], then:
-
-      1. [=Reject=] |promise| with |options|["`signal`"]'s [=AbortSignal/abort reason=].
-
-      1. Abort these steps.
+    1. If |options|["`signal`"] [=map/exists=] and is [=AbortSignal/aborted=], then abort these steps.
 
       <p class="note">This check is necessary in case any code running on the [=agent/event loop=] caused the {{AbortSignal}} to become [=AbortSignal/aborted=] before this [=task=] ran.
 
@@ -2028,6 +2018,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
   1. If |compositeSignal| is [=AbortSignal/aborted=], then return [=a promise rejected with=] |compositeSignal|'s [=AbortSignal/abort reason=].
 
+  1. Let |promise| be [=a new promise=] created in |modelObject|'s [=relevant realm=].
+
   1. Let |abortedDuringOperation| be false.
 
     <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
@@ -2036,7 +2028,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. Set |abortedDuringOperation| to true.
 
-  1. Let |promise| be [=a new promise=] created in |modelObject|'s [=relevant realm=].
+    1. [=Reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
   1. [=In parallel=]:
 
@@ -2046,25 +2038,19 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
       1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
-        1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
-
-        1. Otherwise, append |chunk| to |result|.
+        1. If |abortedDuringOperation| is false, then append |chunk| to |result|.
 
     1. Let |done| be the following steps:
 
       1. [=Queue a global task=] on the [=AI task source=] given ||global| to perform the following steps:
 
-        1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
-
-        1. Otherwise, [=resolve=] |promise| with |result|.
+        1. If |abortedDuringOperation| is false, then [=resolve=] |promise| with |result|.
 
     1. Let |error| be the following steps given [=error information=] |errorInfo|:
 
       1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
-        1. If |abortedDuringOperation| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
-
-        1. Otherwise, [=reject=] |promise| with the result [=converting error information into an exception object=] given |errorInfo|.
+        1. If |abortedDuringOperation| is false, then [=reject=] |promise| with the result [=converting error information into an exception object=] given |errorInfo|.
 
     1. Let |stopProducing| be the following steps:
 
@@ -2092,6 +2078,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
   1. If |compositeSignal| is [=AbortSignal/aborted=], then return [=a promise rejected with=] |compositeSignal|'s [=AbortSignal/abort reason=].
 
+  1. Let |stream| be a [=new=] {{ReadableStream}} created in |modelObject|'s [=relevant realm=].
+
   1. Let |abortedDuringOperation| be false.
 
     <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
@@ -2100,7 +2088,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. Set |abortedDuringOperation| to true.
 
-  1. Let |stream| be a [=new=] {{ReadableStream}} created in |modelObject|'s [=relevant realm=].
+    1. [=ReadableStream/Error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
   1. Let |canceledDuringOperation| be false.
 
@@ -2116,25 +2104,19 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
       1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
-        1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
-
-        1. Otherwise, [=ReadableStream/enqueue=] |chunk| into |stream|.
+        1. If |abortedDuringOperation| is false, then [=ReadableStream/enqueue=] |chunk| into |stream|.
 
     1. Let |done| be the following steps:
 
       1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
-        1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
-
-        1. Otherwise, [=ReadableStream/close=] |stream|.
+        1. If |abortedDuringOperation| is false, then [=ReadableStream/close=] |stream|.
 
     1. Let |error| be the following steps given [=error information=] |errorInfo|:
 
       1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
-        1. If |abortedDuringOperation| is true, then [=ReadableStream/error=] |stream| with |compositeSignal|'s [=AbortSignal/abort reason=].
-
-        1. Otherwise, [=ReadableStream/error=] |stream| with the result of [=converting error information into an exception object=] given |errorInfo|.
+        1. If |abortedDuringOperation| is false, then [=ReadableStream/error=] |stream| with the result of [=converting error information into an exception object=] given |errorInfo|.
 
     1. Let |stopProducing| be the following steps:
 
@@ -2164,6 +2146,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
   1. If |compositeSignal| is [=AbortSignal/aborted=], then return [=a promise rejected with=] |compositeSignal|'s [=AbortSignal/abort reason=].
 
+  1. Let |promise| be [=a new promise=] created in |modelObject|'s [=relevant realm=].
+
   1. Let |abortedDuringMeasurement| be false.
 
     <p class="note">This variable will be written to from the [=event loop=], but read from [=in parallel=].
@@ -2172,7 +2156,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. Set |abortedDuringMeasurement| to true.
 
-  1. Let |promise| be [=a new promise=] created in |modelObject|'s [=relevant realm=].
+    1. [=Reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
 
   1. [=In parallel=]:
 
@@ -2184,7 +2168,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
-      1. If |abortedDuringMeasurement| is true, then [=reject=] |promise| with |compositeSignal|'s [=AbortSignal/abort reason=].
+      1. If |abortedDuringMeasurement| is true, then abort these steps.
 
       1. Otherwise, if |result| is an [=error information=], then [=reject=] |promise| with the result [=converting error information into an exception object=] given |result|.
 
