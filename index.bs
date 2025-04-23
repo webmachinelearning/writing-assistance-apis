@@ -1955,7 +1955,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
               1. Set |lastProgressTime| to the [=monotonic clock=]'s [=monotonic clock/unsafe current time=].
 
-        1. [=If aborted=], then abort these [=in parallel=] steps.
+        1. [=If aborted=], then abort these steps.
 
         1. [=Initialize and return an AI model object=] given |promise|, |options|, a no-op algorithm, |initialize|, and |create|.
     </dl>
