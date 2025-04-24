@@ -2299,7 +2299,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
   1. Return "{{Availability/available}}".
 </div>
 
-For the purposes of our algorithms related to model availability, a user agent <dfn for="model availability" lt="currently supports|currently supported|can support|supports">currently supports</dfn> an operation if it can perform that operation without first downloading the necessary capabilities. (For example, without first downloading an AI model or fine tuning.) Such determination of support should incorporate the privacy considerations described in [[#privacy-model-version]]. That is, even if a user agent has a suitable model available or could in theory download one, it may choose instead to report the operation as unsupported, in order to avoid using models whose versions skew too far from the user agent's version.
+For the purposes of our algorithms related to model availability, a user agent <dfn export for="model availability" lt="currently supports|currently supported|can support|supports">currently supports</dfn> an operation if it can perform that operation without first downloading the necessary capabilities. (For example, without first downloading an AI model or fine tuning.) Such determination of support should incorporate the privacy considerations described in [[#privacy-model-version]]. That is, even if a user agent has a suitable model available or could in theory download one, it may choose instead to report the operation as unsupported, in order to avoid using models whose versions skew too far from the user agent's version.
 
 <h3 id="supporting-language-availability">Language availability</h3>
 
