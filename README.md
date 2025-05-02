@@ -119,7 +119,7 @@ All three of the APIs support streaming output, via counterpart methods `summari
 ```js
 const writer = await Writer.create({ tone: "formal", length: "long" });
 
-const stream = await writer.writeStreaming(
+const stream = writer.writeStreaming(
   "A draft for an inquiry to my bank about how to enable wire transfers on my account"
 );
 

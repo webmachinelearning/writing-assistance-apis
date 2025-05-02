@@ -2106,7 +2106,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
   1. Let |compositeSignal| be the result of [=creating a dependent abort signal=] given |signals| using {{AbortSignal}} and |modelObject|'s [=relevant realm=].
 
-  1. If |compositeSignal| is [=AbortSignal/aborted=], then return [=a promise rejected with=] |compositeSignal|'s [=AbortSignal/abort reason=].
+  1. If |compositeSignal| is [=AbortSignal/aborted=], then throw |compositeSignal|'s [=AbortSignal/abort reason=].
 
   1. Let |stream| be a [=new=] {{ReadableStream}} created in |modelObject|'s [=relevant realm=].
 
