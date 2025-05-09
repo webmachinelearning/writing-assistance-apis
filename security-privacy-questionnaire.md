@@ -101,9 +101,7 @@ Ideally, nothing special should happen. In particular, summarizer/writer/rewrite
 
 > 18.  What happens when a document that uses your feature gets disconnected?
 
-As with the previous question, nothing special should happen: the objects should still stay alive and be usable.
-
-As with the previous question, it's easy to imagine implementations where this is difficult to implement. We may need to add a check in the specification to prevent such usage, if prototyping shows that the difficulty is significant.
+The methods of the summarizer/writer/rewriter objects will start rejecting with `"InvalidStateError"` `DOMException`s.
 
 > 19.  What should this questionnaire have asked?
 
