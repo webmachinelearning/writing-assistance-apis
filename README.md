@@ -133,7 +133,7 @@ for await (const chunk of stream) {
 A created summarizer/writer/rewriter object can be used multiple times. **The only shared state is the initial configuration options**; the inputs do not build on each other. (See more discussion [below](#one-shot-functions-instead-of-summarizer--writer--rewriter-objects).)
 
 ```js
-const summarizer = await Summarizer.create({ type: "tl;dr" });
+const summarizer = await Summarizer.create({ type: "tldr" });
 
 const reviewSummaries = await Promise.all(
   Array.from(

@@ -108,7 +108,7 @@ dictionary SummarizerSummarizeOptions {
   DOMString context;
 };
 
-enum SummarizerType { "tl;dr", "teaser", "key-points", "headline" };
+enum SummarizerType { "tldr", "teaser", "key-points", "headline" };
 enum SummarizerFormat { "plain-text", "markdown" };
 enum SummarizerLength { "short", "medium", "long" };
 </xmp>
@@ -507,7 +507,7 @@ This section gives normative guidance on how the implementation of [=summarize=]
       <th>Meaning
   <tbody>
     <tr>
-      <th>"<dfn enum-value for="SummarizerType">tl;dr</dfn>"
+      <th>"<dfn enum-value for="SummarizerType">tldr</dfn>"
       <td>
         <p>The summary should be short and to the point, providing a quick overview of the input, suitable for a busy reader.
     <tr>
@@ -537,7 +537,7 @@ This section gives normative guidance on how the implementation of [=summarize=]
         <p>The guidance is dependent on the value of {{SummarizerType}}:
 
         <dl class="switch">
-          : "{{SummarizerType/tl;dr}}"
+          : "{{SummarizerType/tldr}}"
           : "{{SummarizerType/teaser}}"
           :: The summary should fit within 1 sentence.
           : "{{SummarizerType/key-points}}"
@@ -551,7 +551,7 @@ This section gives normative guidance on how the implementation of [=summarize=]
         <p>The guidance is dependent on the value of {{SummarizerType}}:
 
         <dl class="switch">
-          : "{{SummarizerType/tl;dr}}"
+          : "{{SummarizerType/tldr}}"
           : "{{SummarizerType/teaser}}"
           :: The summary should fit within 1 short paragraph.
           : "{{SummarizerType/key-points}}"
@@ -565,7 +565,7 @@ This section gives normative guidance on how the implementation of [=summarize=]
         <p>The guidance is dependent on the value of {{SummarizerType}}:
 
         <dl class="switch">
-          : "{{SummarizerType/tl;dr}}"
+          : "{{SummarizerType/tldr}}"
           : "{{SummarizerType/teaser}}"
           :: The summary should fit within 1 paragraph.
           : "{{SummarizerType/key-points}}"
