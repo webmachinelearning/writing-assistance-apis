@@ -8,7 +8,7 @@
   <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="0094d88e59845e14621c6340160fda8ef81b6685" name="revision">
+  <meta content="d1d11c913b85ee765eb671504d24feb98f9a424a" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -747,7 +747,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
   <div class="head">
    <p data-fill-with="logo"><a class="logo" href="https://webmachinelearning.github.io/"> <img alt="Logo" height="100" src="https://webmachinelearning.github.io/webmachinelearning-logo.png" width="100"> </a> </p>
    <h1 class="p-name no-ref" id="title">Writing Assistance APIs</h1>
-   <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>, <time class="dt-updated" datetime="2025-05-15">15 May 2025</time></p>
+   <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>, <time class="dt-updated" datetime="2025-05-22">22 May 2025</time></p>
    <details open>
     <summary>More details about this document</summary>
     <div data-fill-with="spec-metadata">
@@ -940,7 +940,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
   <a class="idl-code" data-link-type="interface" href="https://webidl.spec.whatwg.org/#idl-DOMString" id="ref-for-idl-DOMString①②"><c- b>DOMString</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="SummarizerSummarizeOptions" data-dfn-type="dict-member" data-export data-type="DOMString" id="dom-summarizersummarizeoptions-context"><code><c- g>context</c-></code></dfn>;
 };
 
-<c- b>enum</c-> <dfn class="dfn-paneled idl-code" data-dfn-type="enum" data-export id="enumdef-summarizertype"><code><c- g>SummarizerType</c-></code></dfn> { <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-tldr" id="ref-for-dom-summarizertype-tldr"><c- s>"tl;dr"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-teaser" id="ref-for-dom-summarizertype-teaser"><c- s>"teaser"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-key-points" id="ref-for-dom-summarizertype-key-points"><c- s>"key-points"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-headline" id="ref-for-dom-summarizertype-headline"><c- s>"headline"</c-></a> };
+<c- b>enum</c-> <dfn class="dfn-paneled idl-code" data-dfn-type="enum" data-export id="enumdef-summarizertype"><code><c- g>SummarizerType</c-></code></dfn> { <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-tldr" id="ref-for-dom-summarizertype-tldr"><c- s>"tldr"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-teaser" id="ref-for-dom-summarizertype-teaser"><c- s>"teaser"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-key-points" id="ref-for-dom-summarizertype-key-points"><c- s>"key-points"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-headline" id="ref-for-dom-summarizertype-headline"><c- s>"headline"</c-></a> };
 <c- b>enum</c-> <dfn class="dfn-paneled idl-code" data-dfn-type="enum" data-export id="enumdef-summarizerformat"><code><c- g>SummarizerFormat</c-></code></dfn> { <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerformat-plain-text" id="ref-for-dom-summarizerformat-plain-text"><c- s>"plain-text"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerformat-markdown" id="ref-for-dom-summarizerformat-markdown"><c- s>"markdown"</c-></a> };
 <c- b>enum</c-> <dfn class="dfn-paneled idl-code" data-dfn-type="enum" data-export id="enumdef-summarizerlength"><code><c- g>SummarizerLength</c-></code></dfn> { <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerlength-short" id="ref-for-dom-summarizerlength-short"><c- s>"short"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerlength-medium" id="ref-for-dom-summarizerlength-medium"><c- s>"medium"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerlength-long" id="ref-for-dom-summarizerlength-long"><c- s>"long"</c-></a> };
 </pre>
@@ -1338,7 +1338,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
       <th>Meaning 
     <tbody>
      <tr>
-      <th>"<dfn class="dfn-paneled idl-code" data-dfn-for="SummarizerType" data-dfn-type="enum-value" data-export data-lt="&quot;tl;dr&quot;|tl;dr" id="dom-summarizertype-tldr"><code>tl;dr</code></dfn>" 
+      <th>"<dfn class="dfn-paneled idl-code" data-dfn-for="SummarizerType" data-dfn-type="enum-value" data-export data-lt="&quot;tldr&quot;|tldr" id="dom-summarizertype-tldr"><code>tldr</code></dfn>" 
       <td>
        <p>The summary should be short and to the point, providing a quick overview of the input, suitable for a busy reader. </p>
      <tr>
@@ -1366,7 +1366,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
       <td>
        <p>The guidance is dependent on the value of <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype⑧">SummarizerType</a></code>: </p>
        <dl class="switch">
-        <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-tldr" id="ref-for-dom-summarizertype-tldr①">tl;dr</a></code>"
+        <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-tldr" id="ref-for-dom-summarizertype-tldr①">tldr</a></code>"
         <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-teaser" id="ref-for-dom-summarizertype-teaser①">teaser</a></code>"
         <dd data-md>
          <p>The summary should fit within 1 sentence.</p>
@@ -1382,7 +1382,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
       <td>
        <p>The guidance is dependent on the value of <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype⑨">SummarizerType</a></code>: </p>
        <dl class="switch">
-        <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-tldr" id="ref-for-dom-summarizertype-tldr②">tl;dr</a></code>"
+        <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-tldr" id="ref-for-dom-summarizertype-tldr②">tldr</a></code>"
         <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-teaser" id="ref-for-dom-summarizertype-teaser②">teaser</a></code>"
         <dd data-md>
          <p>The summary should fit within 1 short paragraph.</p>
@@ -1398,7 +1398,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
       <td>
        <p>The guidance is dependent on the value of <code class="idl"><a data-link-type="idl" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype①⓪">SummarizerType</a></code>: </p>
        <dl class="switch">
-        <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-tldr" id="ref-for-dom-summarizertype-tldr③">tl;dr</a></code>"
+        <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-tldr" id="ref-for-dom-summarizertype-tldr③">tldr</a></code>"
         <dt data-md>"<code class="idl"><a data-link-type="idl" href="#dom-summarizertype-teaser" id="ref-for-dom-summarizertype-teaser③">teaser</a></code>"
         <dd data-md>
          <p>The summary should fit within 1 paragraph.</p>
@@ -3734,8 +3734,8 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
    <li><a href="#model-availability-currently-supports">supports</a><span>, in § 5.5</span>
    <li><a href="#dom-summarizertype-teaser">"teaser"</a><span>, in § 2.4.3</span>
    <li><a href="#dom-summarizertype-teaser">teaser</a><span>, in § 2.4.3</span>
-   <li><a href="#dom-summarizertype-tldr">"tl;dr"</a><span>, in § 2.4.3</span>
-   <li><a href="#dom-summarizertype-tldr">tl;dr</a><span>, in § 2.4.3</span>
+   <li><a href="#dom-summarizertype-tldr">"tldr"</a><span>, in § 2.4.3</span>
+   <li><a href="#dom-summarizertype-tldr">tldr</a><span>, in § 2.4.3</span>
    <li>
     tone
     <ul>
@@ -4029,7 +4029,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
   <a class="idl-code" data-link-type="interface" href="https://webidl.spec.whatwg.org/#idl-DOMString"><c- b>DOMString</c-></a> <a data-type="DOMString" href="#dom-summarizersummarizeoptions-context"><code><c- g>context</c-></code></a>;
 };
 
-<c- b>enum</c-> <a href="#enumdef-summarizertype"><code><c- g>SummarizerType</c-></code></a> { <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-tldr"><c- s>"tl;dr"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-teaser"><c- s>"teaser"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-key-points"><c- s>"key-points"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-headline"><c- s>"headline"</c-></a> };
+<c- b>enum</c-> <a href="#enumdef-summarizertype"><code><c- g>SummarizerType</c-></code></a> { <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-tldr"><c- s>"tldr"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-teaser"><c- s>"teaser"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-key-points"><c- s>"key-points"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizertype-headline"><c- s>"headline"</c-></a> };
 <c- b>enum</c-> <a href="#enumdef-summarizerformat"><code><c- g>SummarizerFormat</c-></code></a> { <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerformat-plain-text"><c- s>"plain-text"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerformat-markdown"><c- s>"markdown"</c-></a> };
 <c- b>enum</c-> <a href="#enumdef-summarizerlength"><code><c- g>SummarizerLength</c-></code></a> { <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerlength-short"><c- s>"short"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerlength-medium"><c- s>"medium"</c-></a>, <a class="idl-code" data-link-type="enum-value" href="#dom-summarizerlength-long"><c- s>"long"</c-></a> };
 
@@ -4593,7 +4593,7 @@ let dfnPanelData = {
 "dom-summarizertype-headline": {"dfnID":"dom-summarizertype-headline","dfnText":"headline","external":false,"refSections":[{"refs":[{"id":"ref-for-dom-summarizertype-headline"}],"title":"2. The summarizer API"},{"refs":[{"id":"ref-for-dom-summarizertype-headline\u2460"},{"id":"ref-for-dom-summarizertype-headline\u2461"},{"id":"ref-for-dom-summarizertype-headline\u2462"}],"title":"2.4.3. Options"}],"url":"#dom-summarizertype-headline"},
 "dom-summarizertype-key-points": {"dfnID":"dom-summarizertype-key-points","dfnText":"key-points","external":false,"refSections":[{"refs":[{"id":"ref-for-dom-summarizertype-key-points"}],"title":"2. The summarizer API"},{"refs":[{"id":"ref-for-dom-summarizertype-key-points\u2460"},{"id":"ref-for-dom-summarizertype-key-points\u2461"},{"id":"ref-for-dom-summarizertype-key-points\u2462"}],"title":"2.4.3. Options"}],"url":"#dom-summarizertype-key-points"},
 "dom-summarizertype-teaser": {"dfnID":"dom-summarizertype-teaser","dfnText":"teaser","external":false,"refSections":[{"refs":[{"id":"ref-for-dom-summarizertype-teaser"}],"title":"2. The summarizer API"},{"refs":[{"id":"ref-for-dom-summarizertype-teaser\u2460"},{"id":"ref-for-dom-summarizertype-teaser\u2461"},{"id":"ref-for-dom-summarizertype-teaser\u2462"}],"title":"2.4.3. Options"}],"url":"#dom-summarizertype-teaser"},
-"dom-summarizertype-tldr": {"dfnID":"dom-summarizertype-tldr","dfnText":"tl;dr","external":false,"refSections":[{"refs":[{"id":"ref-for-dom-summarizertype-tldr"}],"title":"2. The summarizer API"},{"refs":[{"id":"ref-for-dom-summarizertype-tldr\u2460"},{"id":"ref-for-dom-summarizertype-tldr\u2461"},{"id":"ref-for-dom-summarizertype-tldr\u2462"}],"title":"2.4.3. Options"}],"url":"#dom-summarizertype-tldr"},
+"dom-summarizertype-tldr": {"dfnID":"dom-summarizertype-tldr","dfnText":"tldr","external":false,"refSections":[{"refs":[{"id":"ref-for-dom-summarizertype-tldr"}],"title":"2. The summarizer API"},{"refs":[{"id":"ref-for-dom-summarizertype-tldr\u2460"},{"id":"ref-for-dom-summarizertype-tldr\u2461"},{"id":"ref-for-dom-summarizertype-tldr\u2462"}],"title":"2.4.3. Options"}],"url":"#dom-summarizertype-tldr"},
 "dom-writer-availability": {"dfnID":"dom-writer-availability","dfnText":"availability(options)","external":false,"refSections":[{"refs":[{"id":"ref-for-dom-writer-availability"}],"title":"3. The writer API"}],"url":"#dom-writer-availability"},
 "dom-writer-availability-options-options": {"dfnID":"dom-writer-availability-options-options","dfnText":"options","external":false,"refSections":[],"url":"#dom-writer-availability-options-options"},
 "dom-writer-create": {"dfnID":"dom-writer-create","dfnText":"create(options)","external":false,"refSections":[{"refs":[{"id":"ref-for-dom-writer-create"}],"title":"3. The writer API"},{"refs":[{"id":"ref-for-dom-writer-create\u2460"},{"id":"ref-for-dom-writer-create\u2461"}],"title":"3.4.4. Errors"}],"url":"#dom-writer-create"},
@@ -5204,7 +5204,7 @@ let refsData = {
 "#dom-summarizertype-headline": {"displayText":"\"headline\"","export":true,"for_":["SummarizerType"],"level":"","normative":true,"shortname":"writing-assistance","spec":"writing-assistance","status":"local","text":"\"headline\"","type":"enum-value","url":"#dom-summarizertype-headline"},
 "#dom-summarizertype-key-points": {"displayText":"\"key-points\"","export":true,"for_":["SummarizerType"],"level":"","normative":true,"shortname":"writing-assistance","spec":"writing-assistance","status":"local","text":"\"key-points\"","type":"enum-value","url":"#dom-summarizertype-key-points"},
 "#dom-summarizertype-teaser": {"displayText":"\"teaser\"","export":true,"for_":["SummarizerType"],"level":"","normative":true,"shortname":"writing-assistance","spec":"writing-assistance","status":"local","text":"\"teaser\"","type":"enum-value","url":"#dom-summarizertype-teaser"},
-"#dom-summarizertype-tldr": {"displayText":"\"tl;dr\"","export":true,"for_":["SummarizerType"],"level":"","normative":true,"shortname":"writing-assistance","spec":"writing-assistance","status":"local","text":"\"tl;dr\"","type":"enum-value","url":"#dom-summarizertype-tldr"},
+"#dom-summarizertype-tldr": {"displayText":"\"tldr\"","export":true,"for_":["SummarizerType"],"level":"","normative":true,"shortname":"writing-assistance","spec":"writing-assistance","status":"local","text":"\"tldr\"","type":"enum-value","url":"#dom-summarizertype-tldr"},
 "#dom-writer-availability": {"displayText":"availability(options)","export":true,"for_":["Writer"],"level":"","normative":true,"shortname":"writing-assistance","spec":"writing-assistance","status":"local","text":"availability(options)","type":"method","url":"#dom-writer-availability"},
 "#dom-writer-create": {"displayText":"create(options)","export":true,"for_":["Writer"],"level":"","normative":true,"shortname":"writing-assistance","spec":"writing-assistance","status":"local","text":"create(options)","type":"method","url":"#dom-writer-create"},
 "#dom-writer-expectedcontextlanguages": {"displayText":"expectedContextLanguages","export":true,"for_":["Writer"],"level":"","normative":true,"shortname":"writing-assistance","spec":"writing-assistance","status":"local","text":"expectedContextLanguages","type":"attribute","url":"#dom-writer-expectedcontextlanguages"},
