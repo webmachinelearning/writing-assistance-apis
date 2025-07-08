@@ -179,7 +179,7 @@ If the `outputLanguage` is not supplied, the default behavior is to produce the 
 
 It's possible that the inputs given for summarizing and rewriting might be too large for the underlying machine learning model to handle. The same can even be the case for strings that are usually smaller, such as the writing task for the writer API, or the context given to all APIs.
 
-Whenever any API call fails due to too-large input, it is rejected with a `QuotaExceededError`. This is a proposed new type of exception, which subclasses `DOMException`, and replaces the web platform's existing `"QuotaExceededError"` `DOMException`. See [whatwg/webidl#1465](https://github.com/whatwg/webidl/pull/1465) for this proposal. For our purposes, the important part is that it has the following properties:
+Whenever any API call fails due to too-large input, it is rejected with a `QuotaExceededError`, with the following properties:
 
 * `requested`: how many tokens the input consists of
 * `quota`: how many tokens were available (which will be less than `requested`)
