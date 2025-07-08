@@ -31,12 +31,6 @@ urlPrefix: https://tc39.es/ecma262/; spec: ECMA-262
     text: floor; url: eqn-floor
   type: dfn
     text: current realm; url: current-realm
-urlPrefix: https://whatpr.org/webidl/1465.html; spec: WEBIDL
-  type: interface
-    text: QuotaExceededError; url: quotaexceedederror
-  type: dfn; for: QuotaExceededError
-    text: requested; url: quotaexceedederror-requested
-    text: quota; url: quotaexceedederror-quota
 </pre>
 
 <style>
@@ -2402,8 +2396,6 @@ A <dfn export>quota exceeded error information</dfn> is a [=struct=] with the fo
 :: a number that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/requested=].
 : <dfn export for="quota exceeded error information">quota</dfn>
 :: a number that will be used for the {{QuotaExceededError}}'s [=QuotaExceededError/quota=].
-
-<p class="advisement">The parts of this specification related to quota exceeded errors assume that <a href="https://github.com/whatwg/webidl/pull/1465">whatwg/webidl#1465</a> will be merged.
 
 <div algorithm>
   To <dfn export>convert error information into an exception object</dfn>, given an [=error information=] |errorInfo|:
