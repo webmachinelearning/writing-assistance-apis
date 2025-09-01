@@ -8,7 +8,7 @@
   <meta content="Bikeshed version 3f621ba99, updated Mon Jul 28 15:38:36 2025 -0700" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="362dfd1fede2c2b35cf956be35a7aa59873395c0" name="revision">
+  <meta content="560bb895222db02596ae5393a948a5f0a45dd75a" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -751,7 +751,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
 </p>
    <h1 class="p-name no-ref" id="title">Writing Assistance APIs</h1>
    <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>,
-    <time class="dt-updated" datetime="2025-08-19">19 August 2025</time></p>
+    <time class="dt-updated" datetime="2025-09-01">1 September 2025</time></p>
    <details open>
     <summary>More details about this document</summary>
     <div data-fill-with="spec-metadata">
@@ -2997,7 +2997,9 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
            <li data-md>
             <p>Wait for the total number of bytes to be downloaded to become determined, and let that number be <var>totalBytes</var>.</p>
             <p>This number must be equal to the number of bytes that the user agent needs to download at the present time, not including any that have already been downloaded.</p>
-            <div class="note" role="note">
+            <div class="note" id="note-progress-total-bytes" role="note">
+             <a class="self-link" href="#note-progress-total-bytes"></a>
+  
              <p>For example, if another tab has started the download and it is 90% finished, and the user agent is planning to share the model across all tabs, then <var>totalBytes</var> will be 10% of the size of the model, not 100% of the size of the model.
 
   </p>
