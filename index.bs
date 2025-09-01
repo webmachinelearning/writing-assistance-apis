@@ -1862,7 +1862,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
              This number must be equal to the number of bytes that the user agent needs to download at the present time, not including any that have already been downloaded.
 
-             <div class="note">
+             <div class="note" id="note-progress-total-bytes">
               <p>For example, if another tab has started the download and it is 90% finished, and the user agent is planning to share the model across all tabs, then |totalBytes| will be 10% of the size of the model, not 100% of the size of the model.
 
               <p>This prevents the web developer-perceived progress from suddenly jumping from 0% to 90%, and then taking a long time to go from 90% to 100%. It also provides some protection against the (admittedly not very powerful) fingerprinting vector of measuring the current download progress across multiple sites.
