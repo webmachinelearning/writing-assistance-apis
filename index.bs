@@ -112,7 +112,7 @@ enum SummarizerLength { "short", "medium", "long" };
 <div algorithm>
   The static <dfn method for="Summarizer">create(|options|)</dfn> method steps are:
 
-  1. Return the result of [=creating an AI model object=] given |options|, "{{summarizer}}", [=validate and canonicalize summarizer options=], [=computing summarizer options availability=], [=download the summarizer model=], [=initialize the summarizer model=], and [=create a summarizer object=].
+  1. Return the result of [=creating an AI model object=] given |options|, "{{summarizer}}", [=validate and canonicalize summarizer options=], [=computing summarizer options availability=], [=download the summarizer model=], [=initialize the summarizer model=], [=create a summarizer object=], and false.
 </div>
 
 <div algorithm>
@@ -698,7 +698,7 @@ enum WriterLength { "short", "medium", "long" };
 <div algorithm>
   The static <dfn method for="Writer">create(|options|)</dfn> method steps are:
 
-  1. Return the result of [=creating an AI model object=] given |options|, "{{writer}}", [=validate and canonicalize writer options=], [=computing writer options availability=], [=download the writer model=], [=initialize the writer model=], and [=create a writer object=].
+  1. Return the result of [=creating an AI model object=] given |options|, "{{writer}}", [=validate and canonicalize writer options=], [=computing writer options availability=], [=download the writer model=], [=initialize the writer model=], [=create a writer object=], and false.
 </div>
 
 <div algorithm>
@@ -1213,7 +1213,7 @@ enum RewriterLength { "as-is", "shorter", "longer" };
 <div algorithm>
   The static <dfn method for="Rewriter">create(|options|)</dfn> method steps are:
 
-  1. Return the result of [=creating an AI model object=] given |options|, "{{rewriter}}", [=validate and canonicalize rewriter options=], [=computing rewriter options availability=], [=download the rewriter model=], [=initialize the rewriter model=], and [=create a rewriter object=].
+  1. Return the result of [=creating an AI model object=] given |options|, "{{rewriter}}", [=validate and canonicalize rewriter options=], [=computing rewriter options availability=], [=download the rewriter model=], [=initialize the rewriter model=], [=create a rewriter object=], and false.
 </div>
 
 <div algorithm>
@@ -1744,7 +1744,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
   * an algorithm |getAvailability| taking an [=ordered map=] and returning an {{Availability}} or null,
   * an algorithm |startDownload| taking an [=ordered map=] and returning a boolean,
   * an algorithm |initialize| taking an [=ordered map=] and returning an error information or null, and
-  * an algorithm |create| taking a [=ECMAScript/realm=] and an [=ordered map=] and returning a Web IDL object representing the model,
+  * an algorithm |create| taking a [=ECMAScript/realm=], an [=ordered map=] and an optional boolean |requireTransientActivation| (default true) and returning a Web IDL object representing the model,
 
   perform the following steps:
 
@@ -1826,11 +1826,20 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
       ::
         1. If |availability| is "{{Availability/downloadable}}", then:
 
-          1. If the user agent does not have sticky user activation in |realm|'s [=realm/global object=], then:
+          1. If |requireTransientActivation| is true, then:
+            1. If |realm|'s [=realm/global object=] does not have [=transient activation=], then:
 
-            1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
+              1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
 
-            1. Abort these steps.
+              1. Abort these steps.
+
+            1. [=Consume user activation=] given |realm|'s [=realm/global object=].
+          1. Else:
+            1. If |realm|'s [=realm/global object=] does not have [=sticky activation=], then:
+
+              1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
+
+              1. Abort these steps.
 
           1. <span id="step-download-user-interface"></span>The user agent may display a user interface to the user to confirm that they want to perform the download operation given by |startDownload|, or to show the progress of the download. Alternately, the user agent may decide to deny the ability to perform |startDownload| based on implicit signals of the user's intent, including the considerations in [[#privacy-availability-eviction]] and [[#security-disk-space]]. If the user explicitly or implicitly signals that they do not want to start the download, then:
 
