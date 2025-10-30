@@ -1834,7 +1834,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
               1. Abort these steps.
 
             1. [=Consume user activation=] given |realm|'s [=realm/global object=].
-          1. Else:
+          1. Otherwise:
             1. If |realm|'s [=realm/global object=] does not have [=sticky activation=], then:
 
               1. [=Queue a global task=] on the [=AI task source=] given |realm|'s [=realm/global object=] to [=reject=] |promise| with a "{{NotAllowedError}}" {{DOMException}}.
