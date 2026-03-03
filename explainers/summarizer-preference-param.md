@@ -4,7 +4,7 @@
 The current Summarizer API largely relies on powerful, high parameter count on-device models. While these models offer high-quality outputs and a broad feature set, it can also result in significant "pain points" for web adoption:
 
 *   **High Resource Requirements:** Large foundational models often require substantial disk space and memory.
-*   **Limited Device Coverage:** Due to these requirements, many mid-range and budget devices–especially mobile devices–are excluded from using the API entirely.
+*   **Limited Device Coverage:** Due to these requirements, many mid-range and budget devices—especially mobile devices—are excluded from using the API entirely.
 *   **Performance Latency:** Initializing and running inference on large models can be slow, which may not be ideal for simple tasks or performance-sensitive user interfaces.
 
 Currently, developers have no way to signal to the browser that they are willing to trade off some output quality or specific capabilities for faster execution or broader device compatibility.
