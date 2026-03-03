@@ -84,7 +84,8 @@ All three APIs share the same format: create a summarizer/writer/rewriter object
 const summarizer = await Summarizer.create({
   sharedContext: "An article from the Daily Economic News magazine",
   type: "headline",
-  length: "short"
+  length: "short",
+  preference: "auto"
 });
 
 const summary = await summarizer.summarize(articleEl.textContent, {
