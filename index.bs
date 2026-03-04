@@ -1778,7 +1778,8 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
   * an algorithm |getAvailability| taking an [=ordered map=] and returning an {{Availability}} or null,
   * an algorithm |startDownload| taking an [=ordered map=] and returning a boolean,
   * an algorithm |initialize| taking an [=ordered map=] and returning an error information or null, and
-  * an algorithm |create| taking a [=ECMAScript/realm=], an [=ordered map=] and an optional boolean |requireTransientActivation| (default true) and returning a Web IDL object representing the model,
+  * an algorithm |create| taking a [=ECMAScript/realm=], an [=ordered map=] and returning a Web IDL object representing the model, and
+  * an optional boolean |requireTransientActivation| (default true).
 
   perform the following steps:
 
