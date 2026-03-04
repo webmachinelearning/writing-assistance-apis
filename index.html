@@ -5,10 +5,10 @@
   <title>Writing Assistance APIs</title>
   <meta content="CG-DRAFT" name="w3c-status">
   <link href="https://www.w3.org/StyleSheets/TR/2021/cg-draft" rel="stylesheet">
-  <meta content="Bikeshed version 3c53a5b02, updated Thu Nov 27 17:03:30 2025 +0000" name="generator">
+  <meta content="Bikeshed version 0ef803fdf, updated Tue Jan 6 11:59:39 2026 -0800" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="93ce4928448b58ed57e16cf4f455c351d87cee76" name="revision">
+  <meta content="20eff15ea61a4459ebcff3b5eab3e181b15ac63a" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -751,7 +751,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
 </p>
    <h1 class="no-ref p-name" id="title">Writing Assistance APIs</h1>
    <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>,
-    <time class="dt-updated" datetime="2026-03-03">3 March 2026</time></p>
+    <time class="dt-updated" datetime="2026-03-04">4 March 2026</time></p>
    <details open>
     <summary>More details about this document</summary>
     <div data-fill-with="spec-metadata">
@@ -2896,7 +2896,9 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
      <li data-md>
       <p>an algorithm <var>initialize</var> taking an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-map" id="ref-for-ordered-map④">ordered map</a> and returning an error information or null, and</p>
      <li data-md>
-      <p>an algorithm <var>create</var> taking a <a data-link-type="dfn" href="https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm" id="ref-for-realm③">realm</a>, an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-map" id="ref-for-ordered-map⑤">ordered map</a> and an optional boolean <var>requireTransientActivation</var> (default true) and returning a Web IDL object representing the model,</p>
+      <p>an algorithm <var>create</var> taking a <a data-link-type="dfn" href="https://tc39.es/ecma262/multipage/executable-code-and-execution-contexts.html#realm" id="ref-for-realm③">realm</a>, an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-map" id="ref-for-ordered-map⑤">ordered map</a> and returning a Web IDL object representing the model, and</p>
+     <li data-md>
+      <p>an optional boolean <var>requireTransientActivation</var> (default true).</p>
     </ul>
     <p>perform the following steps:</p>
     <ol>
@@ -3100,74 +3102,84 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
                  <details>
                   <summary>Full calculation</summary>
                   <p>Assume a 5 GiB download size, and a 20 Mbps download speed (chosen as a number on the lower range from <a href="https://worldpopulationreview.com/country-rankings/internet-speeds-by-country">this source</a>). Then, downloading 5 GiB will take:</p>
-                  <math style="display:block math">
-                   <mtable>
-                    <mtr>
-                     <mtd></mtd>
-                     <mtd style="text-align: left">
-                      <mn>5</mn>
-                      <mtext> GiB</mtext>
-                      <mo>×</mo>
-                      <mfrac>
-                       <mrow>
-                        <msup>
-                         <mn>2</mn>
-                         <mn>30</mn>
-                        </msup>
-                        <mtext> bytes</mtext>
-                       </mrow>
-                       <mtext>GiB</mtext>
-                      </mfrac>
-                      <mo>×</mo>
-                      <mfrac>
-                       <mrow>
-                        <mn>8</mn>
-                        <mtext> bits</mtext>
-                       </mrow>
-                       <mtext>bytes</mtext>
-                      </mfrac>
-                      <mo>÷</mo>
-                      <mfrac>
-                       <mrow>
-                        <mn>20</mn>
-                        <mo>×</mo>
-                        <msup>
-                         <mn>10</mn>
-                         <mn>6</mn>
-                        </msup>
-                        <mtext> bits</mtext>
-                       </mrow>
-                       <mtext>s</mtext>
-                      </mfrac>
-                      <mo>×</mo>
-                      <mfrac>
-                       <mrow>
-                        <mn>1000</mn>
-                        <mtext> ms</mtext>
-                       </mrow>
-                       <mtext>s</mtext>
-                      </mfrac>
-                      <mo>÷</mo>
-                      <mfrac>
-                       <mrow>
-                        <mn>50</mn>
-                        <mtext> ms</mtext>
-                       </mrow>
-                       <mtext>interval</mtext>
-                      </mfrac>
-                     </mtd>
-                    </mtr>
-                    <mtr>
-                     <mtd>
-                      <mo>=</mo>
-                     </mtd>
-                     <mtd style="text-align: left">
-                      <mn>49,950</mn>
-                      <mtext> intervals</mtext>
-                     </mtd>
-                    </mtr>
-                   </mtable>
-                  </math>
+                  
+
+    <math style="display:block math">
+      <mtable>
+        <mtr>
+          <mtd></mtd>
+          <mtd style="text-align: left">
+            <mn>5</mn>
+            <mtext> GiB</mtext>
+
+            <mo>×</mo>
+            <mfrac>
+              <mrow>
+                <msup>
+                  <mn>2</mn>
+                  <mn>30</mn>
+                </msup>
+                <mtext> bytes</mtext>
+              </mrow>
+              <mtext>GiB</mtext>
+            </mfrac>
+
+            <mo>×</mo>
+            <mfrac>
+              <mrow>
+                <mn>8</mn>
+                <mtext> bits</mtext>
+              </mrow>
+              <mtext>bytes</mtext>
+            </mfrac>
+
+            <mo>÷</mo>
+            <mfrac>
+              <mrow>
+                <mn>20</mn>
+                <mo>×</mo>
+                <msup>
+                  <mn>10</mn>
+                  <mn>6</mn>
+                </msup>
+                <mtext> bits</mtext>
+              </mrow>
+              <mtext>s</mtext>
+            </mfrac>
+
+            <mo>×</mo>
+            <mfrac>
+              <mrow>
+                <mn>1000</mn>
+                <mtext> ms</mtext>
+              </mrow>
+              <mtext>s</mtext>
+            </mfrac>
+
+            <mo>÷</mo>
+            <mfrac>
+              <mrow>
+                <mn>50</mn>
+                <mtext> ms</mtext>
+              </mrow>
+              <mtext>interval</mtext>
+            </mfrac>
+          </mtd>
+        </mtr>
+
+        <mtr>
+          <mtd>
+            <mo>=</mo>
+          </mtd>
+          <mtd style="text-align: left">
+            <mn>49,950</mn>
+            <mtext> intervals</mtext>
+          </mtd>
+        </mtr>
+      </mtable>
+    </math>
+
+
                   <p>Rounding up to the nearest power of two gives a conservative estimate of 65,536 fifty millisecond intervals, so we want to give progress to 1 part in 2<sup>16</sup>.</p>
                  </details>
                 </div>
