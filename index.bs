@@ -68,6 +68,7 @@ interface Summarizer {
   readonly attribute SummarizerType type;
   readonly attribute SummarizerFormat format;
   readonly attribute SummarizerLength length;
+  // **EXPERIMENTAL**: Only available in extension and experimental contexts.
   readonly attribute PerformancePreference preference;
 
   readonly attribute FrozenArray<DOMString>? expectedInputLanguages;
@@ -86,6 +87,7 @@ dictionary SummarizerCreateCoreOptions {
   SummarizerType type = "key-points";
   SummarizerFormat format = "markdown";
   SummarizerLength length = "short";
+  // **EXPERIMENTAL**: Only available in extension and experimental contexts.
   PerformancePreference preference = "auto";
 
   sequence<DOMString> expectedInputLanguages;
@@ -625,6 +627,8 @@ This section gives normative guidance on how the implementation of [=summarize=]
       <td>
         <p>The implementation should prioritize the comprehensiveness and coherence of the summarization. This approach focuses on accurately capturing subtle context and producing highly refined summaries, which may result in higher latency and slower execution speeds.</p>
 </table>
+
+<p class="note">When resolving the underlying model, the implementation should prioritize hard functional constraints over the <code>preference</code> hint. For example, if the requested options require specific capabilities (such as a requested language in <code>expectedInputLanguages</code>) that are only supported by a model that does not align with the requested <code>preference</code>, the implementation should select the model capable of completing the task.</p>
 
 <p class="note">As with all "<span class="allow-2119">should</span>"-level guidance, user agents might not conform perfectly to these. Especially in the case of counting words, it's expected that language models might not conform perfectly.
 

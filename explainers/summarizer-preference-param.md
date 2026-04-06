@@ -31,6 +31,13 @@ dictionary SummarizerCreateCoreOptions {
 *   **`"speed"`:** The implementation should prioritize low latency and fast execution. This approach prioritizes performance, which may limit the summarization capability, potentially resulting in less nuanced extraction or simpler synthesis of the source text.
 *   **`"capability"`:** The implementation should prioritize the comprehensiveness and coherence of the summarization, and a model that offers more flexibility in terms of summary types and other configurable options. This approach focuses on accurately capturing subtle context and producing highly refined summaries, which may result in higher latency and slower execution speeds.
 
+## Conflicting Constraints and Routing Fallbacks
+The preference parameter acts as a strong hint to the implementation, rather than a strict guarantee. In scenarios where a developer's performance preference conflicts with a hard functional requirement, the implementation should prioritize the functional requirement.
+
+For example, if an implementation has a smaller, fast model that only supports English (ideal for "speed") and a larger model that supports multiple languages (ideal for "capability"):
+
+If a developer requests preference: "speed" but requires French language support, the implementation will route the request to the larger model. It prioritizes successfully completing the task in the required language over the developer's preference for lower latency.
+
 ## Application to Other APIs
 
 The `preference` parameter addresses a fundamental tradeoff that exists across all client-side machine learning tasks. As such, it is applicable to other APIs in the built-in AI ecosystem.
