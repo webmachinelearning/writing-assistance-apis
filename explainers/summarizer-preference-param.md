@@ -27,9 +27,18 @@ dictionary SummarizerCreateCoreOptions {
 };
 ```
 
-*   **`"auto"`:** It is implementation-defined how to balance execution speed with summarization capability. The implementation may dynamically adjust its internal processing based on the user agent's environment, system constraints, or context.
-*   **`"speed"`:** The implementation should prioritize low latency and fast execution. This approach prioritizes performance, which may limit the summarization capability, potentially resulting in less nuanced extraction or simpler synthesis of the source text.
-*   **`"capability"`:** The implementation should prioritize the comprehensiveness and coherence of the summarization, and a model that offers more flexibility in terms of summary types and other configurable options. This approach focuses on accurately capturing subtle context and producing highly refined summaries, which may result in higher latency and slower execution speeds.
+*   **`"auto"`:** It is implementation-defined how to balance execution speed with summarization capability. The implementation MAY dynamically adjust its internal processing based on the user agent's environment, system constraints, or context.
+*   **`"speed"`:** The implementation SHOULD prioritize low latency and fast execution. This approach prioritizes performance, which may limit the summarization capability, potentially resulting in less nuanced extraction or simpler synthesis of the source text.
+*   **`"capability"`:** The implementation SHOULD prioritize the comprehensiveness and coherence of the summarization, and a model that offers more flexibility in terms of summary types and other configurable options. This approach focuses on accurately capturing subtle context and producing highly refined summaries, which may result in higher latency and slower execution speeds.
+
+## Conflicting Constraints and Routing Fallbacks
+The preference parameter acts as a strong hint to the implementation, rather than a strict guarantee. In scenarios where a developer's performance preference conflicts with a hard functional requirement, the implementation MUST prioritize the functional requirement.
+
+For example, if an implementation has a smaller, fast model that only supports English and a larger model that supports multiple languages:
+
+If a developer requests preference: "speed" but requires French language support, the implementation will route the request to the larger model. It prioritizes successfully completing the task in the required language over the developer's preference for lower latency.
+
+Beyond hard functional requirements, we hope to explore whether other dynamic factors might play into how implementations honor the preference. For example, a user agent might consider current device resource usage (such as battery status or memory pressure) when deciding which model to route to, potentially deviating from the developer's preference to ensure system stability.
 
 ## Application to Other APIs
 
