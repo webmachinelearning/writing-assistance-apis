@@ -5,10 +5,10 @@
   <title>Writing Assistance APIs</title>
   <meta content="CG-DRAFT" name="w3c-status">
   <link href="https://www.w3.org/StyleSheets/TR/2021/cg-draft" rel="stylesheet">
-  <meta content="Bikeshed version 0ef803fdf, updated Tue Jan 6 11:59:39 2026 -0800" name="generator">
+  <meta content="Bikeshed version ffb4274fd, updated Thu Apr 16 23:47:54 2026 +0000" name="generator">
   <link href="https://webmachinelearning.github.io/writing-assistance-apis" rel="canonical">
   <link href="https://www.w3.org/2008/site/images/favicon.ico" rel="icon">
-  <meta content="20eff15ea61a4459ebcff3b5eab3e181b15ac63a" name="revision">
+  <meta content="ca32112369cca211769707aa921911e14d7f617c" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://www.w3.org/StyleSheets/TR/2021/dark.css" media="(prefers-color-scheme: dark)" rel="stylesheet" type="text/css">
 <style>
@@ -312,7 +312,7 @@ pre .property::before, pre .property::after {
 </style>
 <style>/* Boilerplate: style-counters */
 body {
-    counter-reset: example figure issue;
+    counter-reset: example figure issue table;
 }
 .issue {
     counter-increment: issue;
@@ -337,6 +337,13 @@ figcaption {
 }
 figcaption:not(.no-marker)::before {
     content: "Figure " counter(figure) " ";
+}
+
+figure.table figcaption {
+    counter-increment: table;
+}
+figure.table figcaption:not(.no-marker)::before {
+    content: "Table " counter(table) " ";
 }
 </style>
 <style>/* Boilerplate: style-dfn-panel */
@@ -699,6 +706,30 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     c-[vm] { color: #cb4b16 } /* Name.Variable.Magic */
     c-[il] { color: #657b83 } /* Literal.Number.Integer.Long */
 }
+
+@media print {
+    /* Darken colors for print that would otherwise print too faintly */
+    c-[c]  { color: #555555 } /* Comment */
+    c-[d]  { color: #555555 } /* Comment.Multiline */
+    c-[cp] { color: #555555 } /* Comment.Preproc */
+    c-[c1] { color: #555555 } /* Comment.Single */
+    c-[cs] { color: #555555 } /* Comment.Special */
+    c-[o]  { color: #222222 } /* Operator */
+    c-[p]  { color: #222222 } /* Punctuation */
+    c-[ow] { color: #222222 } /* Operator.Word */
+    c-[s]  { color: #664400 } /* Literal.String */
+    c-[t]  { color: #664400 } /* Literal.String.Single */
+    c-[u]  { color: #664400 } /* Literal.String.Double */
+    c-[sb] { color: #664400 } /* Literal.String.Backtick */
+    c-[sc] { color: #664400 } /* Literal.String.Char */
+    c-[sd] { color: #664400 } /* Literal.String.Doc */
+    c-[se] { color: #664400 } /* Literal.String.Escape */
+    c-[sh] { color: #664400 } /* Literal.String.Heredoc */
+    c-[si] { color: #664400 } /* Literal.String.Interpol */
+    c-[sx] { color: #664400 } /* Literal.String.Other */
+    c-[sr] { color: #664400 } /* Literal.String.Regex */
+    c-[ss] { color: #664400 } /* Literal.String.Symbol */
+}
 </style>
 <style>/* Boilerplate: style-var-click-highlighting */
 /*
@@ -751,7 +782,7 @@ var[data-var-color="6"] { --var-vg: #FFBCF2; }
 </p>
    <h1 class="no-ref p-name" id="title">Writing Assistance APIs</h1>
    <p id="w3c-state"><a href="https://www.w3.org/standards/types/#CG-DRAFT">Draft Community Group Report</a>,
-    <time class="dt-updated" datetime="2026-03-04">4 March 2026</time></p>
+    <time class="dt-updated" datetime="2026-04-17">17 April 2026</time></p>
    <details open>
     <summary>More details about this document</summary>
     <div data-fill-with="spec-metadata">
@@ -917,6 +948,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
   <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype"><c- n>SummarizerType</c-></a> <a class="idl-code" data-link-type="attribute" data-readonly data-type="SummarizerType" href="#dom-summarizer-type" id="ref-for-dom-summarizer-type"><c- g>type</c-></a>;
   <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat"><c- n>SummarizerFormat</c-></a> <a class="idl-code" data-link-type="attribute" data-readonly data-type="SummarizerFormat" href="#dom-summarizer-format" id="ref-for-dom-summarizer-format"><c- g>format</c-></a>;
   <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength"><c- n>SummarizerLength</c-></a> <a class="idl-code" data-link-type="attribute" data-readonly data-type="SummarizerLength" href="#dom-summarizer-length" id="ref-for-dom-summarizer-length"><c- g>length</c-></a>;
+  // **EXPERIMENTAL**: Only available in extension and experimental contexts.
   <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="#enumdef-performancepreference" id="ref-for-enumdef-performancepreference"><c- n>PerformancePreference</c-></a> <a class="idl-code" data-link-type="attribute" data-readonly data-type="PerformancePreference" href="#dom-summarizer-preference" id="ref-for-dom-summarizer-preference"><c- g>preference</c-></a>;
 
   <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://webidl.spec.whatwg.org/#idl-frozen-array" id="ref-for-idl-frozen-array"><c- b>FrozenArray</c-></a>&lt;<a class="idl-code" data-link-type="interface" href="https://webidl.spec.whatwg.org/#idl-DOMString" id="ref-for-idl-DOMString④"><c- b>DOMString</c-></a>>? <a class="idl-code" data-link-type="attribute" data-readonly data-type="FrozenArray<DOMString>?" href="#dom-summarizer-expectedinputlanguages" id="ref-for-dom-summarizer-expectedinputlanguages"><c- g>expectedInputLanguages</c-></a>;
@@ -935,6 +967,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
   <a data-link-type="idl-name" href="#enumdef-summarizertype" id="ref-for-enumdef-summarizertype①"><c- n>SummarizerType</c-></a> <dfn class="dfn-paneled idl-code" data-default="&quot;key-points&quot;" data-dfn-for="SummarizerCreateCoreOptions" data-dfn-type="dict-member" data-export data-type="SummarizerType" id="dom-summarizercreatecoreoptions-type"><code><c- g>type</c-></code></dfn> = "key-points";
   <a data-link-type="idl-name" href="#enumdef-summarizerformat" id="ref-for-enumdef-summarizerformat①"><c- n>SummarizerFormat</c-></a> <dfn class="dfn-paneled idl-code" data-default="&quot;markdown&quot;" data-dfn-for="SummarizerCreateCoreOptions" data-dfn-type="dict-member" data-export data-type="SummarizerFormat" id="dom-summarizercreatecoreoptions-format"><code><c- g>format</c-></code></dfn> = "markdown";
   <a data-link-type="idl-name" href="#enumdef-summarizerlength" id="ref-for-enumdef-summarizerlength①"><c- n>SummarizerLength</c-></a> <dfn class="dfn-paneled idl-code" data-default="&quot;short&quot;" data-dfn-for="SummarizerCreateCoreOptions" data-dfn-type="dict-member" data-export data-type="SummarizerLength" id="dom-summarizercreatecoreoptions-length"><code><c- g>length</c-></code></dfn> = "short";
+  // **EXPERIMENTAL**: Only available in extension and experimental contexts.
   <a data-link-type="idl-name" href="#enumdef-performancepreference" id="ref-for-enumdef-performancepreference①"><c- n>PerformancePreference</c-></a> <dfn class="dfn-paneled idl-code" data-default="&quot;auto&quot;" data-dfn-for="SummarizerCreateCoreOptions" data-dfn-type="dict-member" data-export data-type="PerformancePreference" id="dom-summarizercreatecoreoptions-preference"><code><c- g>preference</c-></code></dfn> = "auto";
 
   <a data-link-type="dfn" href="https://webidl.spec.whatwg.org/#idl-sequence" id="ref-for-idl-sequence"><c- b>sequence</c-></a>&lt;<a class="idl-code" data-link-type="interface" href="https://webidl.spec.whatwg.org/#idl-DOMString" id="ref-for-idl-DOMString⑧"><c- b>DOMString</c-></a>> <dfn class="dfn-paneled idl-code" data-dfn-for="SummarizerCreateCoreOptions" data-dfn-type="dict-member" data-export data-type="sequence<DOMString>" id="dom-summarizercreatecoreoptions-expectedinputlanguages"><code><c- g>expectedInputLanguages</c-></code></dfn>;
@@ -1564,6 +1597,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
       <td>
        <p>The implementation should prioritize the comprehensiveness and coherence of the summarization. This approach focuses on accurately capturing subtle context and producing highly refined summaries, which may result in higher latency and slower execution speeds.</p>
    </table>
+   <p class="note" role="note">When resolving the underlying model, the implementation should prioritize hard functional constraints over the <code>preference</code> hint. For example, if the requested options require specific capabilities (such as a requested language in <code>expectedInputLanguages</code>) that are only supported by a model that does not align with the requested <code>preference</code>, the implementation should select the model capable of completing the task.</p>
    <p class="note" role="note">As with all "<span class="allow-2119">should</span>"-level guidance, user agents might not conform perfectly to these. Especially in the case of counting words, it’s expected that language models might not conform perfectly.
 
 </p>
@@ -4458,6 +4492,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
   <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="#enumdef-summarizertype"><c- n>SummarizerType</c-></a> <a class="idl-code" data-link-type="attribute" data-readonly data-type="SummarizerType" href="#dom-summarizer-type"><c- g>type</c-></a>;
   <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="#enumdef-summarizerformat"><c- n>SummarizerFormat</c-></a> <a class="idl-code" data-link-type="attribute" data-readonly data-type="SummarizerFormat" href="#dom-summarizer-format"><c- g>format</c-></a>;
   <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="#enumdef-summarizerlength"><c- n>SummarizerLength</c-></a> <a class="idl-code" data-link-type="attribute" data-readonly data-type="SummarizerLength" href="#dom-summarizer-length"><c- g>length</c-></a>;
+  // **EXPERIMENTAL**: Only available in extension and experimental contexts.
   <c- b>readonly</c-> <c- b>attribute</c-> <a data-link-type="idl-name" href="#enumdef-performancepreference"><c- n>PerformancePreference</c-></a> <a class="idl-code" data-link-type="attribute" data-readonly data-type="PerformancePreference" href="#dom-summarizer-preference"><c- g>preference</c-></a>;
 
   <c- b>readonly</c-> <c- b>attribute</c-> <a class="idl-code" data-link-type="interface" href="https://webidl.spec.whatwg.org/#idl-frozen-array"><c- b>FrozenArray</c-></a>&lt;<a class="idl-code" data-link-type="interface" href="https://webidl.spec.whatwg.org/#idl-DOMString"><c- b>DOMString</c-></a>>? <a class="idl-code" data-link-type="attribute" data-readonly data-type="FrozenArray<DOMString>?" href="#dom-summarizer-expectedinputlanguages"><c- g>expectedInputLanguages</c-></a>;
@@ -4476,6 +4511,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
   <a data-link-type="idl-name" href="#enumdef-summarizertype"><c- n>SummarizerType</c-></a> <a data-default="&quot;key-points&quot;" data-type="SummarizerType" href="#dom-summarizercreatecoreoptions-type"><code><c- g>type</c-></code></a> = "key-points";
   <a data-link-type="idl-name" href="#enumdef-summarizerformat"><c- n>SummarizerFormat</c-></a> <a data-default="&quot;markdown&quot;" data-type="SummarizerFormat" href="#dom-summarizercreatecoreoptions-format"><code><c- g>format</c-></code></a> = "markdown";
   <a data-link-type="idl-name" href="#enumdef-summarizerlength"><c- n>SummarizerLength</c-></a> <a data-default="&quot;short&quot;" data-type="SummarizerLength" href="#dom-summarizercreatecoreoptions-length"><code><c- g>length</c-></code></a> = "short";
+  // **EXPERIMENTAL**: Only available in extension and experimental contexts.
   <a data-link-type="idl-name" href="#enumdef-performancepreference"><c- n>PerformancePreference</c-></a> <a data-default="&quot;auto&quot;" data-type="PerformancePreference" href="#dom-summarizercreatecoreoptions-preference"><code><c- g>preference</c-></code></a> = "auto";
 
   <a data-link-type="dfn" href="https://webidl.spec.whatwg.org/#idl-sequence"><c- b>sequence</c-></a>&lt;<a class="idl-code" data-link-type="interface" href="https://webidl.spec.whatwg.org/#idl-DOMString"><c- b>DOMString</c-></a>> <a data-type="sequence<DOMString>" href="#dom-summarizercreatecoreoptions-expectedinputlanguages"><code><c- g>expectedInputLanguages</c-></code></a>;
