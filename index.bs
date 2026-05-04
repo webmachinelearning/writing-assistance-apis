@@ -622,7 +622,6 @@ This section gives normative guidance on how the implementation of [=summarize=]
       <th>"<dfn enum-value for="PerformancePreference">speed</dfn>"
       <td>
         <p>The implementation should prioritize low latency and fast execution. This approach prioritizes performance, which may limit the summarization capability, potentially resulting in less nuanced extraction or simpler synthesis of the source text.</p>
-        <p>The <code>"speed"</code> preference is constrained to cases where the language is English, the format is <code>"plain-text"</code>, the type is <code>"tldr"</code> or <code>"key-points"</code>, and the length is <code>"short"</code> or <code>"medium"</code>. These constraints represent initial implementation limitations; it is anticipated that future iterations will expand support to a wider range of options as optimized models evolve.</p>
     <tr>
       <th>"<dfn enum-value for="PerformancePreference">capability</dfn>"
       <td>
