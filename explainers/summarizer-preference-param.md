@@ -28,7 +28,7 @@ dictionary SummarizerCreateCoreOptions {
 ```
 
 *   **`"auto"`:** It is implementation-defined how to balance execution speed with summarization capability. The implementation MAY dynamically adjust its internal processing based on the user agent's environment, system constraints, or context.
-*   **`"speed"`:** The implementation SHOULD prioritize low latency and fast execution. This approach prioritizes performance, which may limit the summarization capability, potentially resulting in less nuanced extraction or simpler synthesis of the source text.
+*   **`"speed"`:** The implementation SHOULD prioritize low latency and fast execution. This approach prioritizes performance, which may limit the summarization capability, potentially resulting in less nuanced extraction or simpler synthesis of the source text. The `"speed"` preference is constrained to cases where the language is English, the format is `"plain-text"`, the type is `"tldr"` or `"key-points"`, and the length is `"short"` or `"medium"`. These constraints represent initial implementation limitations; it is anticipated that future iterations will expand support to a wider range of options as optimized models evolve.
 *   **`"capability"`:** The implementation SHOULD prioritize the comprehensiveness and coherence of the summarization, and a model that offers more flexibility in terms of summary types and other configurable options. This approach focuses on accurately capturing subtle context and producing highly refined summaries, which may result in higher latency and slower execution speeds.
 
 ## Conflicting Constraints and Routing Fallbacks
