@@ -2558,6 +2558,31 @@ The implementation-defined parts of these APIs can be implemented by delegating 
 
 However, this is something for web developers to be aware of when they use this API, in case their web page has requirements on not sending certain information to third parties. We're contemplating giving control over this possibility to web developers in <#38>.
 
+<h3 id="privacy-local-implementations">Local (on-device) implementations</h3>
+
+The implementation-defined parts of these APIs can be implemented locally, by executing the model on the same device as the user agent, such that the input, any web-developer-provided context, and the output never leave that device. 
+This is the counterpart to the cloud-based strategy described in [[#privacy-cloud-implementations]].
+
+Local execution avoids the network exposure inherent in delegating to a remote service: user-provided text is not transmitted to a third party, so there is no attendant opportunity for server-side logging, onward sharing, or cross-border transfer of that text. 
+Exposing as little user data as possible in this way is generally the privacy-preferable strategy, and where a user agent is able to satisfy a request locally it is encouraged to do so. 
+
+Local execution is, however, <em>not</em> in itself sufficient to satisfy the privacy requirements of this specification. The observable behaviour of a locally-executed model can still reveal information about the user or their
+device, through the same vectors that apply to any implementation strategy. 
+
+
+<strong>Even when a model is executed locally, user agents must continue to satisfy the requirements in [[#privacy-availability]], [[#privacy-language-availability]], [[#privacy-model-version]], and [[#privacy-user-input]].</strong>
+In particular: the set of locally-available models, fine-tunings, and language packs remains a fingerprinting and demographic-inference vector (see [[#privacy-availability]] and [[#privacy-language-availability]]); the specific
+local model version remains a fingerprinting vector that behavioural probing can reveal (see [[#privacy-model-version]]); and local input must not be retained, nor used to train or fine-tune a model (see [[#privacy-user-input]]).
+
+Local execution may take place in a normal execution environment or in a hardware-backed trusted execution environment. Both keep the input on the device. A trusted execution environment can additionally provide isolation
+against other software running on the device, but is not required in order to meet the requirements of this specification.
+
+Locally stored model and fine-tuning material is a form of state that the user agent maintains on the user's device on behalf of web content.
+
+<strong>User agents should give users a way to inspect and remove locally stored model material</strong>, in the same manner as other locally stored data. Note that any per-[=storage key=] state derived from such material, such
+as the download-status masking state, is already required to be reset when the origin's storage is reset, per [[#privacy-availability-masking]]. Providing these affordances is discussed further, in the context of disk usage, in 
+[[#security-disk-space]].
+
 <h2 id="security">Security considerations</h2>
 
 <em>Unlike many "security considerations" sections, which only summarize and restate security considerations that are already normatively specified elsewhere in the document, this section contains some normative requirements that are not present elsewhere. The novel normative requirements are called out using <strong>strong emphasis</strong>.</em>
@@ -2587,3 +2612,33 @@ This specification does not mandate any particular mitigation strategy for these
 One implementation strategy for these APIs is to delegate to models provided by the operating system. This can provide a number of benefits, such as a more uniform experience for the user across multiple applications, or less disk space usage.
 
 However, doing so comes with the usual dangers of exposing operating system capabilities to the web platform. User agents still need to ensure that the various privacy and security requirements in this specification are followed when using OS-provided models, even if the user agent has less control over the model's behavior. Particularly notable requirements to watch out for are those in [[#privacy-user-input]] and [[#security-runtime]].
+
+An OS-provided model may be shared across multiple applications on the device, not only the user agent. <strong>User agents should consider whether such sharing introduces observable cross-application side channels</strong>, for
+example, timing differences arising from a shared cache or shared runtime, and apply the mitigations discussed in [[#security-runtime]] accordingly.
+
+<h3 id="security-model-integrity">Model provenance and integrity</h3>
+
+Regardless of whether a model is executed locally (see [[#privacy-local-implementations]]) or in the cloud (see [[#privacy-cloud-implementations]]), and whether it is managed by the user agent or provided by the operating system (see [[#security-os]]), these APIs depend on
+the integrity of the model and of any fine-tuning material in order to produce trustworthy results. Material that has been tampered with, substituted, or rolled back to a known-weaker version could cause these APIs to emit
+attacker-influenced output, or could undermine the version-based mitigations described in [[#privacy-model-version]].
+
+<strong>User agents must obtain any model or fine-tuning material used to satisfy these APIs over a channel that provides authentication, integrity, and confidentiality, and must verify the integrity and authenticity of that material
+before using it.</strong>
+
+<strong>User agents should not use model or fine-tuning material whose version is known to be older than a minimum trusted version</strong>, so as to resist downgrade attacks. This complements the version-management guidance in
+[[#privacy-model-version]]. 
+
+When the user agent manages the model itself, it is responsible for meeting these requirements directly. When it delegates to an OS-provided model, it depends on the operating system to do so, and the considerations in
+[[#security-os]] continue to apply.
+
+Behavioural probing of a model such as sending many crafted inputs and inspecting the outputs, can reveal the model version (a fingerprinting vector; see [[#privacy-model-version]]) and, at sufficient scale, can be used to reconstruct
+aspects of the model. The abuse mitigations described in [[#security-runtime]], such as rate limiting and abuse detection, also serve to limit this kind of probing.
+
+
+<h3 id="security-untrusted-output">Untrusted model output</h3>
+
+<em>This section is guidance for web developers, rather than a requirement on user agents.</em>
+
+The text returned by these APIs is generated by a model and should be treated as untrusted, whether the model runs locally or in the cloud. Web developers should not insert it into a document as HTML, nor otherwise interpret it as code,
+without first sanitizing it, exactly as they would treat any other untrusted string. Separately, user agents already take steps to keep the model performing its intended task rather than following instructions embedded in its input; see
+the guidance against treating web-developer-provided context as instructions in each "the algorithm" section (for example, [[#summarizer-algorithm]]).
