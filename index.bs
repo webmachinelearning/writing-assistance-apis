@@ -2126,7 +2126,7 @@ Every [=interface=] [=interface/including=] the {{DestroyableModel}} interface m
 
     1. Let |done| be the following steps:
 
-      1. [=Queue a global task=] on the [=AI task source=] given ||global| to perform the following steps:
+      1. [=Queue a global task=] on the [=AI task source=] given |global| to perform the following steps:
 
         1. If |abortedDuringOperation| is false, then [=resolve=] |promise| with |result|.
 
